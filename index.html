@@ -672,8 +672,6 @@ const i18n = {
     'modal.tip_title': '⭐ 收藏本站',
     'modal.tip_desc': '按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新',
     'modal.close': '我知道了',
-    'card.free': '免费',
-    'card.downloads': '次下载',
   },
   en: {
     'nav.skins': 'Skins',
@@ -726,8 +724,6 @@ const i18n = {
     'modal.tip_title': '⭐ Bookmark This Page',
     'modal.tip_desc': 'Press <kbd>Ctrl</kbd> + <kbd>D</kbd> (Mac: <kbd>⌘</kbd> + <kbd>D</kbd>) to bookmark and follow updates',
     'modal.close': 'Got it',
-    'card.free': 'Free',
-    'card.downloads': ' downloads',
   }
 };
 
@@ -797,8 +793,6 @@ const pets=[
 // Render themes
 function renderThemes(){
   const lang = currentLang;
-  const t_free = i18n[lang]['card.free'];
-  const t_dl = i18n[lang]['card.downloads'];
   document.getElementById('theme-grid').innerHTML=themes.map((t,i)=>`
     <div class="card" data-idx="${i}">
       <div class="card-preview">
@@ -808,10 +802,6 @@ function renderThemes(){
       <div class="card-body">
         <h3>${t.name}</h3>
         <div class="by">${t.author}</div>
-        <div class="row">
-          <span>${t_free}</span>
-          <span>${t.dl>=1000?(t.dl/1000).toFixed(1)+'k':t.dl}${t_dl}</span>
-        </div>
       </div>
     </div>
   `).join('');
