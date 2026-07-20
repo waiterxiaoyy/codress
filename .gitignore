@@ -1,0 +1,14 @@
+# 部署脚本（含服务器IP等敏感信息）
+deploy.sh
+first-deploy.sh
+
+# SSL 证书
+ssl/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
