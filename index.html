@@ -26,10 +26,11 @@
   --shadow-lg:0 8px 32px rgba(0,0,0,.1);
 }
 
-html{scroll-behavior:smooth;background:var(--white)}
+html{scroll-behavior:smooth;background:var(--white);overflow-x:hidden}
 body{
   font-family:var(--font);color:var(--black);line-height:1.65;
   -webkit-font-smoothing:antialiased;background:var(--white);
+  overflow-x:hidden;
 }
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font-family:inherit;border:none}
@@ -80,10 +81,10 @@ nav{
 }
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;
-  padding:6px 16px 6px 8px;border-radius:999px;
+  padding:6px 16px 6px 10px;border-radius:999px;
   background:var(--light-gray);border:1px solid var(--border);
   font-size:12px;font-weight:500;color:var(--dark-gray);
-  margin-bottom:28px;
+  margin-bottom:28px;max-width:100%;flex-wrap:wrap;justify-content:center;
 }
 .hero-badge .dot{
   width:6px;height:6px;border-radius:50%;background:var(--black);
@@ -385,14 +386,23 @@ footer .flinks a:hover{color:var(--black)}
 
 @media(max-width:768px){
   .hero{padding:130px 0 56px}
+  .hero-badge{font-size:11px;padding:6px 14px;max-width:90%;text-align:center;white-space:normal;line-height:1.5}
+  .hero-actions{flex-direction:column;align-items:center}
   .compare-grid{grid-template-columns:1fr}
+  .compare-box img{height:auto;object-fit:contain;object-position:center}
   .steps{grid-template-columns:1fr}
   .features{grid-template-columns:1fr}
   .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .pets-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .marquee-item{width:180px}
+  .marquee-item img{height:110px}
   footer .footer-inner{flex-direction:column;text-align:center}
-  .nav-links a:not(.lang-toggle){display:none}
-  nav{padding:0 20px}
+  nav{padding:0 16px}
+  .nav-links{gap:0}
+  .nav-links a{display:none}
+  .lang-toggle{margin-left:0}
+  .dl-cards{flex-direction:column;align-items:center}
+  .dl-card{min-width:auto;width:100%;max-width:300px}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -415,7 +425,7 @@ footer .flinks a:hover{color:var(--black)}
 
 <section class="hero" id="hero">
   <div class="container">
-    <div class="hero-badge"><span class="dot"></span><span data-i18n="hero.badge">适配 Cursor · VS Code · CodeBuddy 等 Electron 编辑器</span></div>
+    <div class="hero-badge"><span class="dot"></span><span data-i18n="hero.badge">适配 Codex · CodeBuddy 等 Agent 工作台</span></div>
     <h1><span data-i18n="hero.title1">换个界面</span><span class="gradient" data-i18n="hero.title2">，让灵感常驻</span></h1>
     <p data-i18n="hero.desc">告别千篇一律的编辑器外观。数千套皮肤与桌面宠物，一键切换，不修改任何官方文件，随时恢复默认。</p>
     <div class="hero-actions">
@@ -555,7 +565,7 @@ footer .flinks a:hover{color:var(--black)}
     <div class="dl-cards">
       <div class="dl-card">
         <div class="os-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><path d="M2 12h20"/></svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
         </div>
         <h4>macOS</h4>
         <p class="ver">Apple Silicon · v1.0.0</p>
@@ -587,7 +597,7 @@ footer .flinks a:hover{color:var(--black)}
         <a href="#themes" data-i18n="nav.skins">皮肤</a>
         <a href="#pets" data-i18n="nav.pets">宠物</a>
         <a href="#how" data-i18n="footer.guide">指南</a>
-        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/waiterxiaoyy/codress" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
   </div>
@@ -616,7 +626,7 @@ const i18n = {
     'nav.pets': '宠物',
     'nav.guide': '使用指南',
     'nav.download': '下载',
-    'hero.badge': '适配 Cursor · VS Code · CodeBuddy 等 Electron 编辑器',
+    'hero.badge': '适配 Codex · CodeBuddy 等 Agent 工作台',
     'hero.title1': '换个界面',
     'hero.title2': '，让灵感常驻',
     'hero.desc': '告别千篇一律的编辑器外观。数千套皮肤与桌面宠物，一键切换，不修改任何官方文件，随时恢复默认。',
@@ -670,7 +680,7 @@ const i18n = {
     'nav.pets': 'Pets',
     'nav.guide': 'Guide',
     'nav.download': 'Download',
-    'hero.badge': 'Works with Cursor · VS Code · CodeBuddy & other Electron editors',
+    'hero.badge': 'Works with Codex · CodeBuddy & other Agent workspaces',
     'hero.title1': 'New Look',
     'hero.title2': ', Fresh Inspiration',
     'hero.desc': 'Say goodbye to boring editor UIs. Thousands of skins & desktop pets, one-click switch, no modification to official files, revert anytime.',
