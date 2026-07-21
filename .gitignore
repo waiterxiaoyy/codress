@@ -13,3 +13,5 @@ Thumbs.db
 .vscode/
 .idea/skin-skills/
 skin-skills/
+.build/
+deploy*

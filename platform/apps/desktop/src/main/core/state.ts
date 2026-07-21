@@ -12,7 +12,7 @@ export interface Settings {
 }
 
 const DEFAULTS: Settings = {
-  apiBase: "http://127.0.0.1:8080",
+  apiBase: process.env.NODE_ENV === "development" ? "http://127.0.0.1:8080" : "https://codress.dev",
   userToken: null,
   userName: null,
   activePet: null,

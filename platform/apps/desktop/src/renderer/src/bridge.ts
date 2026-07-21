@@ -95,7 +95,7 @@ export interface CodressBridge {
 
 const noop = () => () => {};
 const noopAsync = () => Promise.resolve({} as never);
-const API_BASE = "http://127.0.0.1:8080";
+const API_BASE = import.meta.env.DEV ? "http://127.0.0.1:8080" : "https://codress.dev";
 
 async function apiFetch<T>(path: string): Promise<T> {
   const resp = await fetch(`${API_BASE}${path}`);
@@ -157,7 +157,7 @@ export const bridge: CodressBridge = electronBridge
       get(target, prop, receiver) {
         if (prop in target) return Reflect.get(target, prop, receiver);
         // 旧 preload 缺失新方法时，fallback 到本地实现
-        if (prop in fallbackBridge) return (fallbackBridge as Record<string, unknown>)[prop as string];
+        if (prop in fallbackBridge) return (fallbackBridge as unknown as Record<string, unknown>)[prop as string];
         return undefined;
       },
     })
