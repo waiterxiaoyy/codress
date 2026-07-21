@@ -1,9 +1,12 @@
 import path from "node:path";
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, protocol } from "electron";
 import { AppContext } from "./context";
 import { registerIpc } from "./ipc";
 import { createTray } from "./tray";
 import { PetManager, petPageLocator } from "./pets";
+
+// 确保 Codress 自身不受 WorkBuddy 调试端口环境变量影响
+delete process.env.WORKBUDDY_REMOTE_DEBUGGING_PORT;
 
 let mainWindow: BrowserWindow | null = null;
 let ctx: AppContext | null = null;
@@ -48,6 +51,12 @@ if (!singleLock) {
   app.on("second-instance", () => createMainWindow());
 
   app.whenReady().then(async () => {
+    // 暴露 resources 目录给渲染进程:app-asset://<file> → resources/<file>
+    protocol.registerFileProtocol("app-asset", (request, cb) => {
+      const file = path.basename(new URL(request.url).pathname);
+      cb({ path: path.join(resourcesRoot, file) });
+    });
+
     const pets = new PetManager(
       petPageLocator(
         path.join(__dirname, "../renderer"),

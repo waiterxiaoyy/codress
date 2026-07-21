@@ -1,6 +1,7 @@
 export interface AdapterStatus {
   id: string;
   name: string;
+  icon?: string;
   installed: boolean;
   installPath: string | null;
   port: number;
@@ -28,7 +29,20 @@ export interface PetItem {
   targets: string[];
   imageUrl: string;
   animation: string;
+  spriteSheet?: string;   // spritesheet.webp URL (Codex v2)
+  manifest?: PetManifest; // pet.json content
+  stylePreset?: string;
+  tags?: string;
+  author?: string;
   downloads?: number;
+}
+
+export interface PetManifest {
+  id: string;
+  displayName: string;
+  description?: string;
+  spriteVersionNumber: number;
+  spritesheetPath?: string;
 }
 
 export interface Settings {
@@ -71,7 +85,80 @@ export interface CodressBridge {
   restoreSkin(target: string): Promise<void>;
   importImage(target: string): Promise<ApplyOutcome>;
   setPet(slug: string | null): Promise<void>;
+  installPetToCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
+  activatePetInCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
+  uninstallPetFromCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
+  getInstalledPets(): Promise<string[]>;
+  getActivePetInCodex(): Promise<string | null>;
   openExternal(url: string): Promise<void>;
 }
 
-export const bridge: CodressBridge = (window as unknown as { codress: CodressBridge }).codress;
+const noop = () => () => {};
+const noopAsync = () => Promise.resolve({} as never);
+const API_BASE = "http://127.0.0.1:8080";
+
+async function apiFetch<T>(path: string): Promise<T> {
+  const resp = await fetch(`${API_BASE}${path}`);
+  return resp.json();
+}
+
+const fallbackBridge: CodressBridge = {
+  onStatusChanged: noop,
+  appStatus: () => Promise.resolve([]),
+  getSettings: () => Promise.resolve({
+    apiBase: API_BASE,
+    userToken: null, userName: null, activePet: null,
+    activeSkins: {}, appPaths: {}, ports: {},
+  }),
+  patchSettings: noopAsync,
+  authProviders: () => Promise.resolve({ github: false, google: false, dev: true }),
+  loginOAuth: noopAsync,
+  loginDev: noopAsync,
+  logout: noopAsync,
+  me: noopAsync,
+  myEvents: () => Promise.resolve({ items: [] }),
+  storeSkins: (params: Record<string, unknown>) => {
+    const search = new URLSearchParams();
+    if (params.target) search.set("target", String(params.target));
+    if (params.category) search.set("category", String(params.category));
+    search.set("page", String(params.page ?? 1));
+    search.set("pageSize", "48");
+    return apiFetch(`/api/v1/skins?${search}`);
+  },
+  storePets: (params: Record<string, unknown>) => {
+    const search = new URLSearchParams();
+    if (params.target) search.set("target", String(params.target));
+    search.set("page", String(params.page ?? 1));
+    search.set("pageSize", "48");
+    return apiFetch(`/api/v1/pets?${search}`);
+  },
+  storeCategories: (type: string) => apiFetch(`/api/v1/categories?type=${type}`),
+  favorites: () => Promise.resolve({ items: [] }),
+  toggleFavorite: () => Promise.resolve({ favorited: false }),
+  libraryList: () => Promise.resolve([]),
+  applySkin: () => Promise.resolve({ ok: false, message: "非 Electron 环境，请在桌面客户端操作" }),
+  pauseSkin: noopAsync,
+  resumeSkin: noopAsync,
+  restoreSkin: noopAsync,
+  importImage: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  setPet: noopAsync,
+  installPetToCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  activatePetInCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  uninstallPetFromCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  getInstalledPets: () => Promise.resolve([]),
+  getActivePetInCodex: () => Promise.resolve(null),
+  openExternal: noopAsync,
+};
+
+const electronBridge = (window as unknown as { codress?: CodressBridge }).codress;
+
+export const bridge: CodressBridge = electronBridge
+  ? new Proxy(electronBridge, {
+      get(target, prop, receiver) {
+        if (prop in target) return Reflect.get(target, prop, receiver);
+        // 旧 preload 缺失新方法时，fallback 到本地实现
+        if (prop in fallbackBridge) return (fallbackBridge as Record<string, unknown>)[prop as string];
+        return undefined;
+      },
+    })
+  : fallbackBridge;

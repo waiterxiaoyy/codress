@@ -7,6 +7,7 @@ import type { AdapterDefinition } from "./types";
 export const codexAdapter: AdapterDefinition = {
   id: "codex",
   name: "Codex",
+  icon: "codex.png",
   defaultPort: 9341,
   targetUrlPrefixes: ["app://"],
   probeMarkers: {

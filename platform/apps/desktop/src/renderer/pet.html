@@ -20,7 +20,7 @@
         padding-bottom: 8px;
         box-sizing: border-box;
       }
-      img {
+      canvas, img {
         max-width: 150px;
         max-height: 150px;
         image-rendering: pixelated;
@@ -43,6 +43,7 @@
       body:hover .name {
         opacity: 1;
       }
+      /* 单图模式动画 */
       .anim-idle img {
         animation: breathe 3.2s ease-in-out infinite;
       }
@@ -70,24 +71,116 @@
         99% { transform: translateX(-14px) scaleX(-1); }
       }
       @media (prefers-reduced-motion: reduce) {
-        img { animation: none !important; }
+        canvas, img { animation: none !important; }
       }
     </style>
   </head>
   <body>
-    <div class="stage" id="stage">
-      <img id="pet" alt="pet" />
-    </div>
+    <div class="stage" id="stage"></div>
     <div class="name" id="name"></div>
     <script>
       const params = new URLSearchParams(location.search);
-      const image = params.get("image") || "";
-      document.getElementById("pet").src = image.startsWith("http")
-        ? image
-        : "file:///" + image.replace(/\\/g, "/").replace(/^\/+/, "");
-      document.getElementById("name").textContent = params.get("name") || "";
-      document.getElementById("stage").className =
-        "stage anim-" + (params.get("animation") || "idle");
+      const imageSrc = params.get("image") || "";
+      const petName = params.get("name") || "";
+      const animation = params.get("animation") || "idle";
+
+      document.getElementById("name").textContent = petName;
+
+      const resolvedSrc = imageSrc.startsWith("http")
+        ? imageSrc
+        : "file:///" + imageSrc.replace(/\\/g, "/").replace(/^\/+/, "");
+
+      const img = new Image();
+      img.src = resolvedSrc;
+      img.onload = function () {
+        const CELL_W = 192;
+        const CELL_H = 208;
+
+        // 判断是否为 spritesheet (宽度 >= 1536 且高度 >= 1872)
+        if (img.naturalWidth >= CELL_W * 8 && img.naturalHeight >= CELL_H * 9) {
+          // Spritesheet 模式：用 canvas 播放动画
+          startSpriteAnimation(img, CELL_W, CELL_H);
+        } else {
+          // 单图模式：直接显示
+          const el = document.createElement("img");
+          el.src = resolvedSrc;
+          el.alt = "pet";
+          el.id = "pet";
+          document.getElementById("stage").appendChild(el);
+          document.getElementById("stage").className = "stage anim-" + animation;
+        }
+      };
+      img.onerror = function () {
+        // 加载失败，显示名字
+        document.getElementById("stage").textContent = petName || "🐾";
+      };
+
+      function startSpriteAnimation(spriteImg, cellW, cellH) {
+        // Codex v2 动画行定义
+        const ROWS = {
+          idle: { row: 0, frames: 6, durations: [280, 110, 110, 140, 140, 320] },
+          "running-right": { row: 1, frames: 8, durations: null },
+          "running-left": { row: 2, frames: 8, durations: null },
+          waving: { row: 3, frames: 4, durations: [140, 140, 140, 280] },
+          jumping: { row: 4, frames: 5, durations: [140, 140, 140, 140, 280] },
+          failed: { row: 5, frames: 8, durations: null },
+          waiting: { row: 6, frames: 6, durations: null },
+          running: { row: 7, frames: 6, durations: null },
+          review: { row: 8, frames: 6, durations: null },
+        };
+
+        const scale = 0.72; // 缩放到适合桌面宠物大小
+        const canvas = document.createElement("canvas");
+        canvas.width = cellW * scale;
+        canvas.height = cellH * scale;
+        canvas.style.imageRendering = "pixelated";
+        document.getElementById("stage").appendChild(canvas);
+        const ctx = canvas.getContext("2d");
+
+        // 循环播放多个状态
+        const stateOrder = ["idle", "idle", "idle", "waving", "idle", "idle", "running", "idle", "review", "idle"];
+        let stateIdx = 0;
+        let frame = 0;
+        let loopCount = 0;
+        let lastTick = 0;
+
+        function getCurrentState() {
+          const key = stateOrder[stateIdx % stateOrder.length];
+          return ROWS[key] || ROWS.idle;
+        }
+
+        function getFrameDuration(state, f) {
+          if (state.durations) return state.durations[f] || 140;
+          return f === state.frames - 1 ? 220 : 120;
+        }
+
+        function tick(now) {
+          const state = getCurrentState();
+          const dur = getFrameDuration(state, frame);
+          if (now - lastTick >= dur) {
+            lastTick = now;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(
+              spriteImg,
+              frame * cellW, state.row * cellH, cellW, cellH,
+              0, 0, cellW * scale, cellH * scale
+            );
+            frame++;
+            if (frame >= state.frames) {
+              frame = 0;
+              loopCount++;
+              // 每个状态播放 2-3 轮后切换
+              if (loopCount >= (stateOrder[stateIdx % stateOrder.length] === "idle" ? 3 : 2)) {
+                loopCount = 0;
+                stateIdx++;
+              }
+            }
+          }
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
     </script>
   </body>
 </html>

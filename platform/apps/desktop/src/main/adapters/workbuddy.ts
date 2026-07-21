@@ -3,18 +3,23 @@ import type { AdapterDefinition } from "./types";
 /**
  * WorkBuddy 桌面端(catalog 模式:一次注入携带主题目录,切换靠页面内 switchTheme)。
  * 注入运行时见 resources/runtime/workbuddy/。
+ *
+ * target URL 规则（对齐 skill injector）：
+ *   file://.../WorkBuddy.app/Contents/Resources/app.asar/renderer/index.html
  */
 export const workbuddyAdapter: AdapterDefinition = {
   id: "workbuddy",
   name: "WorkBuddy",
-  defaultPort: 9345,
-  targetUrlPrefixes: [],
+  icon: "workbuddy.png",
+  defaultPort: 9365,
+  // 用 URL 前缀过滤，精准匹配 WorkBuddy 渲染进程（对齐 skill 的 isWorkBuddyRendererTarget）
+  targetUrlPrefixes: ["file://"],
   probeMarkers: {
     required: {
       root: "#root",
       sidebar: ".conversation-list, .conversation-sidebar",
     },
-    title: "WorkBuddy",
+    // 不依赖 title（WorkBuddy 在某些路由下 title 可能变化），改用 URL 过滤 + DOM 探针
   },
   payloadKind: "catalog",
   runtimeKeys: {
@@ -29,9 +34,10 @@ export const workbuddyAdapter: AdapterDefinition = {
     catalog: "__WORKBUDDY_DREAM_SKIN_CATALOG_JSON__",
     version: "__WORKBUDDY_DREAM_SKIN_VERSION_JSON__",
   },
-  launchArgs: (port) => [
+  launchArgs: (_port) => [
+    // WorkBuddy 通过环境变量 WORKBUDDY_REMOTE_DEBUGGING_PORT 接收端口，
+    // 此处只传 address，端口由 launchWithCdp 通过 launchctl setenv 注入
     "--remote-debugging-address=127.0.0.1",
-    `--remote-debugging-port=${port}`,
   ],
   win: {
     exeCandidates: [

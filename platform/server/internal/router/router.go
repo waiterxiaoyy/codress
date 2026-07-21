@@ -74,6 +74,9 @@ func New(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			authed.POST("/skins/:id/assets", admin.UploadSkinAssets)
 			authed.POST("/skins/:id/status", admin.SetSkinStatus)
 			authed.DELETE("/skins/:id", admin.DeleteSkin)
+			// AI 生成
+			authed.POST("/skins/ai-generate", admin.GenerateSkinMeta)
+			authed.POST("/skins/ai-image-prompt", admin.GenerateSkinPrompt)
 
 			authed.GET("/pets", admin.ListPets)
 			authed.POST("/pets", admin.CreatePet)

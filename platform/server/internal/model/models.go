@@ -42,21 +42,31 @@ type Skin struct {
 	Category     string         `gorm:"size:64;index" json:"category"`
 	Targets      datatypes.JSON `json:"targets"` // ["codex","workbuddy"]
 	Appearance   string         `gorm:"size:8;default:auto" json:"appearance"`
-	Art          datatypes.JSON `json:"art"`
-	Colors       datatypes.JSON `json:"colors"`
-	Background   string         `gorm:"size:255" json:"background"`
-	PreviewLight string         `gorm:"size:255" json:"previewLight"`
-	PreviewDark  string         `gorm:"size:255" json:"previewDark"`
-	SizeBytes    int64          `json:"sizeBytes"`
-	Hash         string         `gorm:"size:64" json:"hash"`
-	Status       string         `gorm:"size:16;default:draft;index" json:"status"` // draft | published | offline
-	Downloads    int64          `json:"downloads"`
-	Sort         int            `json:"sort"`
-	CreatedAt    time.Time      `json:"createdAt"`
-	UpdatedAt    time.Time      `json:"updatedAt"`
+	// Art: { safeArea, taskMode, focusX, focusY } — 控制背景图在 Codex 内的排布
+	Art    datatypes.JSON `json:"art"`
+	Colors datatypes.JSON `json:"colors"`
+	// 皮肤文案字段（直接写入 theme.json）
+	Tagline       string `gorm:"size:200" json:"tagline"`
+	Quote         string `gorm:"size:100" json:"quote"`
+	StatusText    string `gorm:"size:80" json:"statusText"`
+	BrandSubtitle string `gorm:"size:80" json:"brandSubtitle"`
+	ProjectPrefix string `gorm:"size:60" json:"projectPrefix"`
+	ProjectLabel  string `gorm:"size:60" json:"projectLabel"`
+
+	Background   string `gorm:"size:255" json:"background"`
+	PreviewLight string `gorm:"size:255" json:"previewLight"`
+	PreviewDark  string `gorm:"size:255" json:"previewDark"`
+	SizeBytes    int64  `json:"sizeBytes"`
+	Hash         string `gorm:"size:64" json:"hash"`
+	Status       string `gorm:"size:16;default:draft;index" json:"status"` // draft | published | offline
+	Downloads    int64  `json:"downloads"`
+	Sort         int    `json:"sort"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 // Pet 桌面宠物,与皮肤平行的资源。
+// 支持两种模式: 1) 单张静态图+CSS动画(legacy) 2) Codex v2 spritesheet 精灵图
 type Pet struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Slug        string         `gorm:"size:80;uniqueIndex" json:"slug"`
@@ -64,8 +74,14 @@ type Pet struct {
 	Description string         `gorm:"size:400" json:"description"`
 	Category    string         `gorm:"size:64;index" json:"category"`
 	Targets     datatypes.JSON `json:"targets"`
-	Image       string         `gorm:"size:255" json:"image"`
-	Animation   string         `gorm:"size:16;default:idle" json:"animation"` // idle | bounce | walk
+	Image       string         `gorm:"size:255" json:"image"`           // 预览图 / legacy 单图
+	Animation   string         `gorm:"size:16;default:idle" json:"animation"` // legacy: idle | bounce | walk
+	// Codex v2 sprite sheet 字段
+	SpriteSheet string         `gorm:"size:255" json:"spriteSheet"` // spritesheet.webp URL
+	Manifest    datatypes.JSON `json:"manifest"`                    // pet.json 内容 (id, displayName, description, spriteVersionNumber)
+	StylePreset string         `gorm:"size:32" json:"stylePreset"`  // pixel | plush | clay | sticker | flat-vector | 3d-toy | auto
+	Tags        string         `gorm:"size:255" json:"tags"`        // 逗号分隔标签
+	Author      string         `gorm:"size:80" json:"author"`       // 作者/来源
 	SizeBytes   int64          `json:"sizeBytes"`
 	Hash        string         `gorm:"size:64" json:"hash"`
 	Status      string         `gorm:"size:16;default:draft;index" json:"status"`

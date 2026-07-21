@@ -3,6 +3,13 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
+export interface SkinArt {
+  safeArea?: "auto" | "left" | "right" | "center" | "none";
+  taskMode?: "auto" | "ambient" | "banner" | "off";
+  focusX?: number;
+  focusY?: number;
+}
+
 export interface SkinManifest {
   slug: string;
   name: string;
@@ -10,8 +17,15 @@ export interface SkinManifest {
   category?: string;
   targets: string[];
   appearance?: string;
-  art?: Record<string, unknown> | null;
+  art?: SkinArt | null;
   colors?: Record<string, string> | null;
+  // 文案字段
+  tagline?: string;
+  quote?: string;
+  statusText?: string;
+  brandSubtitle?: string;
+  projectPrefix?: string;
+  projectLabel?: string;
   backgroundUrl: string;
   previewLightUrl?: string;
   previewDarkUrl?: string;
@@ -26,6 +40,19 @@ export interface PetManifest {
   targets: string[];
   imageUrl: string;
   animation: string;
+  // Codex v2 sprite sheet 字段
+  spriteSheet?: string;
+  manifest?: {
+    id: string;
+    displayName: string;
+    description?: string;
+    spriteVersionNumber: number;
+    spritesheetPath?: string;
+  };
+  stylePreset?: string;
+  tags?: string;
+  author?: string;
+  downloads?: number;
 }
 
 export interface ListResult<T> {

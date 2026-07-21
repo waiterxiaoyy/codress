@@ -1,18 +1,50 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
+	"regexp"
 
 	"codress/server/internal/config"
 	"codress/server/internal/model"
 
 	"github.com/glebarez/sqlite"
+	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+// ensureMySQLDatabase 在 DSN 指定的数据库不存在时自动创建它。
+func ensureMySQLDatabase(dsn string) error {
+	// 从 DSN 中提取数据库名（/dbname? 部分）
+	re := regexp.MustCompile(`/([^/?]+)\?`)
+	m := re.FindStringSubmatch(dsn)
+	if len(m) < 2 {
+		return fmt.Errorf("cannot parse database name from DSN")
+	}
+	dbName := m[1]
+
+	// 构造不含数据库名的 DSN（连接到 MySQL 默认库）
+	noDB := re.ReplaceAllString(dsn, "/?")
+
+	db, err := sql.Open("mysql", noDB)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec(fmt.Sprintf(
+		"CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", dbName,
+	))
+	if err != nil {
+		return fmt.Errorf("create database %q: %w", dbName, err)
+	}
+	log.Printf("[codress] database %q ready", dbName)
+	return nil
+}
 
 func Open(cfg *config.Config) (*gorm.DB, error) {
 	var dialector gorm.Dialector
@@ -20,6 +52,9 @@ func Open(cfg *config.Config) (*gorm.DB, error) {
 	case "sqlite":
 		dialector = sqlite.Open(cfg.DBDSN)
 	case "mysql":
+		if err := ensureMySQLDatabase(cfg.DBDSN); err != nil {
+			return nil, fmt.Errorf("ensure database: %w", err)
+		}
 		dialector = mysql.Open(cfg.DBDSN)
 	default:
 		return nil, fmt.Errorf("unsupported DB_DRIVER: %s", cfg.DBDriver)

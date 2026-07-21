@@ -1,5 +1,5 @@
 import path from "node:path";
-import { BrowserWindow, screen } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 
 export interface ActivePet {
   slug: string;
@@ -21,7 +21,10 @@ export class PetManager {
   async show(pet: ActivePet) {
     this.current = pet;
     if (!this.window || this.window.isDestroyed()) {
-      const workArea = screen.getPrimaryDisplay().workArea;
+      // 使用鼠标所在屏幕，解决多显示器宠物"消失"问题
+      const cursorPoint = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint(cursorPoint);
+      const workArea = display.workArea;
       this.window = new BrowserWindow({
         width: 180,
         height: 200,
@@ -34,7 +37,11 @@ export class PetManager {
         skipTaskbar: true,
         hasShadow: false,
         focusable: false,
-        webPreferences: { contextIsolation: true, nodeIntegration: false },
+        webPreferences: {
+          contextIsolation: true,
+          nodeIntegration: false,
+          webSecurity: false, // 允许 file:// 加载本地图片
+        },
       });
       this.window.setAlwaysOnTop(true, "screen-saver");
       this.window.on("closed", () => {
@@ -65,8 +72,12 @@ export class PetManager {
 }
 
 export function petPageLocator(rendererDist: string, devServerUrl?: string) {
-  return () =>
-    devServerUrl
-      ? { url: `${devServerUrl}/pet.html` }
-      : { file: path.join(rendererDist, "pet.html") };
+  return () => {
+    if (devServerUrl) {
+      // dev 模式：从项目根目录定位 src/renderer/pet.html
+      const appRoot = app.getAppPath();
+      return { file: path.join(appRoot, "src", "renderer", "pet.html") };
+    }
+    return { file: path.join(rendererDist, "pet.html") };
+  };
 }

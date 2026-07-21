@@ -200,13 +200,17 @@ export function probeExpression(adapter: AdapterDefinition): string {
   const titleCheck = adapter.probeMarkers.title
     ? `document.title === ${JSON.stringify(adapter.probeMarkers.title)} && `
     : "";
+  // WorkBuddy 额外校验 URL：必须是 app.asar/renderer/index.html
+  const urlCheck = adapter.id === "workbuddy"
+    ? `/\\/app\\.asar\\/renderer\\/index\\.html$/i.test(location.pathname) && `
+    : "";
   return `(() => {
     const markers = {${entries}};
     return {
       title: document.title,
       href: location.href,
       markers,
-      matched: ${titleCheck}Object.values(markers).every(Boolean),
+      matched: ${urlCheck}${titleCheck}Object.values(markers).every(Boolean),
     };
   })()`;
 }

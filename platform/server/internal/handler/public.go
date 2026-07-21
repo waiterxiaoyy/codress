@@ -64,6 +64,12 @@ func skinView(cfg *config.Config, s *model.Skin) gin.H {
 		"appearance":      s.Appearance,
 		"art":             s.Art,
 		"colors":          s.Colors,
+		"tagline":         s.Tagline,
+		"quote":           s.Quote,
+		"statusText":      s.StatusText,
+		"brandSubtitle":   s.BrandSubtitle,
+		"projectPrefix":   s.ProjectPrefix,
+		"projectLabel":    s.ProjectLabel,
 		"backgroundUrl":   assetURL(cfg, s.Background),
 		"previewLightUrl": assetURL(cfg, s.PreviewLight),
 		"previewDarkUrl":  assetURL(cfg, s.PreviewDark),
@@ -76,7 +82,7 @@ func skinView(cfg *config.Config, s *model.Skin) gin.H {
 }
 
 func petView(cfg *config.Config, p *model.Pet) gin.H {
-	return gin.H{
+	view := gin.H{
 		"schemaVersion": 1,
 		"slug":          p.Slug,
 		"name":          p.Name,
@@ -90,7 +96,20 @@ func petView(cfg *config.Config, p *model.Pet) gin.H {
 		"downloads":     p.Downloads,
 		"status":        p.Status,
 		"sort":          p.Sort,
+		"stylePreset":   p.StylePreset,
+		"tags":          p.Tags,
+		"author":        p.Author,
 	}
+	if p.SpriteSheet != "" {
+		view["spriteSheet"] = assetURL(cfg, p.SpriteSheet)
+	}
+	if len(p.Manifest) > 0 {
+		var manifest map[string]interface{}
+		if err := json.Unmarshal(p.Manifest, &manifest); err == nil {
+			view["manifest"] = manifest
+		}
+	}
+	return view
 }
 
 func (h *Public) recordEvent(userID uint, action, itemType, slug, target string, meta gin.H) {
@@ -211,8 +230,13 @@ func (h *Public) DownloadPet(c *gin.Context) {
 	if claims := middleware.ClaimsFrom(c); claims != nil {
 		h.recordEvent(claims.UserID(), "download", "pet", pet.Slug, c.Query("target"), nil)
 	}
+	// 优先返回 spritesheet URL，兼容旧的 image
+	url := assetURL(h.Cfg, pet.SpriteSheet)
+	if pet.SpriteSheet == "" {
+		url = assetURL(h.Cfg, pet.Image)
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"url":       assetURL(h.Cfg, pet.Image),
+		"url":       url,
 		"hash":      pet.Hash,
 		"sizeBytes": pet.SizeBytes,
 		"manifest":  petView(h.Cfg, &pet),

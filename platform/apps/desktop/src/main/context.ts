@@ -26,6 +26,7 @@ export interface ApplyOutcome {
 export interface AdapterStatus {
   id: string;
   name: string;
+  icon?: string;
   installed: boolean;
   installPath: string | null;
   port: number;
@@ -125,6 +126,7 @@ export class AppContext extends EventEmitter {
       out.push({
         id: adapter.id,
         name: adapter.name,
+        icon: adapter.icon,
         installed: Boolean(install),
         installPath: install?.path ?? null,
         port,
@@ -226,9 +228,11 @@ export class AppContext extends EventEmitter {
       return;
     }
     const download = await this.api.downloadPet(slug);
-    const ext = path.extname(download.url.split("?")[0]).toLowerCase() || ".png";
+    // 优先用 spritesheet（有完整动画），fallback 到预览图
+    const petImageUrl = download.url || download.manifest.imageUrl;
+    const ext = path.extname(petImageUrl.split("?")[0]).toLowerCase() || ".png";
     const imagePath = path.join(this.library.petsDir(), `${slug}${ext}`);
-    await this.api.downloadFile(download.url, imagePath);
+    await this.api.downloadFile(petImageUrl, imagePath);
     await this.pets.show({
       slug,
       name: download.manifest.name,

@@ -34,6 +34,11 @@ const api = {
   importImage: (target: string) => ipcRenderer.invoke("skin:importImage", target),
 
   setPet: (slug: string | null) => ipcRenderer.invoke("pet:set", slug),
+  installPetToCodex: (slug: string) => ipcRenderer.invoke("pet:install", slug),
+  activatePetInCodex: (slug: string) => ipcRenderer.invoke("pet:activate", slug),
+  uninstallPetFromCodex: (slug: string) => ipcRenderer.invoke("pet:uninstall", slug),
+  getInstalledPets: () => ipcRenderer.invoke("pet:installed"),
+  getActivePetInCodex: () => ipcRenderer.invoke("pet:active"),
   openExternal: (url: string) => ipcRenderer.invoke("shell:openExternal", url),
 };
 

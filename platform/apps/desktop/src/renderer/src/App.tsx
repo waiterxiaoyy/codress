@@ -109,12 +109,7 @@ export default function App() {
               title={collapsed ? "展开菜单" : "收起菜单"}
             >
               <IconCollapse collapsed={collapsed} />
-              <span className="nav-label">收起菜单</span>
-            </div>
-            <div className="side-note">
-              不修改官方文件
-              <br />
-              随时恢复默认
+              <span className="nav-label">收起</span>
             </div>
           </div>
         </aside>

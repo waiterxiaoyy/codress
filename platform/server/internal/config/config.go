@@ -24,6 +24,11 @@ type Config struct {
 	GoogleClientSecret string
 	// DevLogin: 未配置任何 OAuth 时默认开启,便于本地联调;生产显式设 DEV_LOGIN=0 关闭。
 	DevLogin bool
+
+	// OpenAI 兼容配置（用于管理端 AI 生成皮肤）
+	OpenAIAPIKey  string
+	OpenAIBaseURL string // 默认 https://api.openai.com/v1，可接入 deepseek/kimi 等兼容接口
+	OpenAIModel   string // 默认 gpt-4o
 }
 
 func env(key, fallback string) string {
@@ -50,6 +55,10 @@ func Load() *Config {
 		GithubClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
 		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+
+		OpenAIAPIKey:  os.Getenv("OPENAI_API_KEY"),
+		OpenAIBaseURL: env("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+		OpenAIModel:   env("OPENAI_MODEL", "gpt-4o"),
 	}
 	if raw := os.Getenv("DEV_LOGIN"); raw != "" {
 		on, err := strconv.ParseBool(raw)

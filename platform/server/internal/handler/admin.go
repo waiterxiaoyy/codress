@@ -89,16 +89,22 @@ func (h *Admin) Me(c *gin.Context) {
 // ---- 皮肤管理 ----
 
 type skinInput struct {
-	Slug        string         `json:"slug"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Author      string         `json:"author"`
-	Category    string         `json:"category"`
-	Targets     []string       `json:"targets"`
-	Appearance  string         `json:"appearance"`
-	Art         map[string]any `json:"art"`
-	Colors      map[string]any `json:"colors"`
-	Sort        *int           `json:"sort"`
+	Slug          string         `json:"slug"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	Author        string         `json:"author"`
+	Category      string         `json:"category"`
+	Targets       []string       `json:"targets"`
+	Appearance    string         `json:"appearance"`
+	Art           map[string]any `json:"art"`
+	Colors        map[string]any `json:"colors"`
+	Tagline       string         `json:"tagline"`
+	Quote         string         `json:"quote"`
+	StatusText    string         `json:"statusText"`
+	BrandSubtitle string         `json:"brandSubtitle"`
+	ProjectPrefix string         `json:"projectPrefix"`
+	ProjectLabel  string         `json:"projectLabel"`
+	Sort          *int           `json:"sort"`
 }
 
 func (h *Admin) ListSkins(c *gin.Context) {
@@ -151,7 +157,10 @@ func (h *Admin) CreateSkin(c *gin.Context) {
 	skin := model.Skin{
 		Slug: input.Slug, Name: input.Name, Description: input.Description,
 		Author: input.Author, Category: input.Category, Targets: targets,
-		Appearance: input.Appearance, Art: art, Colors: colors, Status: "draft",
+		Appearance: input.Appearance, Art: art, Colors: colors,
+		Tagline: input.Tagline, Quote: input.Quote, StatusText: input.StatusText,
+		BrandSubtitle: input.BrandSubtitle, ProjectPrefix: input.ProjectPrefix,
+		ProjectLabel: input.ProjectLabel, Status: "draft",
 	}
 	if input.Sort != nil {
 		skin.Sort = *input.Sort
@@ -204,6 +213,14 @@ func (h *Admin) UpdateSkin(c *gin.Context) {
 	if input.Colors != nil {
 		skin.Colors, _ = toJSONField(input.Colors)
 	}
+	skin.Tagline = input.Tagline
+	skin.Quote = input.Quote
+	skin.StatusText = input.StatusText
+	if input.BrandSubtitle != "" {
+		skin.BrandSubtitle = input.BrandSubtitle
+	}
+	skin.ProjectPrefix = input.ProjectPrefix
+	skin.ProjectLabel = input.ProjectLabel
 	if input.Sort != nil {
 		skin.Sort = *input.Sort
 	}
@@ -326,13 +343,17 @@ func (h *Admin) DeleteSkin(c *gin.Context) {
 // ---- 宠物管理 ----
 
 type petInput struct {
-	Slug        string   `json:"slug"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Category    string   `json:"category"`
-	Targets     []string `json:"targets"`
-	Animation   string   `json:"animation"`
-	Sort        *int     `json:"sort"`
+	Slug        string                 `json:"slug"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Category    string                 `json:"category"`
+	Targets     []string               `json:"targets"`
+	Animation   string                 `json:"animation"`
+	StylePreset string                 `json:"stylePreset"`
+	Tags        string                 `json:"tags"`
+	Author      string                 `json:"author"`
+	Manifest    map[string]interface{} `json:"manifest"` // Codex v2 pet.json 内容
+	Sort        *int                   `json:"sort"`
 }
 
 func (h *Admin) ListPets(c *gin.Context) {
@@ -379,6 +400,11 @@ func (h *Admin) CreatePet(c *gin.Context) {
 	pet := model.Pet{
 		Slug: input.Slug, Name: input.Name, Description: input.Description,
 		Category: input.Category, Targets: targets, Animation: input.Animation, Status: "draft",
+		StylePreset: input.StylePreset, Tags: input.Tags, Author: input.Author,
+	}
+	if input.Manifest != nil {
+		manifestBytes, _ := json.Marshal(input.Manifest)
+		pet.Manifest = manifestBytes
 	}
 	if input.Sort != nil {
 		pet.Sort = *input.Sort
@@ -427,6 +453,19 @@ func (h *Admin) UpdatePet(c *gin.Context) {
 	if input.Sort != nil {
 		pet.Sort = *input.Sort
 	}
+	if input.StylePreset != "" {
+		pet.StylePreset = input.StylePreset
+	}
+	if input.Tags != "" {
+		pet.Tags = input.Tags
+	}
+	if input.Author != "" {
+		pet.Author = input.Author
+	}
+	if input.Manifest != nil {
+		manifestBytes, _ := json.Marshal(input.Manifest)
+		pet.Manifest = manifestBytes
+	}
 	if err := h.DB.Save(&pet).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -444,18 +483,28 @@ func (h *Admin) UploadPetAssets(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "pet not found"})
 		return
 	}
-	fh, err := c.FormFile("image")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "image file field is required"})
-		return
+	// 预览图 (image 字段)
+	if fh, err := c.FormFile("image"); err == nil {
+		rel, size, hash, err := storage.SaveUpload(h.Cfg.StorageDir, fh, "pets/"+pet.Slug, "pet")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		storage.Remove(h.Cfg.StorageDir, pet.Image)
+		pet.Image, pet.SizeBytes, pet.Hash = rel, size, hash
 	}
-	rel, size, hash, err := storage.SaveUpload(h.Cfg.StorageDir, fh, "pets/"+pet.Slug, "pet")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	// Sprite sheet (spritesheet 字段)
+	if fh, err := c.FormFile("spritesheet"); err == nil {
+		rel, size, hash, err := storage.SaveUpload(h.Cfg.StorageDir, fh, "pets/"+pet.Slug, "spritesheet")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "spritesheet upload failed: " + err.Error()})
+			return
+		}
+		storage.Remove(h.Cfg.StorageDir, pet.SpriteSheet)
+		pet.SpriteSheet = rel
+		pet.SizeBytes = size
+		pet.Hash = hash
 	}
-	storage.Remove(h.Cfg.StorageDir, pet.Image)
-	pet.Image, pet.SizeBytes, pet.Hash = rel, size, hash
 	if err := h.DB.Save(&pet).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

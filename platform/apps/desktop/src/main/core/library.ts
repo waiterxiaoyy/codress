@@ -10,17 +10,28 @@ export interface InstalledSkin {
   imageFile: string;
 }
 
+// WorkBuddy 完整默认配色（对齐 skill 的 stellar-office 默认主题）
 const WORKBUDDY_DEFAULT_COLORS: Record<string, string> = {
-  background: "#0b0b0d",
-  panel: "#141417",
-  panelAlt: "#1d1d21",
-  accent: "#8a8f98",
-  accentAlt: "#b0b4bc",
-  secondary: "#7d8590",
-  highlight: "#a3a8b0",
-  text: "#f0f1f3",
-  muted: "#9aa0a8",
-  line: "rgba(138, 143, 152, .30)",
+  background: "#070a16",
+  panel: "#0e1530",
+  panelAlt: "#182248",
+  surface: "rgba(14, 21, 48, .92)",
+  surfaceAlt: "rgba(24, 34, 72, .88)",
+  sidebar: "rgba(7, 10, 22, .95)",
+  control: "rgba(10, 15, 34, .95)",
+  accent: "#8b7cff",
+  accentAlt: "#d478ff",
+  secondary: "#44d8ff",
+  highlight: "#ff6bb5",
+  text: "#f3f5ff",
+  muted: "#adb5d4",
+  sidebarText: "#f3f5ff",
+  sidebarMuted: "#919bc3",
+  heroText: "#ffffff",
+  heroMuted: "#b9c2e1",
+  veil: "rgba(4, 7, 18, .86)",
+  veilSoft: "rgba(13, 15, 37, .42)",
+  line: "rgba(139, 124, 255, .30)",
 };
 
 function imageFileNameFromUrl(url: string): string {
@@ -71,27 +82,49 @@ export class SkinLibrary {
     return installed;
   }
 
-  /** 商店 manifest → codex 运行时 theme.json v1 */
+  /** 商店 manifest → codex 运行时 theme.json v1（完整对齐 skill 规则） */
   private codexTheme(manifest: SkinManifest, imageFile: string) {
-    return {
+    const art = manifest.art ?? {};
+    // safeArea 自动推断：没指定时默认 left
+    const safeArea = art.safeArea && art.safeArea !== "auto" ? art.safeArea : "left";
+    // taskMode 自动推断：没指定时默认 ambient
+    const taskMode = art.taskMode && art.taskMode !== "auto" ? art.taskMode : "ambient";
+
+    const theme: Record<string, unknown> = {
       schemaVersion: 1,
       id: manifest.slug,
       name: manifest.name,
-      brandSubtitle: "CODRESS",
-      tagline: manifest.description ?? "",
-      statusText: "CODRESS ONLINE",
-      quote: "MAKE SOMETHING WONDERFUL",
+      brandSubtitle: manifest.brandSubtitle || "CODRESS",
+      tagline: manifest.tagline || manifest.description || "把喜欢的画面变成可交互的 Codex 工作台。",
+      projectPrefix: manifest.projectPrefix || "选择项目 · ",
+      projectLabel: manifest.projectLabel || "◉  选择项目",
+      statusText: manifest.statusText || "CODRESS ONLINE",
+      quote: manifest.quote || "MAKE SOMETHING WONDERFUL",
       image: imageFile,
       appearance: manifest.appearance ?? "auto",
-      ...(manifest.art ? { art: manifest.art } : {}),
-      ...(manifest.colors ? { colors: manifest.colors } : {}),
+      art: {
+        safeArea,
+        taskMode,
+        ...(art.focusX != null ? { focusX: art.focusX } : {}),
+        ...(art.focusY != null ? { focusY: art.focusY } : {}),
+      },
     };
+
+    if (manifest.colors && Object.keys(manifest.colors).length > 0) {
+      theme.colors = manifest.colors;
+    }
+
+    return theme;
   }
 
-  /** 商店 manifest → workbuddy catalog.json(单主题;auto 外观按暗色处理) */
+  /** 商店 manifest → workbuddy catalog.json（单主题，完整对齐 skill 规则） */
   private workbuddyCatalog(manifest: SkinManifest, imageFile: string) {
+    // skill 里 appearance 支持 light/dark，auto 默认按 dark 处理
     const appearance = manifest.appearance === "light" ? "light" : "dark";
+    // 完整合并颜色（manifest.colors 优先覆盖默认值）
     const colors = { ...WORKBUDDY_DEFAULT_COLORS, ...(manifest.colors ?? {}) };
+    const art = manifest.art ?? {};
+
     return {
       schemaVersion: 1,
       defaultThemeId: manifest.slug,
@@ -100,15 +133,23 @@ export class SkinLibrary {
           id: manifest.slug,
           name: manifest.name,
           emoji: "✦",
-          description: manifest.description ?? "Codress 皮肤",
+          description: manifest.tagline || manifest.description || "Codress 皮肤",
           appearance,
           effects: "stars",
-          brandSubtitle: "CODRESS",
-          tagline: manifest.description ?? "Make work feel lighter.",
-          statusText: "CODRESS ONLINE",
-          quote: "MAKE SOMETHING WONDERFUL",
+          tagline: manifest.tagline || manifest.description || "Make work feel lighter.",
+          statusText: manifest.statusText || "CODRESS ONLINE",
+          quote: manifest.quote || "MAKE WORK FEEL LIGHTER",
           image: imageFile,
           colors,
+          // art 字段透传（WorkBuddy inject 可选用）
+          ...(Object.keys(art).length > 0 ? {
+            art: {
+              safeArea: art.safeArea && art.safeArea !== "auto" ? art.safeArea : "left",
+              taskMode: art.taskMode && art.taskMode !== "auto" ? art.taskMode : "ambient",
+              ...(art.focusX != null ? { focusX: art.focusX } : {}),
+              ...(art.focusY != null ? { focusY: art.focusY } : {}),
+            },
+          } : {}),
         },
       ],
     };

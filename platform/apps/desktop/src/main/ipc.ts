@@ -1,6 +1,7 @@
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { loginViaBrowser } from "./auth";
 import type { AppContext } from "./context";
+import { installPetToCodex, getInstalledPetSlugs, activatePet, uninstallPet, getActivePet } from "./pet-installer";
 
 /** 渲染层唯一入口:全部走 invoke,主进程持有一切状态与密钥。 */
 export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | null) {
@@ -59,6 +60,11 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   });
 
   ipcMain.handle("pet:set", (_e, slug: string | null) => ctx.setPet(slug));
+  ipcMain.handle("pet:install", (_e, slug: string) => installPetToCodex(ctx.api, slug));
+  ipcMain.handle("pet:activate", (_e, slug: string) => activatePet(slug));
+  ipcMain.handle("pet:uninstall", (_e, slug: string) => uninstallPet(slug));
+  ipcMain.handle("pet:installed", () => getInstalledPetSlugs());
+  ipcMain.handle("pet:active", () => getActivePet());
   ipcMain.handle("shell:openExternal", (_e, url: string) => {
     if (/^https?:\/\//.test(url)) return shell.openExternal(url);
     return undefined;

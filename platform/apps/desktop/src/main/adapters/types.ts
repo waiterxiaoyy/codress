@@ -31,6 +31,8 @@ export interface PayloadPlaceholders {
 export interface AdapterDefinition {
   id: TargetAppId;
   name: string;
+  /** 目标应用图标(放在 resources 目录,通过 app-asset://<icon> 访问) */
+  icon?: string;
   defaultPort: number;
   /** CDP 目标 URL 允许的前缀;空数组 = 不按 URL 过滤(只靠 DOM 探测) */
   targetUrlPrefixes: string[];

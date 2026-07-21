@@ -1,3 +1,24 @@
+/* Codress 客户端控制切换，不在 WorkBuddy 内显示 picker */
+#workbuddy-dream-skin-picker { display: none !important; }
+
+/* 侧边栏折叠区块头：文字跟随主题色，去掉底色 */
+html.workbuddy-dream-skin .collapsible-section-header {
+  background: transparent !important;
+  color: var(--wbds-sidebar-text, var(--wbds-text)) !important;
+}
+html.workbuddy-dream-skin .collapsible-section-header *,
+html.workbuddy-dream-skin .collapsible-section-label,
+html.workbuddy-dream-skin .collapsible-section-icon {
+  color: var(--wbds-sidebar-text, var(--wbds-text)) !important;
+}
+html.workbuddy-dream-skin .collapsible-section-header svg {
+  color: var(--wbds-sidebar-muted, var(--wbds-muted)) !important;
+  fill: currentColor !important;
+}
+html.workbuddy-dream-skin .collapsible-section-header:hover {
+  background: color-mix(in srgb, var(--wbds-accent) 8%, transparent) !important;
+}
+
 html.workbuddy-dream-skin {
   color-scheme: dark !important;
   --wbds-bg: #070a16;
@@ -225,7 +246,6 @@ html.workbuddy-dream-skin .chat-container--welcome,
 html.workbuddy-dream-skin .task-input-container,
 html.workbuddy-dream-skin .project-detail-view__chat-input {
   border-radius: 22px;
-  backdrop-filter: blur(24px) saturate(130%);
 }
 
 html.workbuddy-dream-skin .wb-home-composer [contenteditable="true"],

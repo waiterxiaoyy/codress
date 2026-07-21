@@ -1,0 +1,404 @@
+[
+  {
+    "slug": "blackdragon",
+    "name": "BlackDragon",
+    "description": "A polished chibi black dragon mascot with bright blue eyes, a gold star cheek mark, and a playful smug expression.",
+    "category": "anime",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/blackdragon/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "anime,cute,mascot",
+    "author": "kinoooo",
+    "manifest": {
+      "id": "blackdragon",
+      "displayName": "BlackDragon",
+      "description": "A polished chibi black dragon mascot with bright blue eyes, a gold star cheek mark, and a playful smug expression.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "animal",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "cian-kitty",
+    "name": "Cian Kitty",
+    "description": "A celestial-tech white cat mascot with dark silver glitter bow, matching outfit, cyan neon rim, angelic circuit wings, and a glowing C-logo microchip.",
+    "category": "animated",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/cian-kitty/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "animated,cute,robot",
+    "author": "Ekis",
+    "manifest": {
+      "id": "cian-kitty",
+      "displayName": "Cian Kitty",
+      "description": "A celestial-tech white cat mascot with dark silver glitter bow, matching outfit, cyan neon rim, angelic circuit wings, and a glowing C-logo microchip.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "creature",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "dad-coder",
+    "name": "Dad Coder",
+    "description": "A cheerful coder companion with glasses, a mug, and expressive review poses.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/dad-coder/preview.png",
+    "spriteSheet": "pets/dad-coder/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,coder,character",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "dad-coder",
+      "displayName": "Dad Coder",
+      "description": "A cheerful coder companion with glasses, a mug, and expressive review poses.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "golden-leader",
+    "name": "Golden Leader",
+    "description": "A confident blond chibi leader companion in a navy suit and red tie.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/golden-leader/preview.png",
+    "spriteSheet": "pets/golden-leader/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,leader,chibi",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "golden-leader",
+      "displayName": "Golden Leader",
+      "description": "A confident blond chibi leader companion in a navy suit and red tie.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "guilmon",
+    "name": "Guilmon",
+    "description": "Gigimon's evolved red reptilian digital monster form.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/guilmon/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,anime",
+    "author": "jwzoom",
+    "manifest": {
+      "id": "guilmon",
+      "displayName": "Guilmon",
+      "description": "Gigimon's evolved red reptilian digital monster form.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "object",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "happy-pup",
+    "name": "Happy Pup",
+    "description": "A cheerful puppy companion with a red collar, bright eyes, and playful animated poses.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/happy-pup/preview.png",
+    "spriteSheet": "pets/happy-pup/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,dog,puppy",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "happy-pup",
+      "displayName": "Happy Pup",
+      "description": "A cheerful puppy companion with a red collar, bright eyes, and playful animated poses.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "hoop-duck",
+    "name": "Silver Hoop Duck",
+    "description": "A silver-haired basketball duck companion with a black hoodie and bright court energy.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/hoop-duck/preview.png",
+    "spriteSheet": "pets/hoop-duck/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,duck,basketball",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "silver-hoop-duck",
+      "displayName": "Silver Hoop Duck",
+      "description": "A silver-haired basketball duck companion with a black hoodie and bright court energy.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "keqing",
+    "name": "Keqing",
+    "description": "A Keqing-inspired compact pixel-art beautiful girl assistant for Codex.",
+    "category": "animated",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/keqing/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "animated,anime,game",
+    "author": "lxy",
+    "manifest": {
+      "id": "keqing",
+      "displayName": "Keqing",
+      "description": "A Keqing-inspired compact pixel-art beautiful girl assistant for Codex.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "person",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "kitty",
+    "name": "Kitty",
+    "description": "A tiny white bow-wearing cat mascot with a calm friendly expression.",
+    "category": "anime",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/kitty/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "anime,cute",
+    "author": "maxos",
+    "manifest": {
+      "id": "kitty",
+      "displayName": "Kitty",
+      "description": "A tiny white bow-wearing cat mascot with a calm friendly expression.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "animal",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "luo-xiaohei",
+    "name": "Luo Xiaohei",
+    "description": "A tiny black cat companion with huge curious eyes, nimble paws, and quiet mischievous coding energy.",
+    "category": "anime",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/luo-xiaohei/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "anime,cute",
+    "author": "2003pro",
+    "manifest": {
+      "id": "luo-xiaohei",
+      "displayName": "Luo Xiaohei",
+      "description": "A tiny black cat companion with huge curious eyes, nimble paws, and quiet mischievous coding energy.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "creature",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "paimon-v1",
+    "name": "Paimon_v1",
+    "description": "A tiny floating guide with Teyvat-inspired fantasy charm, always ready to cheer on your coding adventure.",
+    "category": "animated",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/paimon-v1/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "animated,anime,cute",
+    "author": "2003pro",
+    "manifest": {
+      "id": "paimon-v1",
+      "displayName": "Paimon_v1",
+      "description": "A tiny floating guide with Teyvat-inspired fantasy charm, always ready to cheer on your coding adventure.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "creature",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "pixel-coder",
+    "name": "Pixel Coder",
+    "description": "A friendly pixel coder companion with spiky hair, blue eyes, and a green hoodie.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/pixel-coder/preview.png",
+    "spriteSheet": "pets/pixel-coder/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,coder,chibi",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "pixel-coder",
+      "displayName": "Pixel Coder",
+      "description": "A friendly pixel coder companion with spiky hair, blue eyes, and a green hoodie.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "potatos",
+    "name": "PotatOS",
+    "description": "A tiny potato-powered AI companion with a glowing test-chamber eye.",
+    "category": "game",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/potatos/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "game,pixel,robot",
+    "author": "choux",
+    "manifest": {
+      "id": "potatos",
+      "displayName": "PotatOS",
+      "description": "A tiny potato-powered AI companion with a glowing test-chamber eye.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "object",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "pumpy",
+    "name": "Pumpy",
+    "description": "A blue PumpBTC penguin mascot hatch-pet with a backwards cap.",
+    "category": "animated",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/pumpy/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "animated,mascot",
+    "author": "PumpTiger",
+    "manifest": {
+      "id": "pumpy",
+      "displayName": "Pumpy",
+      "description": "A blue PumpBTC penguin mascot hatch-pet with a backwards cap.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "creature",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "tiny-dino",
+    "name": "Tiny Dino",
+    "description": "A tiny dinosaur companion with compact pixel-style animation and expressive workday poses.",
+    "category": "pixel",
+    "targets": [
+      "codex"
+    ],
+    "image": "pets/tiny-dino/preview.png",
+    "spriteSheet": "pets/tiny-dino/spritesheet.png",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "pixel,dino,cute",
+    "author": "CodexPets.net",
+    "manifest": {
+      "id": "tiny-dino",
+      "displayName": "Tiny Dino",
+      "description": "A tiny dinosaur companion with compact pixel-style animation and expressive workday poses.",
+      "spritesheetPath": "spritesheet.png",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "xiaobao",
+    "name": "小豹",
+    "description": "A compact chibi digital pet based on 小豹, a grey-brown Chinese tabby cat with leopard-like stripes and bright round eyes.",
+    "category": "soft",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/xiaobao/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "auto",
+    "tags": "soft,animated,cute",
+    "author": "zivaxu",
+    "manifest": {
+      "id": "xiaobao",
+      "displayName": "小豹",
+      "description": "A compact chibi digital pet based on 小豹, a grey-brown Chinese tabby cat with leopard-like stripes and bright round eyes.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "animal",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  },
+  {
+    "slug": "xueren",
+    "name": "xueren",
+    "description": "A tiny red twin-tail office snowball pet with a white rounded body, red scarf, black buttons, pointed ears, and a full range of calm, cheerful, tired, crying, and stubbornly cute expressions.",
+    "category": "game",
+    "targets": [
+      "codex"
+    ],
+    "image": "",
+    "spriteSheet": "pets/xueren/spritesheet.webp",
+    "animation": "idle",
+    "stylePreset": "pixel",
+    "tags": "game,pixel,cute",
+    "author": "jiuqianmi",
+    "manifest": {
+      "id": "xueren",
+      "displayName": "xueren",
+      "description": "A tiny red twin-tail office snowball pet with a white rounded body, red scarf, black buttons, pointed ears, and a full range of calm, cheerful, tired, crying, and stubbornly cute expressions.",
+      "spritesheetPath": "spritesheet.webp",
+      "kind": "creature",
+      "spriteVersionNumber": 2
+    },
+    "status": "published"
+  }
+]

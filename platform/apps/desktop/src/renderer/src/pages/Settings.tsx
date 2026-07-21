@@ -46,23 +46,40 @@ export default function Settings() {
       <div className="list" style={{ maxWidth: 720 }}>
         {statuses.map((status) => (
           <div className="list-row" key={status.id}>
-            <span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {status.icon && (
+                <img
+                  src={`app-asset://${status.icon}`}
+                  alt={status.name}
+                  width={28}
+                  height={28}
+                  style={{ borderRadius: 6, objectFit: "contain" }}
+                />
+              )}
               <b>{status.name}</b>
               <span className="muted" style={{ marginLeft: 10, fontSize: 12 }}>
-                {status.installed ? status.installPath : "未检测到,可手动指定可执行文件路径"}
+                {status.installed
+                  ? `✓ ${status.installPath}`
+                  : "未检测到,可手动指定可执行文件路径"}
               </span>
             </span>
             <span className="row">
               <span className="muted" style={{ fontSize: 12 }}>
                 <span className={`status-dot ${status.cdpReady ? "on" : ""}`} />
-                {status.cdpReady ? `端口 ${status.port} 已连接` : `端口 ${status.port}`}
+                {status.cdpReady
+                  ? `端口 ${status.port} 已连接`
+                  : status.installed
+                    ? `已安装，应用皮肤时自动重启开启通道`
+                    : `端口 ${status.port} 未连接`}
               </span>
               <span className="muted" style={{ fontSize: 12 }}>
                 {status.daemonState === "running"
                   ? `注入中(${status.sessions})`
                   : status.daemonState === "paused"
                     ? "已暂停"
-                    : "未注入"}
+                    : status.installed && !status.cdpReady
+                      ? ""
+                      : "未注入"}
               </span>
             </span>
           </div>

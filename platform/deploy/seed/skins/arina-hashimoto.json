@@ -1,0 +1,15 @@
+{
+  "name": "桥本有菜",
+  "category": "illustration",
+  "tagline": "把柔光与玫瑰带进今天的工作台。",
+  "quote": "MAKE SOMETHING WONDERFUL",
+  "statusText": "DREAM SKIN ONLINE",
+  "brandSubtitle": "CODRESS",
+  "appearance": "auto",
+  "art": {
+    "safeArea": "left",
+    "taskMode": "ambient",
+    "focusX": 0.72,
+    "focusY": 0.45
+  }
+}
