@@ -1,0 +1,13 @@
+node_modules/
+dist/
+out/
+release/
+*.local
+*.tsbuildinfo
+.env
+server/bin/
+server/storage/
+server/codress-api
+server/codress-api.exe
+*.log
+.DS_Store

@@ -1,0 +1,27 @@
+appId: cc.codress.desktop
+productName: Codress
+electronVersion: 33.4.11
+directories:
+  output: release
+files:
+  - out/**
+extraResources:
+  - from: resources
+    to: resources
+asar: true
+compression: maximum
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: true
+  perMachine: false
+  deleteAppDataOnUninstall: false
+mac:
+  icon: build/icon.png
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  category: public.app-category.developer-tools

@@ -1,0 +1,1592 @@
+html.workbuddy-dream-skin {
+  color-scheme: dark !important;
+  --wbds-bg: #070a16;
+  --wbds-panel: #0e1530;
+  --wbds-panel-alt: #182248;
+  --wbds-surface: rgba(14, 21, 48, .92);
+  --wbds-surface-alt: rgba(24, 34, 72, .88);
+  --wbds-sidebar: rgba(7, 10, 22, .95);
+  --wbds-control: rgba(10, 15, 34, .95);
+  --wbds-accent: #8b7cff;
+  --wbds-accent-alt: #d478ff;
+  --wbds-secondary: #44d8ff;
+  --wbds-highlight: #ff6bb5;
+  --wbds-text: #f3f5ff;
+  --wbds-muted: #adb5d4;
+  --wbds-sidebar-text: #f3f5ff;
+  --wbds-sidebar-muted: #919bc3;
+  --wbds-hero-text: #ffffff;
+  --wbds-hero-muted: #b9c2e1;
+  --wbds-veil: rgba(4, 7, 18, .86);
+  --wbds-veil-soft: rgba(13, 15, 37, .42);
+  --wbds-line: rgba(139, 124, 255, .30);
+
+  --wb-bg-primary: var(--wbds-surface) !important;
+  --wb-bg-secondary: var(--wbds-surface-alt) !important;
+  --wb-bg-tertiary: var(--wbds-panel-alt) !important;
+  --wb-bg-quaternary: color-mix(in srgb, var(--wbds-panel-alt) 84%, var(--wbds-surface) 16%) !important;
+  --wb-sidebar-bg: var(--wbds-sidebar) !important;
+  --wb-text-primary: var(--wbds-text) !important;
+  --wb-text-strong: var(--wbds-text) !important;
+  --wb-text-secondary: var(--wbds-muted) !important;
+  --wb-text-medium: var(--wbds-muted) !important;
+  --wb-text-tertiary: color-mix(in srgb, var(--wbds-muted) 78%, transparent) !important;
+  --wb-text-disabled: color-mix(in srgb, var(--wbds-muted) 58%, transparent) !important;
+  --wb-text-white: #ffffff !important;
+  --wb-text-on-primary: #ffffff !important;
+  --wb-border-primary: color-mix(in srgb, var(--wbds-accent) 28%, transparent) !important;
+  --wb-border-secondary: color-mix(in srgb, var(--wbds-secondary) 18%, transparent) !important;
+  --wb-bg-hover: color-mix(in srgb, var(--wbds-accent) 16%, transparent) !important;
+  --wb-bg-pill-hover: color-mix(in srgb, var(--wbds-accent) 20%, transparent) !important;
+  --wb-bg-pill-active: linear-gradient(135deg, var(--wbds-accent), var(--wbds-accent-alt)) !important;
+  --wb-bg-pill-active-hover: var(--wbds-accent-alt) !important;
+  --wb-color-text-primary: var(--wbds-text) !important;
+  --wb-color-text-secondary: var(--wbds-muted) !important;
+  --wb-color-text-disabled: color-mix(in srgb, var(--wbds-muted) 58%, transparent) !important;
+  --wb-color-bg-primary: var(--wbds-surface) !important;
+  --wb-color-bg-secondary: var(--wbds-surface-alt) !important;
+  --wb-color-bg-secondary-hover-active: color-mix(in srgb, var(--wbds-accent) 16%, transparent) !important;
+
+  --vscode-editor-background: var(--wbds-surface) !important;
+  --vscode-editor-foreground: var(--wbds-text) !important;
+  --vscode-sideBar-background: var(--wbds-sidebar) !important;
+  --vscode-sideBar-foreground: var(--wbds-sidebar-text) !important;
+  --vscode-sideBar-border: color-mix(in srgb, var(--wbds-accent) 22%, transparent) !important;
+  --vscode-input-background: var(--wbds-control) !important;
+  --vscode-input-foreground: var(--wbds-text) !important;
+  --vscode-input-border: color-mix(in srgb, var(--wbds-accent) 34%, transparent) !important;
+  --vscode-list-hoverBackground: color-mix(in srgb, var(--wbds-accent) 14%, transparent) !important;
+  --vscode-list-activeSelectionBackground: color-mix(in srgb, var(--wbds-accent) 24%, transparent) !important;
+  --vscode-list-activeSelectionForeground: #ffffff !important;
+  --vscode-focusBorder: var(--wbds-secondary) !important;
+
+  --cb-bg-color: var(--wbds-surface) !important;
+  --cb-bg-color-container: var(--wbds-control) !important;
+  --cb-border: color-mix(in srgb, var(--wbds-accent) 24%, transparent) !important;
+  --cb-panel-border-color: color-mix(in srgb, var(--wbds-accent) 24%, transparent) !important;
+  --cb-text-primary: var(--wbds-text) !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] body {
+  color-scheme: light !important;
+}
+
+html.workbuddy-dream-skin body {
+  background:
+    linear-gradient(108deg, var(--wbds-veil) 0%, color-mix(in srgb, var(--wbds-veil) 72%, var(--wbds-veil-soft) 28%) 45%, var(--wbds-veil-soft) 100%),
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--wbds-accent-alt) 18%, transparent), transparent 34%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+  color: var(--wbds-text) !important;
+}
+
+html.workbuddy-dream-skin #root {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+}
+
+html.workbuddy-dream-skin #root > div {
+  background-color: transparent !important;
+}
+
+html.workbuddy-dream-skin .teams-content-wrapper > [class*="gridViewItem"],
+html.workbuddy-dream-skin .teams-container [class*="_gridViewItem_"] {
+  background-color: transparent !important;
+}
+
+html.workbuddy-dream-skin .conversation-list {
+  position: relative;
+  color: var(--wbds-sidebar-text) !important;
+  -webkit-text-fill-color: var(--wbds-sidebar-text) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wbds-sidebar) 96%, var(--wbds-panel) 4%), var(--wbds-sidebar)) !important;
+  border-right: 1px solid var(--wbds-line) !important;
+  box-shadow: 14px 0 42px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(28px) saturate(135%);
+}
+
+html.workbuddy-dream-skin .conversation-list::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--wbds-accent), var(--wbds-secondary), transparent);
+  opacity: .85;
+}
+
+html.workbuddy-dream-skin .conversation-list button,
+html.workbuddy-dream-skin .conversation-list a {
+  color: var(--wbds-sidebar-text) !important;
+  -webkit-text-fill-color: var(--wbds-sidebar-text) !important;
+}
+
+html.workbuddy-dream-skin .conversation-list-content,
+html.workbuddy-dream-skin .conversation-section-content,
+html.workbuddy-dream-skin .conversation-item,
+html.workbuddy-dream-skin .conversation-item * {
+  color: var(--wbds-sidebar-text) !important;
+  -webkit-text-fill-color: var(--wbds-sidebar-text) !important;
+}
+
+html.workbuddy-dream-skin .conversation-item time,
+html.workbuddy-dream-skin .conversation-item [class*="time"],
+html.workbuddy-dream-skin .conversation-item [class*="date"] {
+  color: var(--wbds-sidebar-muted) !important;
+  -webkit-text-fill-color: var(--wbds-sidebar-muted) !important;
+}
+
+html.workbuddy-dream-skin .conversation-list-logo,
+html.workbuddy-dream-skin .logo-workbuddy-title,
+html.workbuddy-dream-skin .conversation-list-version-badge,
+html.workbuddy-dream-skin .conversation-list-footer,
+html.workbuddy-dream-skin .conversation-list-footer * {
+  color: var(--wbds-sidebar-muted) !important;
+  -webkit-text-fill-color: var(--wbds-sidebar-muted) !important;
+}
+
+html.workbuddy-dream-skin .conversation-list button:hover,
+html.workbuddy-dream-skin .conversation-list a:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wbds-accent) 20%, transparent), color-mix(in srgb, var(--wbds-secondary) 8%, transparent)) !important;
+}
+
+html.workbuddy-dream-skin .conversation-list [aria-selected="true"],
+html.workbuddy-dream-skin .conversation-list [aria-current="page"],
+html.workbuddy-dream-skin .conversation-list .active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wbds-accent) 28%, transparent), color-mix(in srgb, var(--wbds-highlight) 12%, transparent)) !important;
+  box-shadow: inset 3px 0 var(--wbds-accent), inset 0 0 0 1px color-mix(in srgb, var(--wbds-accent) 18%, transparent);
+}
+
+html.workbuddy-dream-skin .wb-home-page {
+  max-width: 860px !important;
+  padding-top: 26px !important;
+  color: var(--wbds-text) !important;
+  background: transparent !important;
+}
+
+html.workbuddy-dream-skin .wb-home-header {
+  min-height: 210px !important;
+  justify-content: center;
+  padding: 30px 34px !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 58%, transparent);
+  border-radius: 26px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(90deg, var(--wbds-veil) 0%, color-mix(in srgb, var(--wbds-veil) 72%, var(--wbds-veil-soft) 28%) 48%, var(--wbds-veil-soft) 100%),
+    radial-gradient(circle at 85% 22%, color-mix(in srgb, var(--wbds-secondary) 18%, transparent), transparent 30%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .34), 0 0 32px color-mix(in srgb, var(--wbds-accent) 12%, transparent);
+}
+
+html.workbuddy-dream-skin .wb-home-header::after {
+  content: var(--workbuddy-dream-tagline, "Make work feel lighter.");
+  display: block;
+  max-width: 54%;
+  margin-top: 12px;
+  color: var(--wbds-hero-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  letter-spacing: .03em;
+}
+
+html.workbuddy-dream-skin .wb-home-header__title,
+html.workbuddy-dream-skin .wb-home-header__subtitle {
+  position: relative;
+  z-index: 1;
+  max-width: 58%;
+  color: var(--wbds-hero-text) !important;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, .72);
+}
+
+html.workbuddy-dream-skin .wb-home-header__title {
+  background: linear-gradient(90deg, var(--wbds-hero-text), color-mix(in srgb, var(--wbds-hero-text) 82%, var(--wbds-secondary) 18%) 62%, var(--wbds-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.workbuddy-dream-skin .wb-scene-tabs {
+  background: var(--wbds-surface) !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 22%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(18px);
+}
+
+html.workbuddy-dream-skin .wb-scene-tabs__pill--active {
+  background: linear-gradient(135deg, var(--wbds-accent), var(--wbds-accent-alt)) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--wbds-accent) 26%, transparent);
+}
+
+html.workbuddy-dream-skin .wb-home-composer,
+html.workbuddy-dream-skin .chat-container--welcome,
+html.workbuddy-dream-skin .task-input-container,
+html.workbuddy-dream-skin .project-detail-view__chat-input {
+  border-radius: 22px;
+  backdrop-filter: blur(24px) saturate(130%);
+}
+
+html.workbuddy-dream-skin .wb-home-composer [contenteditable="true"],
+html.workbuddy-dream-skin .task-input-container [contenteditable="true"],
+html.workbuddy-dream-skin .project-detail-view__chat-input [contenteditable="true"],
+html.workbuddy-dream-skin textarea,
+html.workbuddy-dream-skin input {
+  color: var(--wbds-text) !important;
+  caret-color: var(--wbds-secondary) !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer > div,
+html.workbuddy-dream-skin .task-input-container,
+html.workbuddy-dream-skin .project-detail-view__chat-input > div {
+  background: var(--wbds-control) !important;
+  border-color: color-mix(in srgb, var(--wbds-accent) 30%, transparent) !important;
+  box-shadow: 0 18px 54px rgba(0, 0, 0, .28), inset 0 1px rgba(255, 255, 255, .04) !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer [class*="_mainArea_"],
+html.workbuddy-dream-skin .task-input-container [class*="_mainArea_"],
+html.workbuddy-dream-skin .project-detail-view__chat-input [class*="_mainArea_"] {
+  background: var(--wbds-control) !important;
+  color: var(--wbds-text) !important;
+  border-color: color-mix(in srgb, var(--wbds-accent) 24%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer [role="combobox"],
+html.workbuddy-dream-skin .wb-home-composer [role="button"],
+html.workbuddy-dream-skin .wb-home-composer button,
+html.workbuddy-dream-skin .task-input-container [role="combobox"],
+html.workbuddy-dream-skin .task-input-container [role="button"],
+html.workbuddy-dream-skin .task-input-container button {
+  color: var(--wbds-text) !important;
+  border-color: color-mix(in srgb, var(--wbds-accent) 20%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer [class*="_placeholder_"],
+html.workbuddy-dream-skin .task-input-container [class*="_placeholder_"],
+html.workbuddy-dream-skin .project-detail-view__chat-input [class*="_placeholder_"] {
+  color: var(--wbds-muted) !important;
+  opacity: .82 !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer__input-slot,
+html.workbuddy-dream-skin .wb-home-composer__chips {
+  background: var(--wbds-control) !important;
+  border-color: color-mix(in srgb, var(--wbds-accent) 30%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .detail-panel-container,
+html.workbuddy-dream-skin .messages-container,
+html.workbuddy-dream-skin .main-content,
+html.workbuddy-dream-skin [class~="main-content"] {
+  background-color: color-mix(in srgb, var(--wbds-surface) 72%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .message,
+html.workbuddy-dream-skin article,
+html.workbuddy-dream-skin [class*="artifact-card"] {
+  border-color: color-mix(in srgb, var(--wbds-accent) 16%, transparent) !important;
+}
+
+html.workbuddy-dream-skin button:focus-visible,
+html.workbuddy-dream-skin a:focus-visible,
+html.workbuddy-dream-skin input:focus-visible,
+html.workbuddy-dream-skin textarea:focus-visible,
+html.workbuddy-dream-skin [contenteditable="true"]:focus-visible {
+  outline: 2px solid var(--wbds-secondary) !important;
+  outline-offset: 2px !important;
+}
+
+#workbuddy-dream-skin-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none !important;
+  overflow: hidden;
+}
+
+.workbuddy-dream-skin-status {
+  position: absolute;
+  top: 15px;
+  right: 24px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  color: rgba(220, 225, 255, .76);
+  font: 700 10px/1 ui-monospace, "SFMono-Regular", Menlo, monospace;
+  letter-spacing: .13em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .72);
+}
+
+html[data-workbuddy-dream-home="true"] .workbuddy-dream-skin-status {
+  display: flex;
+}
+
+.workbuddy-dream-skin-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wbds-secondary);
+  box-shadow: 0 0 14px var(--wbds-secondary);
+}
+
+.workbuddy-dream-skin-particles i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--wbds-accent-alt);
+  box-shadow: 0 0 14px 3px color-mix(in srgb, var(--wbds-accent-alt) 32%, transparent);
+  animation: wbds-float 5s ease-in-out infinite;
+}
+
+.workbuddy-dream-skin-particles i:nth-child(1) { left: 31%; top: 12%; }
+.workbuddy-dream-skin-particles i:nth-child(2) { left: 56%; top: 8%; animation-delay: -1s; background: var(--wbds-secondary); }
+.workbuddy-dream-skin-particles i:nth-child(3) { left: 77%; top: 18%; animation-delay: -2s; }
+.workbuddy-dream-skin-particles i:nth-child(4) { left: 91%; top: 38%; animation-delay: -3s; background: var(--wbds-secondary); }
+.workbuddy-dream-skin-particles i:nth-child(5) { left: 68%; top: 76%; animation-delay: -4s; }
+.workbuddy-dream-skin-particles i:nth-child(6) { left: 38%; top: 54%; animation-delay: -2.5s; background: var(--wbds-secondary); }
+.workbuddy-dream-skin-particles i:nth-child(7) { left: 48%; top: 84%; animation-delay: -3.5s; }
+.workbuddy-dream-skin-particles i:nth-child(8) { left: 83%; top: 67%; animation-delay: -4.5s; background: var(--wbds-secondary); }
+.workbuddy-dream-skin-particles i:nth-child(9) { left: 96%; top: 82%; animation-delay: -1.8s; }
+.workbuddy-dream-skin-particles i:nth-child(10) { left: 25%; top: 29%; animation-delay: -2.8s; background: var(--wbds-secondary); }
+.workbuddy-dream-skin-particles i:nth-child(11) { left: 64%; top: 36%; animation-delay: -3.8s; }
+.workbuddy-dream-skin-particles i:nth-child(12) { left: 88%; top: 9%; animation-delay: -4.8s; background: var(--wbds-secondary); }
+
+#workbuddy-dream-skin-picker,
+#workbuddy-dream-skin-picker * {
+  box-sizing: border-box;
+}
+
+#workbuddy-dream-skin-picker {
+  position: fixed;
+  right: 22px;
+  bottom: 20px;
+  z-index: 2147483600;
+  pointer-events: auto !important;
+  color: var(--wbds-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+}
+
+#workbuddy-dream-skin-picker button {
+  font: inherit;
+}
+
+.workbuddy-dream-skin-picker__trigger {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  min-width: 48px;
+  height: 46px;
+  margin-left: auto;
+  padding: 0 14px 0 11px !important;
+  color: var(--wbds-text) !important;
+  background: color-mix(in srgb, var(--wbds-panel) 90%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 44%, transparent) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .38), inset 0 1px rgba(255, 255, 255, .08) !important;
+  backdrop-filter: blur(22px) saturate(150%);
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.workbuddy-dream-skin-picker__trigger:hover {
+  transform: translateY(-2px);
+  border-color: var(--wbds-secondary) !important;
+  background: color-mix(in srgb, var(--wbds-panel-alt) 94%, transparent) !important;
+}
+
+.workbuddy-dream-skin-picker__trigger-icon {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--wbds-accent), var(--wbds-highlight));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--wbds-accent) 36%, transparent);
+  font-size: 14px;
+}
+
+.workbuddy-dream-skin-picker__current {
+  max-width: 100px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbuddy-dream-skin-picker__panel {
+  position: absolute;
+  right: 0;
+  bottom: 57px;
+  width: min(390px, calc(100vw - 32px));
+  max-height: min(610px, calc(100vh - 100px));
+  padding: 12px;
+  overflow: auto;
+  color: var(--wbds-text);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--wbds-panel) 97%, transparent), color-mix(in srgb, var(--wbds-bg) 96%, transparent)) !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 38%, transparent) !important;
+  border-radius: 20px;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .52), inset 0 1px rgba(255, 255, 255, .06);
+  backdrop-filter: blur(28px) saturate(150%);
+  transform-origin: bottom right;
+  animation: wbds-picker-in .16s ease-out both;
+}
+
+.workbuddy-dream-skin-picker__panel[hidden] {
+  display: none !important;
+}
+
+.workbuddy-dream-skin-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 12px 6px;
+}
+
+.workbuddy-dream-skin-picker__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.workbuddy-dream-skin-picker__header strong {
+  color: var(--wbds-text);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.workbuddy-dream-skin-picker__header small {
+  color: var(--wbds-muted);
+  font-size: 11px;
+}
+
+.workbuddy-dream-skin-picker__close {
+  display: grid !important;
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  place-items: center;
+  color: var(--wbds-muted) !important;
+  background: color-mix(in srgb, var(--wbds-panel-alt) 65%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 20%, transparent) !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.workbuddy-dream-skin-picker__grid {
+  display: grid;
+  gap: 8px;
+}
+
+.workbuddy-dream-skin-picker__card {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 76px minmax(0, 1fr) 24px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 7px !important;
+  overflow: hidden;
+  text-align: left;
+  color: var(--wbds-text) !important;
+  background: color-mix(in srgb, var(--wbds-panel-alt) 42%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--wbds-accent) 14%, transparent) !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.workbuddy-dream-skin-picker__card:hover {
+  transform: translateX(-2px);
+  background: color-mix(in srgb, var(--wbds-panel-alt) 70%, transparent) !important;
+  border-color: color-mix(in srgb, var(--wbds-secondary) 48%, transparent) !important;
+}
+
+.workbuddy-dream-skin-picker__card.is-active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wbds-accent) 24%, transparent), color-mix(in srgb, var(--wbds-highlight) 10%, transparent)) !important;
+  border-color: var(--wbds-accent) !important;
+  box-shadow: inset 3px 0 var(--wbds-accent);
+}
+
+.workbuddy-dream-skin-picker__preview {
+  position: relative;
+  display: block;
+  width: 76px;
+  height: 48px;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 10px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, .16);
+}
+
+.workbuddy-dream-skin-picker__preview i {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(4, 7, 18, .72);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .28);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.workbuddy-dream-skin-picker__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.workbuddy-dream-skin-picker__copy strong {
+  overflow: hidden;
+  color: var(--wbds-text);
+  font-size: 13px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbuddy-dream-skin-picker__copy small {
+  overflow: hidden;
+  color: var(--wbds-muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbuddy-dream-skin-picker__check {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  opacity: 0;
+  color: #fff;
+  background: linear-gradient(135deg, var(--wbds-accent), var(--wbds-highlight));
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  transform: scale(.7);
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.workbuddy-dream-skin-picker__card.is-active .workbuddy-dream-skin-picker__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Full-shell theme system: native WorkBuddy controls stay live, while every
+   semantic surface follows the active skin instead of inheriting one dark shell. */
+html.workbuddy-dream-skin .quick-actions__list {
+  background: transparent !important;
+}
+
+html.workbuddy-dream-skin .quick-actions__item {
+  color: var(--wbds-text) !important;
+  background: var(--wbds-surface) !important;
+  border: 1px solid var(--wbds-line) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--wbds-bg) 12%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .quick-actions__item:hover {
+  color: var(--wbds-text) !important;
+  background: var(--wbds-surface-alt) !important;
+  border-color: color-mix(in srgb, var(--wbds-accent) 48%, transparent) !important;
+}
+
+html.workbuddy-dream-skin .wb-scene-tabs__pill:not(.wb-scene-tabs__pill--active),
+html.workbuddy-dream-skin .wb-input-footer,
+html.workbuddy-dream-skin .wb-input-footer button {
+  color: var(--wbds-text) !important;
+}
+
+html.workbuddy-dream-skin .wb-home-composer,
+html.workbuddy-dream-skin .wb-home-composer * {
+  --wb-text-primary: var(--wbds-text) !important;
+  --wb-text-secondary: var(--wbds-muted) !important;
+  --wb-text-medium: var(--wbds-muted) !important;
+  --wb-text-tertiary: color-mix(in srgb, var(--wbds-muted) 78%, transparent) !important;
+  --wb-color-text-primary: var(--wbds-text) !important;
+  --wb-color-text-secondary: var(--wbds-muted) !important;
+  --wb-color-text-disabled: color-mix(in srgb, var(--wbds-muted) 58%, transparent) !important;
+  --wb-bg-primary: var(--wbds-surface) !important;
+  --wb-bg-secondary: var(--wbds-surface-alt) !important;
+  --wb-bg-tertiary: var(--wbds-panel-alt) !important;
+  --cb-text-primary: var(--wbds-text) !important;
+  --cb-text-secondary: var(--wbds-muted) !important;
+  --cb-text-disabled: color-mix(in srgb, var(--wbds-muted) 58%, transparent) !important;
+  --cb-bg-color: var(--wbds-surface) !important;
+  --cb-bg-color-container: var(--wbds-control) !important;
+  --vscode-input-foreground: var(--wbds-text) !important;
+  --vscode-input-background: var(--wbds-control) !important;
+  --vscode-editor-foreground: var(--wbds-text) !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer [data-slate-placeholder="true"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .task-input-container [data-slate-placeholder="true"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .project-detail-view__chat-input [data-slate-placeholder="true"] {
+  color: var(--wbds-muted) !important;
+  -webkit-text-fill-color: var(--wbds-muted) !important;
+  opacity: .86 !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .conversation-list svg,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .conversation-list svg *,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .quick-actions__item svg,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .quick-actions__item svg *,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer svg,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer svg *,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .task-input-container svg,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .task-input-container svg * {
+  color: var(--wbds-text) !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .conversation-list [aria-selected="true"] svg,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .conversation-list [aria-selected="true"] svg * {
+  color: #ffffff !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer [class*="_container_"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer [class*="_trigger_"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer [class*="_chipLabel_"],
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="dark"] .wb-home-composer [class*="_label_"] {
+  color: var(--wbds-text) !important;
+  -webkit-text-fill-color: var(--wbds-text) !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] .conversation-list {
+  box-shadow: 12px 0 34px rgba(80, 48, 40, .10) !important;
+  backdrop-filter: blur(22px) saturate(112%);
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] .wb-home-composer > div,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] .task-input-container,
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] .project-detail-view__chat-input > div {
+  box-shadow: 0 18px 44px rgba(66, 35, 45, .11), inset 0 1px rgba(255, 255, 255, .76) !important;
+}
+
+html.workbuddy-dream-skin[data-workbuddy-dream-appearance="light"] .workbuddy-dream-skin-status {
+  color: var(--wbds-text);
+  text-shadow: 0 1px rgba(255, 255, 255, .72);
+}
+
+#workbuddy-dream-skin-picker .workbuddy-dream-skin-picker__trigger {
+  color: var(--wbds-text) !important;
+  background: var(--wbds-surface) !important;
+}
+
+#workbuddy-dream-skin-picker .workbuddy-dream-skin-picker__panel {
+  color: var(--wbds-text);
+  background: linear-gradient(145deg, var(--wbds-surface), var(--wbds-surface-alt)) !important;
+}
+
+#workbuddy-dream-skin-picker .workbuddy-dream-skin-picker__card {
+  color: var(--wbds-text) !important;
+  background: color-mix(in srgb, var(--wbds-surface-alt) 86%, transparent) !important;
+}
+
+html.workbuddy-dream-skin body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .42;
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--wbds-accent) 52%, transparent) 0 1px, transparent 1.8px),
+    radial-gradient(circle, color-mix(in srgb, var(--wbds-secondary) 42%, transparent) 0 1px, transparent 1.8px);
+  background-position: 0 0, 27px 33px;
+  background-size: 71px 71px, 89px 89px;
+}
+
+/* 星际办公：深色玻璃、星尘与柔和霓虹。 */
+html[data-workbuddy-dream-theme="stellar-office"] body {
+  background:
+    linear-gradient(108deg, rgba(4, 7, 18, .94) 0%, rgba(8, 12, 29, .82) 46%, rgba(13, 15, 37, .50) 100%),
+    radial-gradient(circle at 78% 18%, rgba(212, 120, 255, .18), transparent 32%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+/* 拼单暴富：完整红色运营会场，金色分区、浅色内容卡与红包雨。 */
+html[data-workbuddy-dream-theme="group-bargain"] body {
+  background:
+    radial-gradient(circle at 76% 12%, rgba(255, 211, 45, .34), transparent 22%),
+    linear-gradient(104deg, rgba(154, 0, 18, .88) 0%, rgba(215, 0, 29, .72) 48%, rgba(240, 28, 46, .28) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] body::before {
+  opacity: .86;
+  background-image:
+    radial-gradient(circle, rgba(255, 223, 72, .88) 0 3px, rgba(151, 0, 20, .20) 3.5px 6px, transparent 6.5px),
+    radial-gradient(circle, rgba(255, 62, 70, .92) 0 5px, rgba(255, 242, 181, .72) 5.5px 7px, transparent 7.5px),
+    radial-gradient(circle, rgba(255, 173, 31, .78) 0 2px, transparent 2.5px);
+  background-position: 0 0, 22px 28px, 11px 7px;
+  background-size: 56px 56px, 83px 83px, 31px 31px;
+  mask-image: linear-gradient(90deg, rgba(0,0,0,.65), rgba(0,0,0,.12) 50%, rgba(0,0,0,.72));
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255, 207, 54, .18), transparent 24%),
+    linear-gradient(180deg, rgba(181, 7, 25, .99), rgba(133, 0, 20, .98)) !important;
+  border-right: 2px solid rgba(255, 204, 45, .82) !important;
+  box-shadow: 16px 0 40px rgba(91, 0, 14, .28) !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list::before {
+  content: "百人拼单 · 今日加码";
+  position: absolute;
+  right: 14px;
+  bottom: 58px;
+  left: 14px;
+  padding: 8px 10px;
+  color: #6b1117;
+  background: linear-gradient(90deg, #ffd43a, #fff0a0, #ffbf24);
+  border: 1px solid rgba(255,255,255,.56);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(76,0,10,.24);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-align: center;
+  pointer-events: none;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list button:hover,
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list a:hover {
+  background: linear-gradient(90deg, rgba(255, 205, 45, .28), rgba(255, 255, 255, .10)) !important;
+  box-shadow: inset 3px 0 #ffd43a !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list [aria-selected="true"],
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list [aria-current="page"],
+html[data-workbuddy-dream-theme="group-bargain"] .conversation-list .active {
+  background: linear-gradient(90deg, #ffb922, #ff6d2f) !important;
+  color: #fff !important;
+  box-shadow: inset 4px 0 #fff2a8, 0 8px 18px rgba(91, 0, 14, .22) !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .wb-home-header {
+  border: 2px solid #ffd23d !important;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(153, 0, 19, .94) 0%, rgba(195, 0, 27, .72) 48%, rgba(218, 0, 30, .08) 100%),
+    radial-gradient(circle at 86% 18%, rgba(255, 221, 73, .24), transparent 32%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 22px 50px rgba(101, 0, 17, .26), 0 0 0 5px rgba(255, 207, 50, .10) !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .wb-home-header__title {
+  background: linear-gradient(90deg, #fff, #fff1b1 62%, #ffd33f);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="group-bargain"] .quick-actions__item,
+html[data-workbuddy-dream-theme="group-bargain"] .wb-home-composer > div {
+  border-color: rgba(255, 197, 33, .74) !important;
+  box-shadow: 0 12px 30px rgba(117, 0, 17, .18) !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .main-content,
+html[data-workbuddy-dream-theme="group-bargain"] [class~="main-content"] {
+  background-color: rgba(255, 190, 177, .56) !important;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .quick-actions__item::after {
+  content: "热";
+  margin-left: 6px;
+  padding: 1px 4px;
+  color: #fff;
+  background: #e9152d;
+  border-radius: 5px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"] .workbuddy-dream-skin-status {
+  color: #fff8db;
+  text-shadow: 0 2px 12px rgba(93,0,13,.48);
+}
+
+.workbuddy-dream-skin-festival {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+html[data-workbuddy-dream-theme="group-bargain"][data-workbuddy-dream-home="true"] .workbuddy-dream-skin-festival {
+  display: block;
+}
+
+.workbuddy-dream-skin-festival__ticker {
+  position: absolute;
+  top: 56px;
+  right: 184px;
+  left: 300px;
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 18px;
+  overflow: hidden;
+  color: #fff9df;
+  background: linear-gradient(90deg, #b6001b, #ec1831 45%, #c50020);
+  border: 1px solid rgba(255, 219, 85, .86);
+  border-radius: 999px;
+  box-shadow: 0 10px 28px rgba(103, 0, 17, .24), inset 0 1px rgba(255,255,255,.18);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.workbuddy-dream-skin-festival__ticker b {
+  padding: 5px 10px;
+  color: #741016;
+  background: linear-gradient(90deg, #ffd43d, #fff1a0);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.workbuddy-dream-skin-festival__ticker em {
+  color: #ffd95b;
+  font-style: normal;
+}
+
+.workbuddy-dream-skin-festival__ops {
+  position: absolute;
+  top: 101px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.workbuddy-dream-skin-festival__ops span {
+  padding: 6px 10px;
+  color: #761018;
+  background: linear-gradient(90deg, rgba(255,246,204,.94), rgba(255,205,50,.96));
+  border: 1px solid rgba(255,255,255,.70);
+  border-radius: 9px 2px 9px 9px;
+  box-shadow: 0 7px 18px rgba(94,0,13,.20);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.workbuddy-dream-skin-festival__rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: .78;
+}
+
+.workbuddy-dream-skin-festival__rain i {
+  position: absolute;
+  top: -48px;
+  width: 12px;
+  height: 18px;
+  background: linear-gradient(145deg, #ff2941, #b90020);
+  border: 1px solid rgba(255, 224, 83, .92);
+  border-radius: 3px;
+  box-shadow: 0 4px 10px rgba(100,0,14,.22);
+  animation: wbds-festival-rain 7.8s linear infinite;
+}
+
+.workbuddy-dream-skin-festival__rain i:nth-child(5n+1) { left: 24%; }
+.workbuddy-dream-skin-festival__rain i:nth-child(5n+2) { left: 43%; width: 9px; height: 9px; border-radius: 50%; background: #ffd53f; }
+.workbuddy-dream-skin-festival__rain i:nth-child(5n+3) { left: 62%; }
+.workbuddy-dream-skin-festival__rain i:nth-child(5n+4) { left: 79%; width: 7px; height: 7px; border-radius: 50%; background: #ff564d; }
+.workbuddy-dream-skin-festival__rain i:nth-child(5n) { left: 94%; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+1) { animation-delay: -1.1s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+2) { animation-delay: -2.2s; animation-duration: 9.2s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+3) { animation-delay: -3.4s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+4) { animation-delay: -4.7s; animation-duration: 6.6s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+5) { animation-delay: -5.8s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n+6) { animation-delay: -6.9s; animation-duration: 8.7s; }
+.workbuddy-dream-skin-festival__rain i:nth-child(7n) { animation-delay: -7.5s; }
+
+/* 二次元打工姬：浅色蓝紫工作台、轻玻璃与星形贴纸。 */
+html[data-workbuddy-dream-theme="anime-coder"] body {
+  background:
+    linear-gradient(104deg, rgba(234, 247, 255, .97) 0%, rgba(238, 235, 255, .88) 48%, rgba(240, 231, 255, .42) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] body::before {
+  opacity: .58;
+  background-image:
+    radial-gradient(circle, rgba(151, 104, 239, .34) 0 2px, transparent 2.5px),
+    radial-gradient(circle, rgba(35, 190, 221, .32) 0 1.5px, transparent 2px);
+  background-size: 76px 76px, 49px 49px;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] .conversation-list {
+  background: linear-gradient(180deg, rgba(231, 247, 255, .98), rgba(241, 234, 255, .96)) !important;
+  border-right: 1px solid rgba(143, 102, 238, .30) !important;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] .wb-home-header {
+  border-radius: 30px;
+  background:
+    linear-gradient(90deg, rgba(29, 29, 78, .94) 0%, rgba(49, 42, 108, .68) 48%, rgba(77, 48, 126, .08) 100%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 24px 54px rgba(89, 74, 145, .20), 0 0 0 6px rgba(255,255,255,.34) !important;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="anime-coder"] .quick-actions__item,
+html[data-workbuddy-dream-theme="anime-coder"] .wb-home-composer > div {
+  border-color: rgba(143, 102, 238, .27) !important;
+  box-shadow: 0 14px 32px rgba(91, 83, 142, .12) !important;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] .quick-actions__item:nth-child(2n) {
+  background: rgba(235, 249, 255, .96) !important;
+}
+
+html[data-workbuddy-dream-theme="anime-coder"] .quick-actions__item:nth-child(2n+1) {
+  background: rgba(248, 239, 255, .96) !important;
+}
+
+/* 赛博牛马：唯一保留的深色工业皮肤，使用网格和硬边霓虹。 */
+html[data-workbuddy-dream-theme="cyber-ox"] body {
+  background:
+    linear-gradient(rgba(0, 200, 255, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 200, 255, .055) 1px, transparent 1px),
+    linear-gradient(104deg, rgba(1, 7, 18, .97) 0%, rgba(4, 20, 37, .84) 50%, rgba(10, 18, 41, .44) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+  background-size: 32px 32px, 32px 32px, auto, cover !important;
+}
+
+html[data-workbuddy-dream-theme="cyber-ox"] .conversation-list,
+html[data-workbuddy-dream-theme="cyber-ox"] .wb-home-header,
+html[data-workbuddy-dream-theme="cyber-ox"] .wb-home-composer,
+html[data-workbuddy-dream-theme="cyber-ox"] .wb-home-composer > div,
+html[data-workbuddy-dream-theme="cyber-ox"] .quick-actions__item,
+html[data-workbuddy-dream-theme="cyber-ox"] .wb-scene-tabs {
+  border-radius: 8px !important;
+}
+
+html[data-workbuddy-dream-theme="cyber-ox"] .wb-home-header {
+  border: 1px solid #00c8ff !important;
+  background:
+    linear-gradient(90deg, rgba(2, 10, 25, .97) 0%, rgba(4, 24, 43, .76) 48%, rgba(4, 24, 43, .10) 100%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 0 28px rgba(0,200,255,.18), inset 0 0 0 1px rgba(255,79,189,.16) !important;
+}
+
+/* 财神加班：米金纸张、朱红强调与云纹。 */
+html[data-workbuddy-dream-theme="fortune-overtime"] body {
+  background:
+    radial-gradient(circle at 84% 8%, rgba(208, 54, 31, .12), transparent 24%),
+    linear-gradient(104deg, rgba(255, 247, 222, .97) 0%, rgba(255, 242, 205, .91) 50%, rgba(255, 230, 177, .55) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="fortune-overtime"] body::before {
+  opacity: .55;
+  background-image:
+    radial-gradient(ellipse at center, transparent 0 9px, rgba(196, 50, 31, .16) 10px 11px, transparent 12px),
+    radial-gradient(circle, rgba(211, 152, 18, .26) 0 2px, transparent 2.5px);
+  background-size: 72px 42px, 51px 51px;
+}
+
+html[data-workbuddy-dream-theme="fortune-overtime"] .conversation-list {
+  background: linear-gradient(180deg, rgba(255, 245, 211, .99), rgba(255, 231, 172, .97)) !important;
+  border-right: 1px solid rgba(190, 118, 12, .36) !important;
+}
+
+html[data-workbuddy-dream-theme="fortune-overtime"] .wb-home-header {
+  border: 2px solid rgba(213, 153, 30, .76) !important;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(74, 12, 8, .94) 0%, rgba(105, 20, 13, .70) 48%, rgba(105, 20, 13, .06) 100%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 20px 46px rgba(112, 57, 13, .16), 0 0 0 5px rgba(255, 223, 145, .36) !important;
+}
+
+html[data-workbuddy-dream-theme="fortune-overtime"] .wb-home-header__title,
+html[data-workbuddy-dream-theme="fortune-overtime"] .wb-home-header__subtitle {
+  font-family: "STKaiti", "Kaiti SC", "Songti SC", serif !important;
+}
+
+html[data-workbuddy-dream-theme="fortune-overtime"] .quick-actions__item,
+html[data-workbuddy-dream-theme="fortune-overtime"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="fortune-overtime"] .wb-home-composer > div {
+  border-color: rgba(200, 139, 22, .36) !important;
+  box-shadow: 0 12px 26px rgba(116, 71, 20, .10) !important;
+}
+
+/* 摸鱼假期：浅青海风、奶油卡片与珊瑚色按钮。 */
+html[data-workbuddy-dream-theme="vacation-mode"] body {
+  background:
+    radial-gradient(circle at 24% 12%, rgba(255, 208, 106, .20), transparent 24%),
+    linear-gradient(104deg, rgba(229, 255, 248, .97) 0%, rgba(223, 250, 242, .86) 48%, rgba(255, 239, 208, .42) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="vacation-mode"] body::before {
+  opacity: .48;
+  background-image:
+    radial-gradient(circle, rgba(18, 169, 143, .22) 0 4px, transparent 4.7px),
+    radial-gradient(circle, rgba(239, 119, 94, .18) 0 2px, transparent 2.6px);
+  background-size: 94px 94px, 61px 61px;
+}
+
+html[data-workbuddy-dream-theme="vacation-mode"] .conversation-list {
+  background: linear-gradient(180deg, rgba(221, 250, 243, .98), rgba(255, 246, 220, .96)) !important;
+  border-right: 1px solid rgba(18, 169, 143, .28) !important;
+}
+
+html[data-workbuddy-dream-theme="vacation-mode"] .wb-home-header {
+  border: 2px solid rgba(42, 197, 173, .56) !important;
+  border-radius: 30px;
+  background:
+    linear-gradient(90deg, rgba(6, 74, 77, .94) 0%, rgba(10, 105, 99, .66) 48%, rgba(10, 105, 99, .04) 100%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 20px 48px rgba(21, 106, 97, .16), 0 0 0 6px rgba(255,255,255,.34) !important;
+}
+
+html[data-workbuddy-dream-theme="vacation-mode"] .quick-actions__item,
+html[data-workbuddy-dream-theme="vacation-mode"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="vacation-mode"] .wb-home-composer > div {
+  border-color: rgba(18, 169, 143, .30) !important;
+  box-shadow: 0 12px 28px rgba(20, 97, 89, .10) !important;
+}
+
+/* Buddy 拼拼：把运营会场开到最大，保留原生输入和导航可用。 */
+html[data-workbuddy-dream-theme="buddy-pinpins"] body {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 224, 57, .10) 0 8px, transparent 8px 26px),
+    radial-gradient(circle at 76% 12%, rgba(255, 236, 91, .52), transparent 20%),
+    linear-gradient(104deg, rgba(164, 0, 23, .86) 0%, rgba(235, 20, 42, .70) 48%, rgba(255, 117, 54, .34) 100%),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] body::before {
+  opacity: .96;
+  background-image:
+    radial-gradient(circle, rgba(255, 226, 63, .96) 0 3px, rgba(185, 0, 22, .20) 3.5px 6px, transparent 6.5px),
+    radial-gradient(circle, rgba(255, 54, 68, .92) 0 5px, rgba(255, 246, 188, .76) 5.5px 7px, transparent 7.5px),
+    radial-gradient(circle, rgba(255, 177, 28, .84) 0 2px, transparent 2.5px);
+  background-position: 0 0, 23px 31px, 11px 7px;
+  background-size: 46px 46px, 76px 76px, 25px 25px;
+  mask-image: linear-gradient(90deg, rgba(0,0,0,.80), rgba(0,0,0,.22) 52%, rgba(0,0,0,.88));
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .conversation-list {
+  background:
+    radial-gradient(circle at 15% 8%, rgba(255, 218, 52, .28), transparent 25%),
+    repeating-linear-gradient(165deg, rgba(255, 255, 255, .04) 0 10px, transparent 10px 28px),
+    linear-gradient(180deg, rgba(185, 0, 26, .99), rgba(126, 0, 19, .99)) !important;
+  border-right: 3px solid #ffd33f !important;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .conversation-list::before {
+  content: "BUDDY 拼拼 · 今日爆单";
+  position: absolute;
+  right: 12px;
+  bottom: 58px;
+  left: 12px;
+  padding: 8px 6px;
+  color: #841018;
+  background: repeating-linear-gradient(135deg, #ffd530 0 7px, #fff1a1 7px 14px);
+  border: 2px solid #fff1a1;
+  border-radius: 12px 3px 12px 12px;
+  box-shadow: 0 8px 24px rgba(84, 0, 11, .34);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-align: center;
+  pointer-events: none;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-page {
+  max-width: 900px !important;
+  padding-top: 34px !important;
+  position: relative;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-page::before {
+  content: "🧧 满 199 减 100  ·  0 元试用  ·  今日爆款滚动中  ·  组队越多越便宜";
+  position: absolute;
+  top: 8px;
+  right: 0;
+  left: 0;
+  padding: 7px 12px;
+  color: #87101a;
+  background: linear-gradient(90deg, #ffd43b, #fff2a6 48%, #ffbd2e);
+  border: 2px solid #ffef9d;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(115, 0, 16, .25);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-align: center;
+  pointer-events: none;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-header {
+  min-height: 236px !important;
+  border: 3px solid #ffd43e !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(90deg, rgba(145, 0, 19, .96) 0%, rgba(191, 0, 24, .74) 45%, rgba(237, 31, 39, .08) 100%),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 24px 58px rgba(94, 0, 13, .34), 0 0 0 6px rgba(255, 211, 57, .18) !important;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-header::before {
+  content: "BUDDY 拼拼  ·  百万人正在拼";
+  position: absolute;
+  top: 12px;
+  left: 22px;
+  z-index: 2;
+  padding: 5px 9px;
+  color: #8b1117;
+  background: #ffd83f;
+  border-radius: 5px 12px 5px 12px;
+  box-shadow: 0 4px 12px rgba(88, 0, 12, .22);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-header__title {
+  background: linear-gradient(90deg, #ffffff, #fff2a3 58%, #ffd43c);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="buddy-pinpins"] .quick-actions__item,
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-home-composer > div {
+  border: 2px solid rgba(255, 210, 49, .88) !important;
+  box-shadow: 0 12px 32px rgba(117, 0, 17, .22), inset 0 1px rgba(255,255,255,.38) !important;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .quick-actions__item {
+  background: linear-gradient(135deg, #fffdf1, #ffe0c6) !important;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .quick-actions__item::after {
+  content: "抢";
+  margin-left: 6px;
+  padding: 1px 5px;
+  color: #fff;
+  background: linear-gradient(135deg, #f01931, #ff7c2a);
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 950;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="boss-pie"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="neon-rave"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="pink-idol"] .wb-scene-tabs {
+  position: relative;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-scene-tabs::after,
+html[data-workbuddy-dream-theme="boss-pie"] .wb-scene-tabs::after,
+html[data-workbuddy-dream-theme="neon-rave"] .wb-scene-tabs::after,
+html[data-workbuddy-dream-theme="pink-idol"] .wb-scene-tabs::after {
+  position: absolute;
+  top: 3px;
+  left: calc(100% + 16px);
+  display: flex;
+  width: 468px;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  content: "";
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  pointer-events: none;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .wb-scene-tabs::after {
+  content: "⚡ 0 元包邮  ·  组队减价  ·  红包已就位  ·  下单就发光";
+  color: #8c1017;
+  background: linear-gradient(90deg, #ffd43f, #fff2a6, #ffbc2d);
+  border: 1px solid #fff1a2;
+  box-shadow: 0 7px 16px rgba(115, 0, 16, .20);
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .wb-scene-tabs::after {
+  content: "KPI +100  ·  饼 +999  ·  咖啡续命  ·  本周一定上市";
+  color: #fff;
+  background: linear-gradient(90deg, #ff5b2f, #8f36ff);
+  border: 1px solid #ffd64b;
+  box-shadow: 5px 5px 0 rgba(143, 54, 255, .20);
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .wb-scene-tabs::after {
+  content: "BASS BOOST  //  DEPLOY  //  404  //  ALL NIGHT LONG";
+  color: #c8ff37;
+  background: #0d062e;
+  border: 1px solid #11f7e0;
+  box-shadow: 0 0 18px rgba(17, 247, 224, .24), 4px 4px 0 rgba(255, 41, 206, .34);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .wb-scene-tabs::after {
+  content: "♡ TOP 1  ·  ALL MEMBERS  ·  SHINE  ·  今日也要闪闪发光";
+  color: #a22972;
+  background: linear-gradient(90deg, #fff, #ffe5f5, #eee3ff);
+  border: 1px solid #ff8cc5;
+  box-shadow: 0 7px 18px rgba(191, 71, 155, .16);
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival {
+  display: block;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker {
+  top: 52px;
+  right: 164px;
+  left: 282px;
+  color: #fff9df;
+  background: linear-gradient(90deg, #9f0018, #ef1831 45%, #bc001e);
+  border-width: 2px;
+  border-color: #ffdc53;
+  box-shadow: 0 12px 34px rgba(107, 0, 14, .32), inset 0 1px rgba(255,255,255,.22);
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker b::after {
+  content: "Buddy 拼拼";
+  font-size: 11px;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker b {
+  font-size: 0;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker span:nth-child(2)::after {
+  content: "红包暴雨警报";
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker span:nth-child(3)::after {
+  content: "全员组队 · 价格打穿";
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker em::after {
+  content: "拼成一单，好运翻倍";
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker span,
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker em {
+  font-size: 0;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker span::after,
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ticker em::after {
+  font-size: 10px;
+}
+
+html[data-workbuddy-dream-theme="buddy-pinpins"] .workbuddy-dream-skin-festival__ops span {
+  padding: 7px 12px;
+  border-radius: 10px 2px 10px 10px;
+  box-shadow: 0 8px 22px rgba(94, 0, 13, .28);
+}
+
+/* 老板画饼大会：橙黄纸张、紫色批注和会飞的 KPI。 */
+html[data-workbuddy-dream-theme="boss-pie"] body {
+  background:
+    repeating-conic-gradient(from 14deg at 72% 30%, rgba(255, 126, 31, .11) 0 5deg, transparent 5deg 18deg),
+    radial-gradient(circle at 82% 8%, rgba(255, 222, 69, .30), transparent 25%),
+    linear-gradient(104deg, rgba(255, 240, 208, .97), rgba(255, 211, 126, .82) 50%, rgba(255, 177, 89, .38)),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .conversation-list {
+  background: linear-gradient(180deg, rgba(132, 42, 10, .99), rgba(91, 25, 7, .98)) !important;
+  border-right: 2px solid #ffd23f !important;
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .wb-home-header {
+  border: 3px dashed #ff6a2b !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(90deg, rgba(112, 28, 6, .94), rgba(200, 72, 15, .68) 48%, rgba(245, 151, 44, .08)),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 12px 14px 0 rgba(143, 54, 255, .20), 0 20px 44px rgba(105, 39, 6, .20) !important;
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .wb-home-header::before {
+  content: "⚠ KPI 画饼指数 999%  ·  本周一定暴富";
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  z-index: 2;
+  padding: 5px 8px;
+  color: #fff;
+  background: #8f36ff;
+  border-radius: 4px;
+  transform: rotate(3deg);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .quick-actions__item:nth-child(odd) {
+  background: linear-gradient(135deg, #fffdf3, #ffe6af) !important;
+  transform: rotate(-1deg);
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .quick-actions__item:nth-child(even) {
+  background: linear-gradient(135deg, #fff7ff, #eadcff) !important;
+  transform: rotate(1deg);
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .quick-actions__item::after {
+  content: "饼";
+  margin-left: 6px;
+  color: #8f36ff;
+  font-weight: 950;
+}
+
+html[data-workbuddy-dream-theme="boss-pie"] .wb-home-composer > div {
+  border: 2px solid #ff6a2b !important;
+  box-shadow: 8px 8px 0 rgba(143, 54, 255, .14), 0 18px 42px rgba(112, 42, 8, .16) !important;
+}
+
+/* 霓虹蹦迪办：夜店网格、激光边框与故障色块。 */
+html[data-workbuddy-dream-theme="neon-rave"] body {
+  background:
+    linear-gradient(rgba(255, 41, 206, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 247, 224, .07) 1px, transparent 1px),
+    radial-gradient(circle at 72% 8%, rgba(255, 41, 206, .24), transparent 24%),
+    linear-gradient(110deg, rgba(8, 0, 29, .98), rgba(28, 5, 75, .88) 52%, rgba(11, 28, 68, .60)),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+  background-size: 34px 34px, 34px 34px, auto, auto, cover !important;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .conversation-list {
+  background: linear-gradient(180deg, rgba(19, 3, 55, .99), rgba(7, 1, 23, .99)) !important;
+  border-right: 2px solid #ff29ce !important;
+  box-shadow: 10px 0 32px rgba(255, 41, 206, .18) !important;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .wb-home-header {
+  border: 2px solid #11f7e0 !important;
+  border-radius: 4px !important;
+  background:
+    linear-gradient(90deg, rgba(9, 2, 34, .96), rgba(31, 5, 84, .72) 46%, rgba(255, 41, 206, .10)),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 8px 8px 0 rgba(255, 41, 206, .46), 0 0 34px rgba(17, 247, 224, .22) !important;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .wb-home-header::before {
+  content: "LIVE 404 · BASS BOOST · NO SLEEP";
+  position: absolute;
+  top: 12px;
+  left: 22px;
+  z-index: 2;
+  color: #c8ff37;
+  font: 900 10px/1 ui-monospace, monospace;
+  letter-spacing: .16em;
+  text-shadow: 3px 0 #ff29ce, -2px 0 #11f7e0;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .quick-actions__item,
+html[data-workbuddy-dream-theme="neon-rave"] .wb-scene-tabs,
+html[data-workbuddy-dream-theme="neon-rave"] .wb-home-composer > div {
+  border: 1px solid #ff29ce !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 20px rgba(255, 41, 206, .18), inset 0 0 16px rgba(17, 247, 224, .06) !important;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .quick-actions__item:nth-child(2n) {
+  border-color: #11f7e0 !important;
+}
+
+html[data-workbuddy-dream-theme="neon-rave"] .quick-actions__item::after {
+  content: "DJ";
+  margin-left: 6px;
+  color: #c8ff37;
+  font: 900 9px/1 ui-monospace, monospace;
+}
+
+/* 粉红应援部：贴纸、爱心和闪粉的高甜暴击。 */
+html[data-workbuddy-dream-theme="pink-idol"] body {
+  background:
+    radial-gradient(circle, rgba(255, 75, 168, .22) 0 2px, transparent 2.8px),
+    radial-gradient(circle at 76% 8%, rgba(174, 110, 255, .24), transparent 24%),
+    linear-gradient(104deg, rgba(255, 240, 251, .98), rgba(255, 222, 244, .82) 48%, rgba(224, 230, 255, .38)),
+    var(--workbuddy-dream-art) center / cover fixed no-repeat !important;
+  background-size: 38px 38px, auto, auto, cover !important;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .conversation-list {
+  background: linear-gradient(180deg, rgba(255, 223, 244, .99), rgba(238, 213, 255, .97)) !important;
+  border-right: 2px solid rgba(255, 75, 168, .42) !important;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .wb-home-header {
+  border: 2px solid #ff4ba8 !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(90deg, rgba(110, 36, 101, .94), rgba(194, 83, 157, .65) 46%, rgba(255, 154, 209, .08)),
+    var(--workbuddy-dream-art) right center / cover no-repeat !important;
+  box-shadow: 0 18px 42px rgba(191, 71, 155, .20), 0 0 0 6px rgba(255, 255, 255, .56) !important;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .wb-home-header::before {
+  content: "♡ 全员应援中  ·  今日任务闪耀完成 ♡";
+  position: absolute;
+  top: 11px;
+  right: 20px;
+  z-index: 2;
+  padding: 5px 9px;
+  color: #9c276a;
+  background: #fff1fb;
+  border: 1px solid #ff9ccc;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .quick-actions__item:nth-child(odd) {
+  background: linear-gradient(135deg, #fff, #ffe8f6) !important;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .quick-actions__item:nth-child(even) {
+  background: linear-gradient(135deg, #fff, #eee7ff) !important;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .quick-actions__item::after {
+  content: "♥";
+  margin-left: 6px;
+  color: #ff4ba8;
+  font-weight: 950;
+}
+
+html[data-workbuddy-dream-theme="pink-idol"] .wb-home-composer > div {
+  border: 2px solid rgba(255, 75, 168, .56) !important;
+  box-shadow: 0 16px 40px rgba(191, 71, 155, .13), inset 0 1px rgba(255,255,255,.9) !important;
+}
+
+/* Theme-specific ambient symbols. */
+.workbuddy-dream-skin-theme-symbols {
+  display: none;
+  position: absolute;
+  inset: 0;
+  opacity: .58;
+}
+
+html[data-workbuddy-dream-effects="anime"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="fortune"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="vacation"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="festival-max"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="chaos"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="neon"] .workbuddy-dream-skin-theme-symbols,
+html[data-workbuddy-dream-effects="idol"] .workbuddy-dream-skin-theme-symbols {
+  display: block;
+}
+
+.workbuddy-dream-skin-theme-symbols i {
+  position: absolute;
+  color: var(--wbds-accent);
+  font-style: normal;
+  animation: wbds-symbol-drift 6s ease-in-out infinite;
+}
+
+.workbuddy-dream-skin-theme-symbols i::before { content: "✦"; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(3n)::before { content: "♡"; }
+html[data-workbuddy-dream-effects="fortune"] .workbuddy-dream-skin-theme-symbols i::before { content: "◆"; color: #d39812; }
+html[data-workbuddy-dream-effects="vacation"] .workbuddy-dream-skin-theme-symbols i::before { content: "○"; color: #12a98f; }
+html[data-workbuddy-dream-effects="festival-max"] .workbuddy-dream-skin-theme-symbols i::before { content: "¥"; color: #ffd23f; }
+html[data-workbuddy-dream-effects="chaos"] .workbuddy-dream-skin-theme-symbols i::before { content: "✹"; color: #8f36ff; }
+html[data-workbuddy-dream-effects="neon"] .workbuddy-dream-skin-theme-symbols i::before { content: "✦"; color: #11f7e0; text-shadow: 2px 0 #ff29ce; }
+html[data-workbuddy-dream-effects="idol"] .workbuddy-dream-skin-theme-symbols i::before { content: "♥"; color: #ff4ba8; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(1) { left: 29%; top: 11%; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(2) { left: 42%; top: 7%; animation-delay: -1s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(3) { left: 58%; top: 14%; animation-delay: -2s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(4) { left: 73%; top: 9%; animation-delay: -3s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(5) { left: 90%; top: 18%; animation-delay: -4s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(6) { left: 33%; top: 43%; animation-delay: -5s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(7) { left: 52%; top: 51%; animation-delay: -.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(8) { left: 84%; top: 46%; animation-delay: -1.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(9) { left: 31%; top: 76%; animation-delay: -2.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(10) { left: 47%; top: 88%; animation-delay: -3.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(11) { left: 69%; top: 79%; animation-delay: -4.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(12) { left: 91%; top: 70%; animation-delay: -5.7s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(13) { left: 61%; top: 31%; animation-delay: -2.3s; }
+.workbuddy-dream-skin-theme-symbols i:nth-child(14) { left: 78%; top: 61%; animation-delay: -4.3s; }
+
+@keyframes wbds-festival-rain {
+  from { transform: translate3d(0, -60px, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: .94; }
+  to { transform: translate3d(28px, calc(100vh + 100px), 0) rotate(420deg); opacity: .16; }
+}
+
+@keyframes wbds-symbol-drift {
+  0%, 100% { transform: translateY(0) rotate(-4deg) scale(.9); opacity: .34; }
+  50% { transform: translateY(-10px) rotate(7deg) scale(1.12); opacity: .82; }
+}
+
+@keyframes wbds-picker-in {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes wbds-float {
+  0%, 100% { transform: translateY(0); opacity: .35; }
+  50% { transform: translateY(-9px); opacity: .86; }
+}
+
+html.workbuddy-dream-skin ::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--wbds-accent), var(--wbds-highlight)) !important;
+  border: 2px solid transparent;
+  background-clip: padding-box !important;
+  border-radius: 999px;
+}
+
+@media (max-height: 760px) {
+  html.workbuddy-dream-skin .wb-home-page { padding-top: 16px !important; }
+  html.workbuddy-dream-skin .wb-home-header { min-height: 158px !important; padding: 20px 28px !important; }
+  html.workbuddy-dream-skin .wb-home-header__title,
+  html.workbuddy-dream-skin .wb-home-header__subtitle { font-size: 27px !important; line-height: 36px !important; }
+  html.workbuddy-dream-skin .wb-scene-tabs { margin-top: 12px !important; margin-bottom: 22px !important; }
+}
+
+@media (max-width: 900px) {
+  html.workbuddy-dream-skin .wb-home-header { min-height: 172px !important; background-position: 64% center !important; }
+  html.workbuddy-dream-skin .wb-home-header__title,
+  html.workbuddy-dream-skin .wb-home-header__subtitle { max-width: 72%; }
+  html.workbuddy-dream-skin .wb-home-header::after { max-width: 68%; }
+  .workbuddy-dream-skin-status { display: none !important; }
+  #workbuddy-dream-skin-picker { right: 14px; bottom: 14px; }
+  .workbuddy-dream-skin-picker__current { display: none; }
+  .workbuddy-dream-skin-picker__trigger { width: 46px; min-width: 46px; padding: 0 !important; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workbuddy-dream-skin-particles i { animation: none !important; }
+  .workbuddy-dream-skin-festival__rain i,
+  .workbuddy-dream-skin-theme-symbols i { animation: none !important; }
+  .workbuddy-dream-skin-picker__panel { animation: none !important; }
+  html.workbuddy-dream-skin * { scroll-behavior: auto !important; }
+}

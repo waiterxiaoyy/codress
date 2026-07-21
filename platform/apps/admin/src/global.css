@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  background: #fff;
+  color: #111;
+}
+
+/* 状态一律黑白灰,不引入彩色 */
+.status-pill {
+  display: inline-block;
+  padding: 0 8px;
+  border: 1px solid #111;
+  font-size: 12px;
+  line-height: 20px;
+}
+.status-pill.muted {
+  border-color: #bbb;
+  color: #888;
+}
+.thumb {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border: 1px solid #e5e5e5;
+  background: #fafafa;
+  display: block;
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Codress Pet</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        -webkit-app-region: drag;
+        user-select: none;
+      }
+      .stage {
+        height: 100%;
+        display: grid;
+        place-items: end center;
+        padding-bottom: 8px;
+        box-sizing: border-box;
+      }
+      img {
+        max-width: 150px;
+        max-height: 150px;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+      }
+      .name {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #111;
+        color: #fff;
+        font: 11px/18px system-ui, sans-serif;
+        padding: 0 8px;
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+      }
+      body:hover .name {
+        opacity: 1;
+      }
+      .anim-idle img {
+        animation: breathe 3.2s ease-in-out infinite;
+      }
+      .anim-bounce img {
+        animation: bounce 1.6s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+      }
+      .anim-walk img {
+        animation: walk 2.4s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-16px); }
+        50% { transform: translateY(0); }
+        62% { transform: translateY(-6px); }
+        72% { transform: translateY(0); }
+      }
+      @keyframes walk {
+        0%, 100% { transform: translateX(-14px) scaleX(1); }
+        49% { transform: translateX(14px) scaleX(1); }
+        51% { transform: translateX(14px) scaleX(-1); }
+        99% { transform: translateX(-14px) scaleX(-1); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        img { animation: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <img id="pet" alt="pet" />
+    </div>
+    <div class="name" id="name"></div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const image = params.get("image") || "";
+      document.getElementById("pet").src = image.startsWith("http")
+        ? image
+        : "file:///" + image.replace(/\\/g, "/").replace(/^\/+/, "");
+      document.getElementById("name").textContent = params.get("name") || "";
+      document.getElementById("stage").className =
+        "stage anim-" + (params.get("animation") || "idle");
+    </script>
+  </body>
+</html>

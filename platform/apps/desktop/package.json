@@ -1,0 +1,33 @@
+{
+  "name": "@codress/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Codress 桌面客户端 — 给 Codex / WorkBuddy 一键换肤与桌面宠物",
+  "main": "out/main/index.js",
+  "author": "codress",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "test": "vitest run",
+    "pack:dir": "electron-vite build && electron-builder --dir",
+    "pack:win": "electron-vite build && electron-builder --win",
+    "pack:mac": "electron-vite build && electron-builder --mac"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

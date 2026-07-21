@@ -1,0 +1,18 @@
+{
+  "name": "codress-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Codress — 编辑器皮肤与桌面宠物平台(客户端 / 管理端 / Go API)",
+  "scripts": {
+    "dev:admin": "pnpm --filter @codress/admin dev",
+    "dev:desktop": "pnpm --filter @codress/desktop dev",
+    "build:admin": "pnpm --filter @codress/admin build",
+    "build:desktop": "pnpm --filter @codress/desktop build",
+    "pack:win": "pnpm --filter @codress/desktop pack:win",
+    "pack:mac": "pnpm --filter @codress/desktop pack:mac",
+    "test": "pnpm -r --if-present test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: codress-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: codress
+      MYSQL_DATABASE: codress
+    ports:
+      - "3307:3306" # 宿主机用 3307,避免与本机已有 MySQL 冲突;容器内仍是 3306
+    volumes:
+      - codress-mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pcodress"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ../server
+    container_name: codress-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      GIN_MODE: release
+      DB_DRIVER: mysql
+      DB_DSN: root:codress@tcp(mysql:3306)/codress?charset=utf8mb4&parseTime=True&loc=Local
+      PUBLIC_BASE_URL: http://127.0.0.1:8080
+      JWT_SECRET: codress-dev-secret-change-me
+    ports:
+      - "8080:8080"
+    volumes:
+      - codress-storage:/data/storage
+
+volumes:
+  codress-mysql-data:
+  codress-storage:
