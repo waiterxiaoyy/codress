@@ -41,7 +41,10 @@ export const codexAdapter: AdapterDefinition = {
       "%LOCALAPPDATA%\\Programs\\ChatGPT\\ChatGPT.exe",
       "%LOCALAPPDATA%\\Codex\\Codex.exe",
     ],
-    processName: "Codex.exe",
+    // 商店版(MSIX)的可执行文件叫 ChatGPT.exe;独立安装版可能叫 Codex.exe
+    processNames: ["ChatGPT.exe", "Codex.exe"],
+    displayNamePattern: "codex|chatgpt",
+    appx: { namePattern: "OpenAI.Codex" },
   },
   mac: {
     bundleIds: ["com.openai.codex"],

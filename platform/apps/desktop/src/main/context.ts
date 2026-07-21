@@ -119,7 +119,7 @@ export class AppContext extends EventEmitter {
   async statusAll(): Promise<AdapterStatus[]> {
     const out: AdapterStatus[] = [];
     for (const adapter of Object.values(adapters)) {
-      const install = discoverInstall(adapter, this.settings.get().appPaths[adapter.id]);
+      const install = await discoverInstall(adapter, this.settings.get().appPaths[adapter.id]);
       const port = this.portFor(adapter);
       const daemon = this.daemons.get(adapter.id);
       out.push({

@@ -40,6 +40,15 @@ export interface AdapterDefinition {
   runtimeKeys: RuntimeKeys;
   placeholders: PayloadPlaceholders;
   launchArgs(port: number): string[];
-  win: { exeCandidates: string[]; processName: string };
+  win: {
+    /** 快速路径:常见安装位置(支持 %ENV% 展开);找不到再走自动发现 */
+    exeCandidates: string[];
+    /** 可能的进程名(不同渠道安装的进程名可能不同,如 Codex 商店版是 ChatGPT.exe) */
+    processNames: string[];
+    /** 注册表卸载项 / 开始菜单快捷方式的 DisplayName 匹配(不区分大小写的正则源) */
+    displayNamePattern: string;
+    /** MSIX / 商店包:按包名前缀发现,启动走 AUMID 激活 */
+    appx?: { namePattern: string };
+  };
   mac: { bundleIds: string[]; appCandidates: string[] };
 }

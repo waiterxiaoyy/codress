@@ -37,8 +37,10 @@ export const workbuddyAdapter: AdapterDefinition = {
     exeCandidates: [
       "%LOCALAPPDATA%\\Programs\\WorkBuddy\\WorkBuddy.exe",
       "%LOCALAPPDATA%\\Programs\\workbuddy\\WorkBuddy.exe",
+      "%ProgramFiles%\\WorkBuddy\\WorkBuddy.exe",
     ],
-    processName: "WorkBuddy.exe",
+    processNames: ["WorkBuddy.exe"],
+    displayNamePattern: "workbuddy",
   },
   mac: {
     bundleIds: ["com.tencent.workbuddy"],

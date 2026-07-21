@@ -5,38 +5,50 @@ import path from "node:path";
 import { promisify } from "node:util";
 import type { AdapterDefinition } from "../adapters";
 import { cdpReady } from "../engine/cdp";
+import { discoverWinInstall, launchAppxWithArgs } from "./discover-win";
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 
 export interface AppInstall {
-  kind: "win-exe" | "mac-app";
+  kind: "win-exe" | "win-appx" | "mac-app";
   path: string;
-}
-
-function expandWinEnv(value: string): string {
-  return value.replace(/%([^%]+)%/g, (_, name) => process.env[name] ?? `%${name}%`);
+  /** MSIX 包应用的激活 ID(WindowsApps 下的 exe 不能直接 spawn) */
+  aumid?: string;
+  /** 命中的发现渠道(override/candidate/appx/process/registry/start-menu) */
+  source?: string;
 }
 
 function expandHome(value: string): string {
   return value.startsWith("~") ? path.join(os.homedir(), value.slice(1)) : value;
 }
 
-/** 查找目标应用安装位置:用户设置优先,其次内置候选路径。 */
-export function discoverInstall(adapter: AdapterDefinition, overridePath?: string): AppInstall | null {
-  if (overridePath && existsSync(overridePath)) {
-    return { kind: process.platform === "darwin" ? "mac-app" : "win-exe", path: overridePath };
-  }
+/**
+ * 查找目标应用安装位置:用户设置优先;Windows 走全自动发现链
+ * (常见目录 → MSIX 包 → 运行中进程 → 注册表卸载项 → 开始菜单快捷方式),
+ * 用户不需要关心装在哪。
+ */
+export async function discoverInstall(
+  adapter: AdapterDefinition,
+  overridePath?: string
+): Promise<AppInstall | null> {
   if (process.platform === "darwin") {
+    if (overridePath && existsSync(overridePath)) {
+      return { kind: "mac-app", path: overridePath, source: "override" };
+    }
     for (const candidate of adapter.mac.appCandidates.map(expandHome)) {
-      if (existsSync(candidate)) return { kind: "mac-app", path: candidate };
+      if (existsSync(candidate)) return { kind: "mac-app", path: candidate, source: "candidate" };
     }
     return null;
   }
-  for (const candidate of adapter.win.exeCandidates.map(expandWinEnv)) {
-    if (existsSync(candidate)) return { kind: "win-exe", path: candidate };
-  }
-  return null;
+  const found = await discoverWinInstall(adapter, overridePath);
+  if (!found) return null;
+  return {
+    kind: found.aumid ? "win-appx" : "win-exe",
+    path: found.exePath,
+    aumid: found.aumid,
+    source: found.source,
+  };
 }
 
 export async function isProcessRunning(adapter: AdapterDefinition): Promise<boolean> {
@@ -46,10 +58,11 @@ export async function isProcessRunning(adapter: AdapterDefinition): Promise<bool
       const { stdout } = await execAsync(`pgrep -x ${JSON.stringify(bundle ?? adapter.name)} || true`);
       return stdout.trim().length > 0;
     }
-    const { stdout } = await execAsync(
-      `tasklist /FI "IMAGENAME eq ${adapter.win.processName}" /NH`
-    );
-    return stdout.toLowerCase().includes(adapter.win.processName.toLowerCase());
+    for (const name of adapter.win.processNames) {
+      const { stdout } = await execAsync(`tasklist /FI "IMAGENAME eq ${name}" /NH`);
+      if (stdout.toLowerCase().includes(name.toLowerCase())) return true;
+    }
+    return false;
   } catch {
     return false;
   }
@@ -63,7 +76,9 @@ export async function stopApp(adapter: AdapterDefinition): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     return;
   }
-  await execAsync(`taskkill /IM "${adapter.win.processName}" /T /F`).catch(() => undefined);
+  for (const name of adapter.win.processNames) {
+    await execAsync(`taskkill /IM "${name}" /T /F`).catch(() => undefined);
+  }
   await new Promise((resolve) => setTimeout(resolve, 800));
 }
 
@@ -84,6 +99,11 @@ export async function launchWithCdp(
       child.unref();
     });
     return;
+  }
+  if (install.kind === "win-appx" && install.aumid) {
+    const ok = await launchAppxWithArgs(install.aumid, args);
+    if (ok) return;
+    // 激活失败时兜底尝试直接 spawn(部分包对当前用户可执行)
   }
   const child = spawn(install.path, args, { detached: true, stdio: "ignore" });
   child.unref();
@@ -113,12 +133,12 @@ export async function ensureAppWithCdp(
   { allowRestart = false } = {}
 ): Promise<EnsureResult> {
   if (await cdpReady(port)) return { ok: true, port };
-  const install = discoverInstall(adapter, overridePath);
+  const install = await discoverInstall(adapter, overridePath);
   if (!install) {
     return {
       ok: false,
       reason: "not-installed",
-      message: `${adapter.name} 未找到,请先安装,或在设置中手动指定路径`,
+      message: `${adapter.name} 未找到(已尝试自动检测常见目录、商店包、注册表与开始菜单),可在设置中手动指定路径`,
     };
   }
   if (await isProcessRunning(adapter)) {
