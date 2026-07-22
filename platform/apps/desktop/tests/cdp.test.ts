@@ -80,7 +80,16 @@ describe("probeExpression", () => {
     expect(expr).toContain("aside.app-shell-left-panel");
   });
   it("adds title check when adapter requires it", () => {
-    const expr = probeExpression(workbuddyAdapter);
+    const withTitle = {
+      ...workbuddyAdapter,
+      probeMarkers: { ...workbuddyAdapter.probeMarkers, title: "WorkBuddy" },
+    };
+    const expr = probeExpression(withTitle);
     expect(expr).toContain('"WorkBuddy"');
+  });
+  it("workbuddy probes URL instead of title", () => {
+    const expr = probeExpression(workbuddyAdapter);
+    expect(expr).toContain("app\\.asar");
+    expect(expr).not.toContain("document.title ===");
   });
 });

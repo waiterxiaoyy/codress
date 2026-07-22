@@ -35,10 +35,11 @@ export const workbuddyAdapter: AdapterDefinition = {
     version: "__WORKBUDDY_DREAM_SKIN_VERSION_JSON__",
   },
   launchArgs: (_port) => [
-    // WorkBuddy 通过环境变量 WORKBUDDY_REMOTE_DEBUGGING_PORT 接收端口，
-    // 此处只传 address，端口由 launchWithCdp 通过 launchctl setenv 注入
+    // WorkBuddy 不认 --remote-debugging-port,此处只传 address;
+    // 端口由 launchWithCdp 按 portEnvVar 注入环境变量(mac/win 通用)
     "--remote-debugging-address=127.0.0.1",
   ],
+  portEnvVar: "WORKBUDDY_REMOTE_DEBUGGING_PORT",
   win: {
     exeCandidates: [
       "%LOCALAPPDATA%\\Programs\\WorkBuddy\\WorkBuddy.exe",

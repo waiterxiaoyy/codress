@@ -121,6 +121,27 @@ export async function stopApp(adapter: AdapterDefinition): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 800));
 }
 
+/**
+ * 构造启动目标应用的环境变量(mac/win 通用):
+ * - 清理 Codress/electron-vite 的 dev 变量(ELECTRON_*、VITE_DEV_SERVER_URL、NODE_ENV),
+ *   避免从 Codress 里 spawn 出的 Electron 应用被干扰;
+ * - adapter 声明了 portEnvVar 时注入调试端口(如 WorkBuddy 只认环境变量不认命令行参数)。
+ */
+export function buildLaunchEnv(
+  adapter: AdapterDefinition,
+  port: number,
+  base: NodeJS.ProcessEnv = process.env
+): NodeJS.ProcessEnv {
+  const env = { ...base };
+  delete env.VITE_DEV_SERVER_URL;
+  delete env.NODE_ENV;
+  for (const key of Object.keys(env)) {
+    if (key.startsWith("ELECTRON_")) delete env[key];
+  }
+  if (adapter.portEnvVar) env[adapter.portEnvVar] = String(port);
+  return env;
+}
+
 /** 带 CDP 调试端口启动目标应用。 */
 export async function launchWithCdp(
   adapter: AdapterDefinition,
@@ -128,58 +149,40 @@ export async function launchWithCdp(
   port: number
 ): Promise<void> {
   const args = adapter.launchArgs(port);
+  const env = buildLaunchEnv(adapter, port);
   if (install.kind === "mac-app") {
-    // WorkBuddy 通过环境变量 WORKBUDDY_REMOTE_DEBUGGING_PORT 接收调试端口。
-    // 直接 spawn 真实二进制 + 环境变量注入，避免 open 与 Codress dev Electron 冲突。
-    if (adapter.id === "workbuddy") {
-      const execName = getBundleExecutable(install.path);
-      const binaryPath = path.join(install.path, "Contents", "MacOS", execName);
-      // 清理环境变量：移除所有会干扰 WorkBuddy 的 Codress/electron-vite 变量
-      const env = { ...process.env };
-      env.WORKBUDDY_REMOTE_DEBUGGING_PORT = String(port);
-      delete env.ELECTRON_RUN_AS_NODE;
-      delete env.ELECTRON_RENDERER_URL;
-      delete env.VITE_DEV_SERVER_URL;
-      delete env.NODE_ENV;
-      // 移除所有 ELECTRON_ 开头的 dev 相关变量
-      for (const key of Object.keys(env)) {
-        if (key.startsWith("ELECTRON_") && key !== "WORKBUDDY_REMOTE_DEBUGGING_PORT") {
-          delete env[key];
-        }
-      }
-      try {
-        const child = spawn(binaryPath, ["--remote-debugging-address=127.0.0.1"], {
-          detached: true,
-          stdio: "ignore",
-          env,
-        });
-        child.unref();
-      } catch {
-        // 兜底：launchctl + open -b（按 bundle id 启动）
-        await execFileAsync("/bin/launchctl", ["setenv", "WORKBUDDY_REMOTE_DEBUGGING_PORT", String(port)]).catch(() => undefined);
-        const bundleId = adapter.mac.bundleIds?.[0] ?? "com.tencent.workbuddy";
-        await execFileAsync("/usr/bin/open", ["-b", bundleId, "--args", "--remote-debugging-address=127.0.0.1"]).catch(() => undefined);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        await execFileAsync("/bin/launchctl", ["unsetenv", "WORKBUDDY_REMOTE_DEBUGGING_PORT"]).catch(() => undefined);
-      }
-      return;
-    }
-    // Codex / 其他 Electron 应用：通过 Info.plist 获取真实二进制名，直接 spawn + 参数
+    // 通过 Info.plist 获取真实二进制名,直接 spawn + 环境变量注入,
+    // 避免 open 与 Codress dev Electron 冲突
     const execName = getBundleExecutable(install.path);
     const binaryPath = path.join(install.path, "Contents", "MacOS", execName);
     try {
-      const child = spawn(binaryPath, args, { detached: true, stdio: "ignore" });
+      const child = spawn(binaryPath, args, { detached: true, stdio: "ignore", env });
       child.unref();
     } catch {
-      await execFileAsync("open", ["-a", install.path, "--args", ...args]).catch(() => undefined);
+      // 兜底:依赖 portEnvVar 的应用走 launchctl setenv + open;其余直接 open -a
+      if (adapter.portEnvVar) {
+        await execFileAsync("/bin/launchctl", ["setenv", adapter.portEnvVar, String(port)]).catch(() => undefined);
+        const bundleId = adapter.mac.bundleIds?.[0];
+        if (bundleId) {
+          await execFileAsync("/usr/bin/open", ["-b", bundleId, "--args", ...args]).catch(() => undefined);
+        } else {
+          await execFileAsync("/usr/bin/open", ["-a", install.path, "--args", ...args]).catch(() => undefined);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await execFileAsync("/bin/launchctl", ["unsetenv", adapter.portEnvVar]).catch(() => undefined);
+      } else {
+        await execFileAsync("open", ["-a", install.path, "--args", ...args]).catch(() => undefined);
+      }
     }
     return;
   }
   if (install.kind === "win-appx" && install.aumid) {
+    // 注意:COM 激活无法注入环境变量,依赖 portEnvVar 的目标(WorkBuddy)没有商店版,
+    // 实际不会走到这里;真出现时会因 CDP 超时报错,提示用户改用独立安装版
     const ok = await launchAppxWithArgs(install.aumid, args);
     if (ok) return;
   }
-  const child = spawn(install.path, args, { detached: true, stdio: "ignore" });
+  const child = spawn(install.path, args, { detached: true, stdio: "ignore", env });
   child.unref();
 }
 

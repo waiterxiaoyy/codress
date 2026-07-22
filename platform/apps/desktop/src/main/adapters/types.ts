@@ -42,6 +42,12 @@ export interface AdapterDefinition {
   runtimeKeys: RuntimeKeys;
   placeholders: PayloadPlaceholders;
   launchArgs(port: number): string[];
+  /**
+   * 通过环境变量接收调试端口的应用在此声明变量名(如 WorkBuddy 在 app ready 前读
+   * WORKBUDDY_REMOTE_DEBUGGING_PORT,不认 --remote-debugging-port 命令行参数)。
+   * launchWithCdp 在 mac/win 两端 spawn 时都会注入该变量。
+   */
+  portEnvVar?: string;
   win: {
     /** 快速路径:常见安装位置(支持 %ENV% 展开);找不到再走自动发现 */
     exeCandidates: string[];
