@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (() => {
+        const saved = localStorage.getItem("codress.theme.mode");
+        const mode = saved === "light" || saved === "dark" ? saved : "auto";
+        const resolved = mode === "auto" && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : mode === "auto" ? "light" : mode;
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.style.colorScheme = resolved;
+      })();
+    </script>
     <title>Codress</title>
   </head>
   <body>

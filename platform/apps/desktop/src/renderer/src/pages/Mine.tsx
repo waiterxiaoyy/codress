@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { bridge } from "../bridge";
+import { bridge, type PetItem } from "../bridge";
 import { useToast } from "../toast";
 
 interface EventRow {
@@ -22,16 +22,31 @@ export default function Mine() {
   const [providers, setProviders] = useState<{ github: boolean; google: boolean; dev: boolean } | null>(null);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [installed, setInstalled] = useState<{ slug: string; name: string; target: string }[]>([]);
+  const [localPets, setLocalPets] = useState<{ slug: string; name: string; installed: boolean; onDesktop: boolean }[]>([]);
+  const [activeCodexPet, setActiveCodexPet] = useState<string | null>(null);
   const [devName, setDevName] = useState("");
 
   const refresh = useCallback(async () => {
     const settings = await bridge.getSettings();
     setUserName(settings.userToken ? settings.userName : null);
-    const [codexLib, workbuddyLib] = await Promise.all([
+    const [codexLib, workbuddyLib, installedPetSlugs, petStore, codexPet] = await Promise.all([
       bridge.libraryList("codex"),
       bridge.libraryList("workbuddy"),
+      bridge.getInstalledPets(),
+      bridge.storePets({ target: "codex" }).catch(() => ({ items: [], total: 0 })),
+      bridge.getActivePetInCodex(),
     ]);
     setInstalled([...codexLib, ...workbuddyLib]);
+    const petNames = new Map((petStore.items as PetItem[]).map((pet) => [pet.slug, pet.name]));
+    const petSlugs = new Set(installedPetSlugs);
+    if (settings.activePet) petSlugs.add(settings.activePet);
+    setLocalPets(Array.from(petSlugs).map((slug) => ({
+      slug,
+      name: petNames.get(slug) ?? slug,
+      installed: installedPetSlugs.includes(slug),
+      onDesktop: settings.activePet === slug,
+    })));
+    setActiveCodexPet(codexPet);
     if (settings.userToken) {
       const mine = await bridge.myEvents().catch(() => ({ items: [] }));
       setEvents(mine.items as unknown as EventRow[]);
@@ -118,9 +133,12 @@ export default function Mine() {
       )}
 
       <hr className="divider" />
-      <h2 style={{ fontSize: 16 }}>已下载的皮肤({installed.length})</h2>
+      <h2 style={{ fontSize: 16, marginBottom: 4 }}>本地皮肤（{installed.length}）</h2>
+      <div className="muted" style={{ marginBottom: 10, fontSize: 12 }}>
+        首次应用后缓存在本机，方便快速重新应用，也能减少重复下载。
+      </div>
       {installed.length === 0 ? (
-        <div className="empty">还没有下载过皮肤</div>
+        <div className="empty">还没有缓存到本地的皮肤</div>
       ) : (
         <div className="list">
           {installed.map((item) => (
@@ -141,6 +159,72 @@ export default function Mine() {
                 >
                   应用
                 </button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <hr className="divider" />
+      <h2 style={{ fontSize: 16, marginBottom: 4 }}>本地宠物（{localPets.length}）</h2>
+      <div className="muted" style={{ marginBottom: 10, fontSize: 12 }}>
+        显示已安装到 Codex 的宠物，以及当前正在桌面运行的宠物。
+      </div>
+      {localPets.length === 0 ? (
+        <div className="empty">还没有安装或上桌过宠物</div>
+      ) : (
+        <div className="list">
+          {localPets.map((pet) => (
+            <div className="list-row" key={pet.slug}>
+              <span>
+                {pet.name} <span className="muted">({pet.slug})</span>
+              </span>
+              <span className="row">
+                {pet.installed && (
+                  <span className="muted" style={{ fontSize: 11 }}>Codex 已安装</span>
+                )}
+                {pet.onDesktop && (
+                  <span className="muted" style={{ fontSize: 11 }}>桌面运行中</span>
+                )}
+                {pet.installed && (
+                  <button
+                    className="btn small"
+                    disabled={activeCodexPet === pet.slug}
+                    onClick={async () => {
+                      const result = await bridge.activatePetInCodex(pet.slug);
+                      if (result.ok) {
+                        setActiveCodexPet(pet.slug);
+                        toast("已设为 Codex 当前宠物");
+                      } else toast(result.message ?? "启用失败", true);
+                    }}
+                  >
+                    {activeCodexPet === pet.slug ? "已启用" : "在 Codex 启用"}
+                  </button>
+                )}
+                <button
+                  className="btn small ghost"
+                  onClick={async () => {
+                    await bridge.setPet(pet.onDesktop ? null : pet.slug);
+                    toast(pet.onDesktop ? "宠物已收起" : "宠物已上桌");
+                    refresh();
+                  }}
+                >
+                  {pet.onDesktop ? "收起" : "上桌"}
+                </button>
+                {pet.installed && (
+                  <button
+                    className="btn small ghost"
+                    onClick={async () => {
+                      const result = await bridge.uninstallPetFromCodex(pet.slug);
+                      if (result.ok) {
+                        toast("已从 Codex 卸载");
+                        refresh();
+                      } else toast(result.message ?? "卸载失败", true);
+                    }}
+                  >
+                    卸载
+                  </button>
+                )}
               </span>
             </div>
           ))}

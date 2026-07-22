@@ -7,8 +7,28 @@ const api = {
     return () => ipcRenderer.removeListener("codress:status-changed", wrapped);
   },
   appStatus: () => ipcRenderer.invoke("app:status"),
+  clientInfo: () => ipcRenderer.invoke("app:info"),
+  latestClient: () => ipcRenderer.invoke("app:update:latest"),
+  getUpdateState: () => ipcRenderer.invoke("app:update:state"),
+  checkForUpdates: () => ipcRenderer.invoke("app:update:check"),
+  installUpdate: () => ipcRenderer.invoke("app:update:install"),
+  onUpdateState(listener: (state: unknown) => void) {
+    const wrapped = (_event: Electron.IpcRendererEvent, state: unknown) => listener(state);
+    ipcRenderer.on("codress:update-state", wrapped);
+    return () => ipcRenderer.removeListener("codress:update-state", wrapped);
+  },
+  pickAppPath: (appId: string, currentPath?: string) => ipcRenderer.invoke("app:path:pick", appId, currentPath),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   patchSettings: (patch: Record<string, unknown>) => ipcRenderer.invoke("settings:patch", patch),
+  getCreatorConfig: () => ipcRenderer.invoke("creator:config:get"),
+  saveCreatorConfig: (input: Record<string, unknown>) => ipcRenderer.invoke("creator:config:save", input),
+  testCreatorConfig: () => ipcRenderer.invoke("creator:config:test"),
+  creatorModels: () => ipcRenderer.invoke("creator:config:models"),
+  discoverCreatorProviders: () => ipcRenderer.invoke("creator:providers:discover"),
+  importCreatorProvider: (id: string) => ipcRenderer.invoke("creator:providers:import", id),
+  creatorDrafts: () => ipcRenderer.invoke("creator:drafts:list"),
+  saveCreatorDraft: (input: Record<string, unknown>) => ipcRenderer.invoke("creator:drafts:save", input),
+  deleteCreatorDraft: (id: string) => ipcRenderer.invoke("creator:drafts:delete", id),
 
   authProviders: () => ipcRenderer.invoke("auth:providers"),
   loginOAuth: (provider: string) => ipcRenderer.invoke("auth:oauth", provider),

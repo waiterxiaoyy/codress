@@ -15,6 +15,7 @@ import { ApiClient, type SkinManifest } from "./core/api";
 import { SkinLibrary } from "./core/library";
 import { SettingsStore } from "./core/state";
 import { PetManager } from "./pets";
+import { CreatorWorkspace } from "./creator";
 
 export interface ApplyOutcome {
   ok: boolean;
@@ -42,6 +43,7 @@ export class AppContext extends EventEmitter {
   readonly api: ApiClient;
   readonly library: SkinLibrary;
   readonly pets: PetManager;
+  readonly creator: CreatorWorkspace;
   readonly clientVersion: string;
   private readonly runtimeRoot: string;
   private daemons = new Map<string, AppDaemon>();
@@ -57,6 +59,7 @@ export class AppContext extends EventEmitter {
     this.settings = new SettingsStore(options.userDataDir);
     this.library = new SkinLibrary(path.join(options.userDataDir, "library"));
     this.pets = options.pets;
+    this.creator = new CreatorWorkspace(options.userDataDir);
     this.runtimeRoot = options.runtimeRoot;
     this.clientVersion = options.clientVersion;
     this.api = new ApiClient(
@@ -66,7 +69,7 @@ export class AppContext extends EventEmitter {
   }
 
   async init() {
-    await this.settings.load();
+    await Promise.all([this.settings.load(), this.creator.load()]);
   }
 
   portFor(adapter: AdapterDefinition): number {

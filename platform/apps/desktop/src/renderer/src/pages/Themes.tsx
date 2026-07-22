@@ -1,13 +1,47 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { bridge, type AdapterStatus, type SkinItem } from "../bridge";
 import { useToast } from "../toast";
 import codexIcon from "../assets/codex.png";
 import workbuddyIcon from "../assets/workbuddy.png";
+import { CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
 
 const TARGETS = [
   { id: "codex", label: "Codex", icon: codexIcon },
   { id: "workbuddy", label: "WorkBuddy", icon: workbuddyIcon },
 ];
+
+const THEME_PAGE_SIZE = 24;
+const THEME_CACHE_TTL = 5 * 60 * 1000;
+const THEME_CACHE_LIMIT = 20;
+
+interface ThemeListCacheEntry {
+  items: SkinItem[];
+  total: number;
+  page: number;
+  updatedAt: number;
+}
+
+const themeListCache = new Map<string, ThemeListCacheEntry>();
+const themeViewCache = {
+  target: "codex",
+  category: "",
+  search: "",
+  scrollTop: 0,
+};
+
+function themeCacheKey(target: string, category: string, search: string) {
+  return `${target}:${category}:${search.trim().toLowerCase()}`;
+}
+
+function setThemeCache(key: string, entry: ThemeListCacheEntry) {
+  themeListCache.delete(key);
+  themeListCache.set(key, entry);
+  while (themeListCache.size > THEME_CACHE_LIMIT) {
+    const oldestKey = themeListCache.keys().next().value;
+    if (oldestKey) themeListCache.delete(oldestKey);
+    else break;
+  }
+}
 
 function SearchIcon() {
   return (
@@ -64,54 +98,173 @@ function RestartModal({
 
 export default function Themes() {
   const toast = useToast();
-  const [target, setTarget] = useState("codex");
-  const [category, setCategory] = useState("");
+  const rootRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const requestSequence = useRef(0);
+  const [target, setTarget] = useState(themeViewCache.target);
+  const [category, setCategory] = useState(themeViewCache.category);
   const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
-  const [skins, setSkins] = useState<SkinItem[]>([]);
+  const initialCache = themeListCache.get(themeCacheKey(themeViewCache.target, themeViewCache.category, themeViewCache.search));
+  const [skins, setSkins] = useState<SkinItem[]>(initialCache?.items ?? []);
+  const [total, setTotal] = useState(initialCache?.total ?? 0);
+  const [page, setPage] = useState(initialCache?.page ?? 0);
   const [status, setStatus] = useState<AdapterStatus | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(themeViewCache.search);
+  const [debouncedSearch, setDebouncedSearch] = useState(themeViewCache.search);
   const [restartPending, setRestartPending] = useState<{ slug: string; name: string } | null>(null);
+  const [loading, setLoading] = useState(!initialCache);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const refresh = useCallback(async () => {
-    try {
-      const [skinList, categoryList, appStatus, settings] = await Promise.all([
-        bridge.storeSkins({ target, category: category || undefined }),
-        bridge.storeCategories("skin"),
-        bridge.appStatus(),
-        bridge.getSettings(),
-      ]);
-      setSkins(skinList.items);
-      setCategories(categoryList.items);
-      setStatus(appStatus.find((s) => s.id === target) ?? null);
-      setLoggedIn(Boolean(settings.userToken));
-      if (settings.userToken) {
-        const favs = await bridge.favorites().catch(() => ({ items: [] }));
-        setFavorites(new Set(favs.items.filter((f) => f.itemType === "skin").map((f) => f.itemSlug)));
-      }
-    } catch (error) {
-      toast(`商店加载失败:${(error as Error).message}`, true);
+  const queryKey = themeCacheKey(target, category, debouncedSearch);
+  const activeQueryKey = useRef(queryKey);
+  activeQueryKey.current = queryKey;
+  const hasMore = skins.length < total;
+
+  const loadFirstPage = useCallback(async (force = false) => {
+    const sequence = ++requestSequence.current;
+    setRefreshing(force);
+    setLoadingMore(false);
+    const cached = themeListCache.get(queryKey);
+    if (cached) {
+      setSkins(cached.items);
+      setTotal(cached.total);
+      setPage(cached.page);
+      setLoading(false);
+      if (!force && Date.now() - cached.updatedAt < THEME_CACHE_TTL) return;
+    } else {
+      setSkins([]);
+      setTotal(0);
+      setPage(0);
+      setLoading(true);
     }
-  }, [target, category, toast]);
+
+    try {
+      const result = await bridge.storeSkins({
+        target,
+        category: category || undefined,
+        q: debouncedSearch.trim() || undefined,
+        page: 1,
+        pageSize: THEME_PAGE_SIZE,
+      });
+      if (sequence !== requestSequence.current) return;
+      const entry = { items: result.items, total: result.total, page: 1, updatedAt: Date.now() };
+      setThemeCache(queryKey, entry);
+      setSkins(entry.items);
+      setTotal(entry.total);
+      setPage(1);
+    } catch (error) {
+      if (!cached || force) toast(`商店加载失败:${(error as Error).message}`, true);
+    } finally {
+      if (sequence === requestSequence.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [category, debouncedSearch, queryKey, target, toast]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const result = await bridge.storeSkins({
+        target,
+        category: category || undefined,
+        q: debouncedSearch.trim() || undefined,
+        page: nextPage,
+        pageSize: THEME_PAGE_SIZE,
+      });
+      if (activeQueryKey.current !== queryKey) return;
+      setSkins((previous) => {
+        const known = new Set(previous.map((item) => item.slug));
+        const merged = [...previous, ...result.items.filter((item) => !known.has(item.slug))];
+        setThemeCache(queryKey, {
+          items: merged,
+          total: result.total,
+          page: nextPage,
+          updatedAt: Date.now(),
+        });
+        return merged;
+      });
+      setTotal(result.total);
+      setPage(nextPage);
+    } catch (error) {
+      toast(`更多主题加载失败:${(error as Error).message}`, true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [category, debouncedSearch, hasMore, loading, loadingMore, page, queryKey, target, toast]);
 
   useEffect(() => {
-    refresh();
-    return bridge.onStatusChanged(() => {
-      bridge.appStatus().then((all) => setStatus(all.find((s) => s.id === target) ?? null));
-    });
-  }, [refresh, target]);
+    const timer = window.setTimeout(() => setDebouncedSearch(search), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  const filteredSkins = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return skins;
-    return skins.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        (s.category ?? "").toLowerCase().includes(q)
+  useEffect(() => {
+    themeViewCache.target = target;
+    themeViewCache.category = category;
+    themeViewCache.search = search;
+  }, [category, search, target]);
+
+  useEffect(() => {
+    loadFirstPage();
+  }, [loadFirstPage]);
+
+  useEffect(() => {
+    Promise.all([bridge.storeCategories("skin"), bridge.getSettings()])
+      .then(async ([categoryList, settings]) => {
+        setCategories(categoryList.items);
+        setLoggedIn(Boolean(settings.userToken));
+        if (settings.userToken) {
+          const favs = await bridge.favorites().catch(() => ({ items: [] }));
+          setFavorites(new Set(favs.items.filter((item) => item.itemType === "skin").map((item) => item.itemSlug)));
+        }
+      })
+      .catch((error) => toast(`商店信息加载失败:${(error as Error).message}`, true));
+  }, [toast]);
+
+  useEffect(() => {
+    const updateStatus = () => {
+      bridge.appStatus().then((all) => setStatus(all.find((item) => item.id === target) ?? null));
+    };
+    updateStatus();
+    return bridge.onStatusChanged(updateStatus);
+  }, [target]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scrollRoot = rootRef.current?.closest(".content");
+    if (!sentinel || !scrollRoot || !hasMore || loading || loadingMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      { root: scrollRoot, rootMargin: "240px 0px" },
     );
-  }, [skins, search]);
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, loading, loadingMore]);
+
+  useEffect(() => {
+    const scrollRoot = rootRef.current?.closest(".content");
+    if (!scrollRoot) return;
+    const frame = requestAnimationFrame(() => { scrollRoot.scrollTop = themeViewCache.scrollTop; });
+    const rememberScroll = () => { themeViewCache.scrollTop = scrollRoot.scrollTop; };
+    scrollRoot.addEventListener("scroll", rememberScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      themeViewCache.scrollTop = scrollRoot.scrollTop;
+      scrollRoot.removeEventListener("scroll", rememberScroll);
+    };
+  }, []);
+
+  const resetScroll = () => {
+    themeViewCache.scrollTop = 0;
+    const scrollRoot = rootRef.current?.closest(".content");
+    if (scrollRoot) scrollRoot.scrollTop = 0;
+  };
 
   const apply = async (slug: string, allowRestart = false) => {
     setBusySlug(slug);
@@ -162,7 +315,7 @@ export default function Themes() {
   };
 
   return (
-    <div>
+    <div ref={rootRef}>
       {/* 顶部：标题 + badge */}
       <div className="page-header">
         <h1 className="page-title">主题商店</h1>
@@ -185,7 +338,13 @@ export default function Themes() {
               key={t.id}
               className={`app-icon-btn ${target === t.id ? "active" : ""}`}
               title={t.label}
-              onClick={() => { setTarget(t.id); setCategory(""); setSearch(""); }}
+              onClick={() => {
+                resetScroll();
+                setTarget(t.id);
+                setCategory("");
+                setSearch("");
+                setDebouncedSearch("");
+              }}
             >
               <img src={t.icon} alt={t.label} draggable={false} />
             </button>
@@ -198,20 +357,16 @@ export default function Themes() {
             <SearchIcon />
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { resetScroll(); setSearch(e.target.value); }}
               placeholder="搜索皮肤名称…"
             />
           </div>
-          <select
-            className="select"
+          <CategorySelect
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">全部分类</option>
-            {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>{c.name}</option>
-            ))}
-          </select>
+            onChange={(value) => { resetScroll(); setCategory(value); }}
+            options={categories.map((item) => ({ value: item.slug, label: item.name }))}
+          />
+          <RefreshButton loading={loading || refreshing} onClick={() => loadFirstPage(true)} />
           <button
             className="app-icon-add-btn"
             title="本地图片做皮肤"
@@ -228,13 +383,15 @@ export default function Themes() {
       </div>
 
       {/* 皮肤网格 */}
-      {filteredSkins.length === 0 ? (
+      {loading ? (
+        <StoreSkeleton />
+      ) : skins.length === 0 ? (
         <div className="empty">
           {search ? `没有找到「${search}」相关皮肤` : "该平台 / 分类下暂无皮肤，去管理端上架或换个分类看看"}
         </div>
       ) : (
         <div className="grid">
-          {filteredSkins.map((skin) => (
+          {skins.map((skin) => (
             <div className="card" key={skin.slug}>
               <img className="cover" src={skin.previewLightUrl || skin.backgroundUrl} alt={skin.name} loading="lazy" />
               <div className="meta">
@@ -259,6 +416,18 @@ export default function Themes() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && skins.length > 0 && (
+        <div className="store-load-more" ref={sentinelRef}>
+          {loadingMore ? (
+            <span><span className="store-load-spinner" />正在加载更多主题…</span>
+          ) : hasMore ? (
+            <button className="btn ghost" onClick={loadMore}>加载更多</button>
+          ) : (
+            <span>已加载全部 {total} 个主题</span>
+          )}
         </div>
       )}
 

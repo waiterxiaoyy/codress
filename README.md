@@ -139,6 +139,14 @@ pnpm pack:mac
 cd server && go run cmd/main.go
 ```
 
+### Publish a desktop update
+
+1. Bump `platform/apps/desktop/package.json` to the new version and commit it.
+2. Push the matching tag, for example `git tag v1.0.1 && git push origin v1.0.1`.
+3. The `Release desktop app` workflow builds macOS/Windows installers and updater metadata, then publishes one complete GitHub Release.
+
+For signed macOS releases, configure the repository secrets `MAC_CERTIFICATE`, `MAC_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`. Windows signing can optionally use `WIN_CERTIFICATE` and `WIN_CERTIFICATE_PASSWORD`. Installed clients check the signed GitHub Release at startup and show a green update icon next to `CODRESS` when a newer version exists.
+
 ## Project Structure
 
 ```
@@ -292,6 +300,14 @@ pnpm pack:mac
 # 运行后端服务
 cd server && go run cmd/main.go
 ```
+
+### 发布桌面客户端更新
+
+1. 修改 `platform/apps/desktop/package.json` 中的版本号并提交。
+2. 推送与版本号一致的标签，例如 `git tag v1.0.1 && git push origin v1.0.1`。
+3. GitHub Actions 的 `Release desktop app` 会构建 Windows/macOS 安装包及更新元数据，全部完成后再正式发布 Release。
+
+macOS 正式发布前，需要在仓库 Secrets 中配置 `MAC_CERTIFICATE`、`MAC_CERTIFICATE_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD` 和 `APPLE_TEAM_ID`；Windows 可选配置 `WIN_CERTIFICATE` 和 `WIN_CERTIFICATE_PASSWORD`。已安装客户端启动时会检查签名后的 GitHub Release，发现新版后在左侧 `CODRESS` 旁显示绿色更新图标。
 
 ## 项目结构
 

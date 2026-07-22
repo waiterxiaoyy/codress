@@ -3,7 +3,7 @@ import path from "node:path";
 import os from "node:os";
 import https from "node:https";
 import http from "node:http";
-import type { CodressApi } from "./core/api";
+import type { ApiClient } from "./core/api";
 
 /**
  * 下载宠物的 spritesheet.webp 并写入 ~/.codex/pets/<slug>/pet.json，
@@ -15,7 +15,7 @@ import type { CodressApi } from "./core/api";
  *   └── spritesheet.webp  8x11 atlas (1536x2288)
  */
 export async function installPetToCodex(
-  api: CodressApi,
+  api: ApiClient,
   slug: string,
 ): Promise<{ ok: boolean; message?: string }> {
   try {
@@ -44,6 +44,7 @@ export async function installPetToCodex(
       id: (manifest as Record<string, unknown>).id || slug,
       displayName: (manifest as Record<string, unknown>).displayName || detail.manifest?.name || slug,
       description: (manifest as Record<string, unknown>).description || detail.manifest?.description || "",
+      spriteVersionNumber: 2,
       spritesheetPath: "spritesheet.webp",
     };
 

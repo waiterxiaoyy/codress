@@ -26,6 +26,7 @@ export interface PetItem {
   slug: string;
   name: string;
   description?: string;
+  category?: string;
   targets: string[];
   imageUrl: string;
   animation: string;
@@ -55,6 +56,62 @@ export interface Settings {
   ports: Record<string, number>;
 }
 
+export interface ClientRelease {
+  id: number;
+  platform: "win" | "mac";
+  version: string;
+  url: string;
+  notes: string;
+  mandatory: boolean;
+  createdAt: string;
+}
+
+export interface UpdateState {
+  status: "idle" | "checking" | "available" | "downloading" | "downloaded" | "not-available" | "error";
+  currentVersion: string;
+  version?: string;
+  notes?: string;
+  progress?: number;
+  error?: string;
+}
+
+export interface CreatorAiConfig {
+  protocol: "openai" | "anthropic";
+  label: string;
+  baseUrl: string;
+  textModel: string;
+  imageModel: string;
+  hasApiKey: boolean;
+  maskedApiKey: string;
+  secureStorageAvailable: boolean;
+}
+
+export interface DiscoveredProvider {
+  id: string;
+  family: "openai" | "anthropic";
+  name: string;
+  source: "cc-switch" | "codex" | "claude" | "environment";
+  baseUrl: string;
+  model: string;
+  hasCredential: boolean;
+  maskedCredential: string;
+  importable: boolean;
+  note: string;
+}
+
+export interface CreatorDraft {
+  id: string;
+  kind: "theme" | "pet";
+  name: string;
+  brief: string;
+  style: string;
+  target: string;
+  status: "draft" | "ready" | "generating" | "review" | "complete" | "failed";
+  stage: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApplyOutcome {
   ok: boolean;
   needsRestart?: boolean;
@@ -65,8 +122,32 @@ export interface ApplyOutcome {
 export interface CodressBridge {
   onStatusChanged(listener: () => void): () => void;
   appStatus(): Promise<AdapterStatus[]>;
+  clientInfo(): Promise<{ version: string; platform: "mac" | "win" | "other" }>;
+  latestClient(): Promise<ClientRelease | null>;
+  getUpdateState(): Promise<UpdateState>;
+  checkForUpdates(): Promise<UpdateState>;
+  installUpdate(): Promise<UpdateState>;
+  onUpdateState(listener: (state: UpdateState) => void): () => void;
+  pickAppPath(appId: string, currentPath?: string): Promise<string | null>;
   getSettings(): Promise<Settings>;
   patchSettings(patch: Partial<Settings>): Promise<Settings>;
+  getCreatorConfig(): Promise<CreatorAiConfig>;
+  saveCreatorConfig(input: {
+    protocol?: "openai" | "anthropic";
+    label?: string;
+    baseUrl: string;
+    apiKey?: string;
+    clearApiKey?: boolean;
+    textModel: string;
+    imageModel: string;
+  }): Promise<CreatorAiConfig>;
+  testCreatorConfig(): Promise<{ ok: boolean; message: string }>;
+  creatorModels(): Promise<string[]>;
+  discoverCreatorProviders(): Promise<DiscoveredProvider[]>;
+  importCreatorProvider(id: string): Promise<CreatorAiConfig>;
+  creatorDrafts(): Promise<CreatorDraft[]>;
+  saveCreatorDraft(input: Partial<CreatorDraft> & Pick<CreatorDraft, "kind" | "name" | "brief">): Promise<CreatorDraft>;
+  deleteCreatorDraft(id: string): Promise<void>;
   authProviders(): Promise<{ github: boolean; google: boolean; dev: boolean }>;
   loginOAuth(provider: string): Promise<{ name: string }>;
   loginDev(name: string): Promise<{ name: string }>;
@@ -105,12 +186,37 @@ async function apiFetch<T>(path: string): Promise<T> {
 const fallbackBridge: CodressBridge = {
   onStatusChanged: noop,
   appStatus: () => Promise.resolve([]),
+  clientInfo: () => Promise.resolve({ version: "Web", platform: "other" }),
+  latestClient: () => Promise.resolve(null),
+  getUpdateState: () => Promise.resolve({ status: "idle", currentVersion: "Web" }),
+  checkForUpdates: () => Promise.resolve({ status: "idle", currentVersion: "Web" }),
+  installUpdate: () => Promise.reject(new Error("请在安装后的桌面客户端中更新")),
+  onUpdateState: noop,
+  pickAppPath: () => Promise.resolve(null),
   getSettings: () => Promise.resolve({
     apiBase: API_BASE,
     userToken: null, userName: null, activePet: null,
     activeSkins: {}, appPaths: {}, ports: {},
   }),
   patchSettings: noopAsync,
+  getCreatorConfig: () => Promise.resolve({
+    protocol: "openai",
+    label: "手动配置",
+    baseUrl: "https://api.openai.com/v1",
+    textModel: "gpt-4.1-mini",
+    imageModel: "gpt-image-1",
+    hasApiKey: false,
+    maskedApiKey: "",
+    secureStorageAvailable: false,
+  }),
+  saveCreatorConfig: noopAsync,
+  testCreatorConfig: () => Promise.reject(new Error("请在安装后的桌面客户端中配置 AI 服务")),
+  creatorModels: () => Promise.resolve([]),
+  discoverCreatorProviders: () => Promise.resolve([]),
+  importCreatorProvider: noopAsync,
+  creatorDrafts: () => Promise.resolve([]),
+  saveCreatorDraft: noopAsync,
+  deleteCreatorDraft: () => Promise.resolve(),
   authProviders: () => Promise.resolve({ github: false, google: false, dev: true }),
   loginOAuth: noopAsync,
   loginDev: noopAsync,
@@ -121,8 +227,9 @@ const fallbackBridge: CodressBridge = {
     const search = new URLSearchParams();
     if (params.target) search.set("target", String(params.target));
     if (params.category) search.set("category", String(params.category));
+    if (params.q) search.set("q", String(params.q));
     search.set("page", String(params.page ?? 1));
-    search.set("pageSize", "48");
+    search.set("pageSize", String(params.pageSize ?? 48));
     return apiFetch(`/api/v1/skins?${search}`);
   },
   storePets: (params: Record<string, unknown>) => {

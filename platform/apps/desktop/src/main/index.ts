@@ -4,6 +4,7 @@ import { AppContext } from "./context";
 import { registerIpc } from "./ipc";
 import { createTray } from "./tray";
 import { PetManager, petPageLocator } from "./pets";
+import { DesktopUpdater } from "./updater";
 
 // 确保 Codress 自身不受 WorkBuddy 调试端口环境变量影响
 delete process.env.WORKBUDDY_REMOTE_DEBUGGING_PORT;
@@ -36,6 +37,14 @@ function createMainWindow() {
       sandbox: false,
     },
   });
+  if (!app.isPackaged) {
+    mainWindow.webContents.on("before-input-event", (event, input) => {
+      if (input.type === "keyDown" && input.key === "F12") {
+        event.preventDefault();
+        mainWindow?.webContents.toggleDevTools();
+      }
+    });
+  }
   const devUrl = process.env.ELECTRON_RENDERER_URL;
   if (devUrl) mainWindow.loadURL(devUrl);
   else mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
@@ -53,7 +62,10 @@ if (!singleLock) {
   app.whenReady().then(async () => {
     // 暴露 resources 目录给渲染进程:app-asset://<file> → resources/<file>
     protocol.registerFileProtocol("app-asset", (request, cb) => {
-      const file = path.basename(new URL(request.url).pathname);
+      const url = new URL(request.url);
+      // app-asset://codex.png 会把文件名解析为 hostname；
+      // app-asset:///codex.png 则位于 pathname。两种形式都兼容。
+      const file = path.basename(url.pathname) || path.basename(url.hostname);
       cb({ path: path.join(resourcesRoot, file) });
     });
 
@@ -70,9 +82,19 @@ if (!singleLock) {
       pets,
     });
     await ctx.init();
-    registerIpc(ctx, () => mainWindow);
+    const updater = new DesktopUpdater(
+      () => mainWindow,
+      async () => {
+        if (!ctx) return;
+        const closing = ctx;
+        ctx = null;
+        await closing.shutdown().catch(() => undefined);
+      },
+    );
+    registerIpc(ctx, () => mainWindow, updater);
     createMainWindow();
     createTray(ctx, resourcesRoot, createMainWindow);
+    updater.start();
 
     app.on("activate", () => createMainWindow());
   });

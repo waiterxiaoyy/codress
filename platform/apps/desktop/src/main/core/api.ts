@@ -62,6 +62,16 @@ export interface ListResult<T> {
   pageSize: number;
 }
 
+export interface ClientRelease {
+  id: number;
+  platform: "win" | "mac";
+  version: string;
+  url: string;
+  notes: string;
+  mandatory: boolean;
+  createdAt: string;
+}
+
 /** 云端商店 API 客户端(主进程用,渲染层经 IPC 间接访问)。 */
 export class ApiClient {
   constructor(
@@ -82,13 +92,13 @@ export class ApiClient {
     return body;
   }
 
-  listSkins(params: { target?: string; category?: string; page?: number; q?: string }) {
+  listSkins(params: { target?: string; category?: string; page?: number; pageSize?: number; q?: string }) {
     const search = new URLSearchParams();
     if (params.target) search.set("target", params.target);
     if (params.category) search.set("category", params.category);
     if (params.q) search.set("q", params.q);
     search.set("page", String(params.page ?? 1));
-    search.set("pageSize", "48");
+    search.set("pageSize", String(params.pageSize ?? 48));
     return this.request<ListResult<SkinManifest>>(`/api/v1/skins?${search}`);
   }
 
@@ -128,6 +138,10 @@ export class ApiClient {
     return this.request<{ version: number; config: Record<string, unknown> | null; css: string }>(
       `/api/v1/adapters/${appId}?platform=${platform}`
     );
+  }
+
+  latestClient(platform: "win" | "mac") {
+    return this.request<ClientRelease>(`/api/v1/client/latest?platform=${platform}`);
   }
 
   providers() {

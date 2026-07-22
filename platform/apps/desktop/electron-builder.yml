@@ -10,6 +10,12 @@ extraResources:
     to: resources
 asar: true
 compression: maximum
+artifactName: Codress-${version}-${os}-${arch}.${ext}
+publish:
+  provider: github
+  owner: waiterxiaoyy
+  repo: codress
+  releaseType: draft
 win:
   icon: build/icon.png
   target:
@@ -23,5 +29,7 @@ mac:
   icon: build/icon.png
   target:
     - target: dmg
+      arch: [arm64, x64]
+    - target: zip
       arch: [arm64, x64]
   category: public.app-category.developer-tools
