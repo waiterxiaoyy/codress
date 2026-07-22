@@ -237,7 +237,7 @@ export default function Themes() {
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    const scrollRoot = rootRef.current?.closest(".content");
+    const scrollRoot = rootRef.current?.closest(".page-keepalive");
     if (!sentinel || !scrollRoot || !hasMore || loading || loadingMore) return;
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) loadMore(); },
@@ -248,7 +248,7 @@ export default function Themes() {
   }, [hasMore, loadMore, loading, loadingMore]);
 
   useEffect(() => {
-    const scrollRoot = rootRef.current?.closest(".content");
+    const scrollRoot = rootRef.current?.closest(".page-keepalive");
     if (!scrollRoot) return;
     const frame = requestAnimationFrame(() => { scrollRoot.scrollTop = themeViewCache.scrollTop; });
     const rememberScroll = () => { themeViewCache.scrollTop = scrollRoot.scrollTop; };
@@ -262,7 +262,7 @@ export default function Themes() {
 
   const resetScroll = () => {
     themeViewCache.scrollTop = 0;
-    const scrollRoot = rootRef.current?.closest(".content");
+    const scrollRoot = rootRef.current?.closest(".page-keepalive");
     if (scrollRoot) scrollRoot.scrollTop = 0;
   };
 

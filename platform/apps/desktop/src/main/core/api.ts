@@ -53,6 +53,8 @@ export interface PetManifest {
   tags?: string;
   author?: string;
   downloads?: number;
+  hash?: string;
+  sizeBytes?: number;
 }
 
 export interface ListResult<T> {
@@ -114,16 +116,22 @@ export class ApiClient {
     );
   }
 
-  listPets(params: { target?: string; page?: number }) {
+  listPets(params: { target?: string; category?: string; page?: number; pageSize?: number; q?: string }) {
     const search = new URLSearchParams();
     if (params.target) search.set("target", params.target);
+    if (params.category) search.set("category", params.category);
+    if (params.q) search.set("q", params.q);
     search.set("page", String(params.page ?? 1));
-    search.set("pageSize", "48");
+    search.set("pageSize", String(params.pageSize ?? 24));
     return this.request<ListResult<PetManifest>>(`/api/v1/pets?${search}`);
   }
 
+  getPet(slug: string) {
+    return this.request<PetManifest>(`/api/v1/pets/${slug}`);
+  }
+
   downloadPet(slug: string) {
-    return this.request<{ url: string; manifest: PetManifest }>(`/api/v1/pets/${slug}/download`, {
+    return this.request<{ url: string; hash?: string; sizeBytes?: number; manifest: PetManifest }>(`/api/v1/pets/${slug}/download`, {
       method: "POST",
     });
   }

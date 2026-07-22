@@ -1,11 +1,16 @@
-import { BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { BrowserWindow, dialog, ipcMain, screen, shell } from "electron";
 import { loginViaBrowser } from "./auth";
 import type { AppContext } from "./context";
 import type { DesktopUpdater } from "./updater";
 import { installPetToCodex, getInstalledPetSlugs, activatePet, uninstallPet, getActivePet } from "./pet-installer";
 
 /** 渲染层唯一入口:全部走 invoke,主进程持有一切状态与密钥。 */
-export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | null, updater: DesktopUpdater) {
+export function registerIpc(
+  ctx: AppContext,
+  getWindow: () => BrowserWindow | null,
+  updater: DesktopUpdater,
+  showMainWindow: () => void,
+) {
   const broadcast = () => {
     const win = getWindow();
     if (win && !win.isDestroyed()) win.webContents.send("codress:status-changed");
@@ -101,11 +106,37 @@ export function registerIpc(ctx: AppContext, getWindow: () => BrowserWindow | nu
   });
 
   ipcMain.handle("pet:set", (_e, slug: string | null) => ctx.setPet(slug));
-  ipcMain.handle("pet:install", (_e, slug: string) => installPetToCodex(ctx.api, slug));
+  ipcMain.handle("pet:install", (_e, slug: string) => installPetToCodex(ctx.api, ctx.library.petsDir(), slug));
   ipcMain.handle("pet:activate", (_e, slug: string) => activatePet(slug));
   ipcMain.handle("pet:uninstall", (_e, slug: string) => uninstallPet(slug));
   ipcMain.handle("pet:installed", () => getInstalledPetSlugs());
   ipcMain.handle("pet:active", () => getActivePet());
+  const petDragStates = new Map<number, { cursorX: number; cursorY: number; windowX: number; windowY: number }>();
+  ipcMain.on("pet-window:open-main", (event) => {
+    if (ctx.pets.ownsWebContents(event.sender)) showMainWindow();
+  });
+  ipcMain.on("pet-window:drag-start", (event) => {
+    if (!ctx.pets.ownsWebContents(event.sender)) return;
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+    const cursor = screen.getCursorScreenPoint();
+    const [windowX, windowY] = win.getPosition();
+    petDragStates.set(event.sender.id, { cursorX: cursor.x, cursorY: cursor.y, windowX, windowY });
+  });
+  ipcMain.on("pet-window:drag-move", (event) => {
+    const state = petDragStates.get(event.sender.id);
+    if (!state || !ctx.pets.ownsWebContents(event.sender)) return;
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+    const cursor = screen.getCursorScreenPoint();
+    win.setPosition(
+      state.windowX + cursor.x - state.cursorX,
+      state.windowY + cursor.y - state.cursorY,
+    );
+  });
+  ipcMain.on("pet-window:drag-end", (event) => {
+    petDragStates.delete(event.sender.id);
+  });
   ipcMain.handle("shell:openExternal", (_e, url: string) => {
     if (/^https?:\/\//.test(url)) return shell.openExternal(url);
     return undefined;

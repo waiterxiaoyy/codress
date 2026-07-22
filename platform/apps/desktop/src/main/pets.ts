@@ -1,11 +1,12 @@
 import path from "node:path";
-import { app, BrowserWindow, screen } from "electron";
+import { app, BrowserWindow, screen, type WebContents } from "electron";
 
 export interface ActivePet {
   slug: string;
   name: string;
   animation: string;
   imagePath: string;
+  assetVersion?: string;
 }
 
 /**
@@ -14,6 +15,7 @@ export interface ActivePet {
  */
 export class PetManager {
   private window: BrowserWindow | null = null;
+  private loadedPetKey: string | null = null;
   current: ActivePet | null = null;
 
   constructor(private readonly petPageUrl: () => { file?: string; url?: string }) {}
@@ -38,6 +40,7 @@ export class PetManager {
         hasShadow: false,
         focusable: false,
         webPreferences: {
+          preload: path.join(__dirname, "../preload/pet.js"),
           contextIsolation: true,
           nodeIntegration: false,
           webSecurity: false, // 允许 file:// 加载本地图片
@@ -46,27 +49,42 @@ export class PetManager {
       this.window.setAlwaysOnTop(true, "screen-saver");
       this.window.on("closed", () => {
         this.window = null;
+        this.loadedPetKey = null;
       });
     }
+    const petKey = `${pet.slug}:${pet.imagePath}:${pet.animation}:${pet.assetVersion ?? ""}`;
     const query = {
       image: pet.imagePath,
       name: pet.name,
       animation: pet.animation,
     };
     const target = this.petPageUrl();
-    if (target.url) {
-      const url = new URL(target.url);
-      for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
-      await this.window.loadURL(url.toString());
-    } else if (target.file) {
-      await this.window.loadFile(target.file, { query });
+    if (this.loadedPetKey !== petKey) {
+      if (target.url) {
+        const url = new URL(target.url);
+        for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
+        await this.window.loadURL(url.toString());
+      } else if (target.file) {
+        await this.window.loadFile(target.file, { query });
+      }
+      this.loadedPetKey = petKey;
     }
     this.window.showInactive();
   }
 
   hide() {
     this.current = null;
-    if (this.window && !this.window.isDestroyed()) this.window.close();
+    if (this.window && !this.window.isDestroyed()) this.window.hide();
+  }
+
+  ownsWebContents(webContents: WebContents) {
+    return Boolean(this.window && !this.window.isDestroyed() && this.window.webContents === webContents);
+  }
+
+  shutdown() {
+    this.current = null;
+    this.loadedPetKey = null;
+    if (this.window && !this.window.isDestroyed()) this.window.destroy();
     this.window = null;
   }
 }

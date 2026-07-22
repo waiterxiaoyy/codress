@@ -1,5 +1,14 @@
 import { UnifiedSelect } from "./UnifiedSelect";
 
+export function ButtonLoadingLabel({ children }: { children: string }) {
+  return (
+    <span className="button-loading-label">
+      <i className="store-load-spinner" aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
+
 export interface CategoryOption {
   value: string;
   label: string;

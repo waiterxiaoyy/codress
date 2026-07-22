@@ -182,10 +182,16 @@ button, input, textarea, select { font: inherit; }
 
 /* ── 内容区 ── */
 .content {
+  min-width: 0;
+  overflow: hidden;
+}
+.page-keepalive {
+  height: 100%;
   overflow-y: auto;
   scrollbar-gutter: stable;
   padding: 24px 28px 48px;
 }
+.page-keepalive[hidden] { display: none; }
 
 /* ── 页面 header ── */
 .page-header {
@@ -316,6 +322,10 @@ button, input, textarea, select { font: inherit; }
 .card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+}
+.pet-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
 }
 .card .cover {
   aspect-ratio: 16 / 9;
@@ -844,6 +854,7 @@ button, input, textarea, select { font: inherit; }
   color: var(--muted);
   font-size: 12px;
 }
+.store-load-more.silent { min-height: 1px; }
 .store-load-more > span {
   display: inline-flex;
   align-items: center;
@@ -856,6 +867,18 @@ button, input, textarea, select { font: inherit; }
   border-top-color: var(--fg);
   border-radius: 50%;
   animation: store-spin .7s linear infinite;
+}
+.button-loading-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.button-loading-label .store-load-spinner {
+  width: 12px;
+  height: 12px;
+  border-color: currentColor;
+  border-top-color: transparent;
 }
 
 /* ── 设置：目标应用 ── */

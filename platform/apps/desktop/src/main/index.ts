@@ -91,7 +91,7 @@ if (!singleLock) {
         await closing.shutdown().catch(() => undefined);
       },
     );
-    registerIpc(ctx, () => mainWindow, updater);
+    registerIpc(ctx, () => mainWindow, updater, createMainWindow);
     createMainWindow();
     createTray(ctx, resourcesRoot, createMainWindow);
     updater.start();

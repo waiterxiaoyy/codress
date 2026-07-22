@@ -7,6 +7,7 @@ import Settings from "./pages/Settings";
 import Creator from "./pages/Creator";
 import { bridge, type UpdateState } from "./bridge";
 import { applyTheme, watchTheme } from "./theme";
+import { PageVisibilityProvider } from "./components/PageVisibility";
 
 function IconThemes() {
   return (
@@ -90,6 +91,7 @@ const COLLAPSED_KEY = "codress.sidebar.collapsed";
 
 export default function App() {
   const [active, setActive] = useState<(typeof pages)[number]["key"]>("themes");
+  const [mountedPages, setMountedPages] = useState<Set<(typeof pages)[number]["key"]>>(() => new Set(["themes"]));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
   useEffect(() => {
@@ -104,12 +106,15 @@ export default function App() {
     return bridge.onUpdateState(setUpdateState);
   }, []);
   const updateAvailable = updateState && ["available", "downloading", "downloaded"].includes(updateState.status);
+  const showPage = (key: (typeof pages)[number]["key"]) => {
+    setMountedPages((current) => current.has(key) ? current : new Set([...current, key]));
+    setActive(key);
+  };
   const showUpdate = () => {
     sessionStorage.setItem("codress.settings.section", "update");
-    setActive("settings");
+    showPage("settings");
     window.dispatchEvent(new Event("codress:show-update"));
   };
-  const Page = pages.find((p) => p.key === active)!.component;
   return (
     <ToastProvider>
       <div className={`shell ${collapsed ? "collapsed" : ""}`}>
@@ -141,7 +146,7 @@ export default function App() {
               <div
                 key={page.key}
                 className={`nav-item ${active === page.key ? "active" : ""}`}
-                onClick={() => setActive(page.key)}
+                onClick={() => showPage(page.key)}
                 title={collapsed ? page.label : undefined}
               >
                 <Icon />
@@ -161,7 +166,18 @@ export default function App() {
           </div>
         </aside>
         <main className="content">
-          <Page />
+          {pages.map((page) => {
+            if (!mountedPages.has(page.key)) return null;
+            const Page = page.component;
+            const isActive = active === page.key;
+            return (
+              <PageVisibilityProvider active={isActive} key={page.key}>
+                <section className="page-keepalive" hidden={!isActive} aria-hidden={!isActive}>
+                  <Page />
+                </section>
+              </PageVisibilityProvider>
+            );
+          })}
         </main>
       </div>
     </ToastProvider>

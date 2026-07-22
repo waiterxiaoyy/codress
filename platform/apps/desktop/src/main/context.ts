@@ -16,6 +16,7 @@ import { SkinLibrary } from "./core/library";
 import { SettingsStore } from "./core/state";
 import { PetManager } from "./pets";
 import { CreatorWorkspace } from "./creator";
+import { ensurePetAsset } from "./core/pet-assets";
 
 export interface ApplyOutcome {
   ok: boolean;
@@ -225,24 +226,26 @@ export class AppContext extends EventEmitter {
   /** 宠物与主题平行:独立悬浮窗,不依赖任何注入。 */
   async setPet(slug: string | null): Promise<void> {
     if (!slug) {
-      this.pets.hide();
       await this.settings.patch({ activePet: null });
+      this.pets.hide();
       this.emit("status");
       return;
     }
-    const download = await this.api.downloadPet(slug);
-    // 优先用 spritesheet（有完整动画），fallback 到预览图
-    const petImageUrl = download.url || download.manifest.imageUrl;
-    const ext = path.extname(petImageUrl.split("?")[0]).toLowerCase() || ".png";
-    const imagePath = path.join(this.library.petsDir(), `${slug}${ext}`);
-    await this.api.downloadFile(petImageUrl, imagePath);
-    await this.pets.show({
-      slug,
-      name: download.manifest.name,
-      animation: download.manifest.animation ?? "idle",
-      imagePath,
-    });
+    const asset = await ensurePetAsset(this.api, this.library.petsDir(), slug, false);
+    const previousPet = this.settings.get().activePet;
     await this.settings.patch({ activePet: slug });
+    try {
+      await this.pets.show({
+        slug,
+        name: asset.manifest.name,
+        animation: asset.manifest.animation ?? "idle",
+        imagePath: asset.imagePath,
+        assetVersion: asset.hash,
+      });
+    } catch (error) {
+      await this.settings.patch({ activePet: previousPet }).catch(() => undefined);
+      throw error;
+    }
     void this.api.recordEvent({ action: "apply", itemType: "pet", itemSlug: slug, target: "codex" });
     this.emit("status");
   }
@@ -251,6 +254,6 @@ export class AppContext extends EventEmitter {
     for (const daemon of this.daemons.values()) {
       await daemon.stop({ removeSkin: false }).catch(() => undefined);
     }
-    this.pets.hide();
+    this.pets.shutdown();
   }
 }

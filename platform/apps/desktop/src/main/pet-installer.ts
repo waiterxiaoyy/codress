@@ -1,9 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import https from "node:https";
-import http from "node:http";
 import type { ApiClient } from "./core/api";
+import { ensurePetAsset } from "./core/pet-assets";
 
 /**
  * 下载宠物的 spritesheet.webp 并写入 ~/.codex/pets/<slug>/pet.json，
@@ -16,12 +15,12 @@ import type { ApiClient } from "./core/api";
  */
 export async function installPetToCodex(
   api: ApiClient,
+  cacheRoot: string,
   slug: string,
 ): Promise<{ ok: boolean; message?: string }> {
   try {
-    // 调用后端 download API，获取 spritesheet URL 和 manifest
-    const detail = await api.downloadPet(slug);
-    if (!detail.url) {
+    const asset = await ensurePetAsset(api, cacheRoot, slug, true);
+    if (!asset.manifest.spriteSheet) {
       return { ok: false, message: "该宠物没有 spritesheet，无法安装到 Codex" };
     }
 
@@ -29,27 +28,31 @@ export async function installPetToCodex(
     const petDir = path.join(codexHome, "pets", slug);
     fs.mkdirSync(petDir, { recursive: true });
 
-    // 下载 spritesheet.webp
+    // 资源已经在共享缓存中，安装只需复制，不再二次下载。
     const spritesheetPath = path.join(petDir, "spritesheet.webp");
-    await downloadFile(detail.url, spritesheetPath);
+    const temporarySpritesheet = path.join(petDir, `.spritesheet-${process.pid}.tmp`);
+    fs.copyFileSync(asset.imagePath, temporarySpritesheet);
+    fs.rmSync(spritesheetPath, { force: true });
+    fs.renameSync(temporarySpritesheet, spritesheetPath);
 
     // 构建 pet.json (Codex v2 格式)
-    const manifest = detail.manifest?.manifest || {
+    const manifest = asset.manifest.manifest || {
       id: slug,
-      displayName: detail.manifest?.name || slug,
-      description: detail.manifest?.description || "",
+      displayName: asset.manifest.name || slug,
+      description: asset.manifest.description || "",
       spritesheetPath: "spritesheet.webp",
     };
     const petJson = {
       id: (manifest as Record<string, unknown>).id || slug,
-      displayName: (manifest as Record<string, unknown>).displayName || detail.manifest?.name || slug,
-      description: (manifest as Record<string, unknown>).description || detail.manifest?.description || "",
+      displayName: (manifest as Record<string, unknown>).displayName || asset.manifest.name || slug,
+      description: (manifest as Record<string, unknown>).description || asset.manifest.description || "",
       spriteVersionNumber: 2,
       spritesheetPath: "spritesheet.webp",
     };
 
     const petJsonPath = path.join(petDir, "pet.json");
     fs.writeFileSync(petJsonPath, JSON.stringify(petJson, null, 2), "utf-8");
+    fs.writeFileSync(path.join(petDir, ".codress-asset.json"), JSON.stringify({ hash: asset.hash }, null, 2), "utf-8");
 
     // 自动激活：修改 Codex config.toml 中的 selected-avatar-id
     activatePetInCodex(codexHome, slug);
@@ -168,37 +171,4 @@ export function getActivePet(): string | null {
   } catch {
     return null;
   }
-}
-
-function downloadFile(url: string, dest: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    const client = url.startsWith("https") ? https : http;
-    client
-      .get(url, (response) => {
-        if (response.statusCode === 301 || response.statusCode === 302) {
-          const redirectUrl = response.headers.location;
-          if (redirectUrl) {
-            file.close();
-            fs.unlinkSync(dest);
-            downloadFile(redirectUrl, dest).then(resolve).catch(reject);
-            return;
-          }
-        }
-        if (response.statusCode !== 200) {
-          file.close();
-          reject(new Error(`下载失败: HTTP ${response.statusCode}`));
-          return;
-        }
-        response.pipe(file);
-        file.on("finish", () => {
-          file.close();
-          resolve();
-        });
-      })
-      .on("error", (err) => {
-        fs.unlink(dest, () => {});
-        reject(err);
-      });
-  });
 }

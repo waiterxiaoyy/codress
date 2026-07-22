@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { bridge, type PetItem } from "../bridge";
 import { useToast } from "../toast";
-import { CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
+import { ButtonLoadingLabel, CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
+import { usePageVisibility } from "../components/PageVisibility";
 
 /** 更多操作菜单（三竖点） */
 function PetMoreMenu({ slug, name, onUninstall }: { slug: string; name: string; onUninstall: () => void }) {
@@ -54,6 +55,44 @@ const ANIMATIONS = [
 
 type AnimationId = (typeof ANIMATIONS)[number]["id"];
 
+const PET_PAGE_SIZE = 24;
+const PET_CACHE_TTL = 5 * 60 * 1000;
+const PET_CACHE_LIMIT = 20;
+
+interface PetListCacheEntry {
+  items: PetItem[];
+  total: number;
+  page: number;
+  updatedAt: number;
+}
+
+const petListCache = new Map<string, PetListCacheEntry>();
+const knownPetTags = new Set<string>();
+const petViewCache = { category: "", search: "", installFilter: "" };
+
+function petCacheKey(category: string, search: string) {
+  return `${category}:${search.trim().toLowerCase()}`;
+}
+
+function rememberPetCache(key: string, entry: PetListCacheEntry) {
+  petListCache.delete(key);
+  petListCache.set(key, entry);
+  while (petListCache.size > PET_CACHE_LIMIT) {
+    const oldest = petListCache.keys().next().value;
+    if (oldest) petListCache.delete(oldest);
+    else break;
+  }
+}
+
+function collectPetTags(items: PetItem[]) {
+  for (const pet of items) {
+    if (pet.category) knownPetTags.add(pet.category);
+    for (const tag of (pet.tags ?? "").split(",")) {
+      if (tag.trim()) knownPetTags.add(tag.trim());
+    }
+  }
+}
+
 function DesktopPetIcon({ active }: { active: boolean }) {
   return active ? (
     <svg className="btn-inline-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -70,74 +109,112 @@ function DesktopPetIcon({ active }: { active: boolean }) {
 
 /** 精灵图预览组件 - 在 canvas 中播放 spritesheet 动画 */
 function SpritePreview({ pet, animation = "idle", detail = false }: { pet: PetItem; animation?: AnimationId; detail?: boolean }) {
+  const pageActive = usePageVisibility();
+  const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [nearViewport, setNearViewport] = useState(detail);
+  const [documentVisible, setDocumentVisible] = useState(() => document.visibilityState === "visible");
+  const [imageReady, setImageReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof IntersectionObserver === "undefined") {
+      setNearViewport(true);
+      return;
+    }
+    const root = frame.closest(".page-keepalive");
+    const observer = new IntersectionObserver(
+      ([entry]) => setNearViewport(entry.isIntersecting),
+      { root, rootMargin: "240px 0px" },
+    );
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const updateVisibility = () => setDocumentVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
     setFailed(false);
-    if (!pet.spriteSheet) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    setImageReady(false);
+    imageRef.current = null;
+    if (!pet.spriteSheet || !nearViewport) return;
 
-      const img = new Image();
-
-      let frame = 0;
-      let animId = 0;
-      const CELL_W = 192;
-      const CELL_H = 208;
-      const COLS = 8;
-      const SCALE = detail ? 1 : 0.6;
-
-      canvas.width = CELL_W * SCALE;
-      canvas.height = CELL_H * SCALE;
-      canvas.style.imageRendering = "pixelated";
-
-      const fps = 8;
-      let lastTick = 0;
-      const selectedAnimation = ANIMATIONS.find((item) => item.id === animation) ?? ANIMATIONS[0];
-      const { row, frames } = selectedAnimation;
-
-      const tick = (now: number) => {
-        if (now - lastTick >= 1000 / fps) {
-          lastTick = now;
-          frame = (frame + 1) % frames;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(
-            img,
-            frame * CELL_W, row * CELL_H, CELL_W, CELL_H,
-            0, 0, CELL_W * SCALE, CELL_H * SCALE,
-          );
-        }
-        animId = requestAnimationFrame(tick);
-      };
-
-      img.onload = () => {
-        setLoading(false);
-        animId = requestAnimationFrame(tick);
-      };
-      img.onerror = () => {
-        setLoading(false);
-        setFailed(true);
-      };
-      // 事件处理器先绑定，再赋值，避免内存缓存命中时错过 load 事件。
-      img.src = pet.spriteSheet;
+    const img = new Image();
+    img.onload = () => {
+      imageRef.current = img;
+      setLoading(false);
+      setImageReady(true);
+    };
+    img.onerror = () => {
+      setLoading(false);
+      setFailed(true);
+    };
+    // canvas 图片不支持原生 lazy loading，仅在进入视口附近后设置 URL。
+    img.src = pet.spriteSheet;
 
     return () => {
-      cancelAnimationFrame(animId);
       img.onload = null;
       img.onerror = null;
+      if (imageRef.current === img) imageRef.current = null;
     };
-  }, [animation, detail, pet.spriteSheet]);
+  }, [nearViewport, pet.spriteSheet]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const img = imageRef.current;
+    if (!canvas || !img || !imageReady) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const CELL_W = 192;
+    const CELL_H = 208;
+    const SCALE = detail ? 1 : 0.6;
+    const selectedAnimation = ANIMATIONS.find((item) => item.id === animation) ?? ANIMATIONS[0];
+    const { row, frames } = selectedAnimation;
+    let frame = 0;
+    let animationFrame = 0;
+    let lastTick = 0;
+
+    canvas.width = CELL_W * SCALE;
+    canvas.height = CELL_H * SCALE;
+    canvas.style.imageRendering = "pixelated";
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+        img,
+        frame * CELL_W, row * CELL_H, CELL_W, CELL_H,
+        0, 0, CELL_W * SCALE, CELL_H * SCALE,
+      );
+    };
+    draw();
+
+    if (!pageActive || !nearViewport || !documentVisible) return;
+    const tick = (now: number) => {
+      if (now - lastTick >= 1000 / 8) {
+        lastTick = now;
+        frame = (frame + 1) % frames;
+        draw();
+      }
+      animationFrame = requestAnimationFrame(tick);
+    };
+    animationFrame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [animation, detail, documentVisible, imageReady, nearViewport, pageActive]);
 
   if (!pet.spriteSheet) {
     // Legacy 单图模式
     return (
-      <div className={`pet-preview-frame ${detail ? "detail" : ""}`}>
+      <div ref={frameRef} className={`pet-preview-frame ${detail ? "detail" : ""}`}>
         {loading && <PetPreviewLoading />}
         <img
           className={`cover pet pet-preview-media ${loading ? "loading" : "loaded"}`}
@@ -153,7 +230,7 @@ function SpritePreview({ pet, animation = "idle", detail = false }: { pet: PetIt
   }
 
   return (
-    <div className={`pet-preview-frame ${detail ? "detail" : ""}`}>
+    <div ref={frameRef} className={`pet-preview-frame ${detail ? "detail" : ""}`}>
       {loading && <PetPreviewLoading />}
       <canvas
         ref={canvasRef}
@@ -175,76 +252,159 @@ function PetPreviewLoading() {
 
 export default function Pets() {
   const toast = useToast();
-  const [pets, setPets] = useState<PetItem[]>([]);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const requestSequence = useRef(0);
+  const initialCache = petListCache.get(petCacheKey(petViewCache.category, petViewCache.search));
+  const [pets, setPets] = useState<PetItem[]>(initialCache?.items ?? []);
+  const [total, setTotal] = useState(initialCache?.total ?? 0);
+  const [page, setPage] = useState(initialCache?.page ?? 0);
   const [activePet, setActivePet] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [installFilter, setInstallFilter] = useState("");
+  const [search, setSearch] = useState(petViewCache.search);
+  const [debouncedSearch, setDebouncedSearch] = useState(petViewCache.search);
+  const [category, setCategory] = useState(petViewCache.category);
+  const [installFilter, setInstallFilter] = useState(petViewCache.installFilter);
+  const [tagVersion, setTagVersion] = useState(0);
   const [installing, setInstalling] = useState<string | null>(null);
   const [installedSlugs, setInstalledSlugs] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialCache);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [previewAnimation, setPreviewAnimation] = useState<AnimationId>("idle");
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  const queryKey = petCacheKey(category, debouncedSearch);
+  const activeQueryKey = useRef(queryKey);
+  activeQueryKey.current = queryKey;
+  const hasMore = pets.length < total;
+
+  const refreshLocalState = useCallback(async () => {
     try {
-      const [list, settings, installed] = await Promise.all([
-        bridge.storePets({ target: "codex" }),
-        bridge.getSettings(),
-        bridge.getInstalledPets(),
-      ]);
-      setPets(list.items);
+      const [settings, installed] = await Promise.all([bridge.getSettings(), bridge.getInstalledPets()]);
       setActivePet(settings.activePet);
       setInstalledSlugs(new Set(installed));
     } catch (error) {
-      toast(`宠物列表加载失败:${(error as Error).message}`, true);
-    } finally {
-      setLoading(false);
+      toast(`宠物状态读取失败:${(error as Error).message}`, true);
     }
   }, [toast]);
 
+  const loadFirstPage = useCallback(async (force = false) => {
+    const sequence = ++requestSequence.current;
+    const cached = petListCache.get(queryKey);
+    setRefreshing(force);
+    setLoadingMore(false);
+    if (cached) {
+      setPets(cached.items);
+      setTotal(cached.total);
+      setPage(cached.page);
+      setLoading(false);
+      if (!force && Date.now() - cached.updatedAt < PET_CACHE_TTL) return;
+    } else {
+      setPets([]);
+      setTotal(0);
+      setPage(0);
+      setLoading(true);
+    }
+    try {
+      const result = await bridge.storePets({
+        target: "codex",
+        category: category || undefined,
+        q: debouncedSearch.trim() || undefined,
+        page: 1,
+        pageSize: PET_PAGE_SIZE,
+      });
+      if (sequence !== requestSequence.current) return;
+      const entry = { items: result.items, total: result.total, page: 1, updatedAt: Date.now() };
+      collectPetTags(entry.items);
+      setTagVersion((value) => value + 1);
+      rememberPetCache(queryKey, entry);
+      setPets(entry.items);
+      setTotal(entry.total);
+      setPage(1);
+    } catch (error) {
+      if (!cached || force) toast(`宠物列表加载失败:${(error as Error).message}`, true);
+    } finally {
+      if (sequence === requestSequence.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [category, debouncedSearch, queryKey, toast]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const result = await bridge.storePets({
+        target: "codex",
+        category: category || undefined,
+        q: debouncedSearch.trim() || undefined,
+        page: nextPage,
+        pageSize: PET_PAGE_SIZE,
+      });
+      if (activeQueryKey.current !== queryKey) return;
+      const known = new Set(pets.map((item) => item.slug));
+      const merged = [...pets, ...result.items.filter((item) => !known.has(item.slug))];
+      collectPetTags(merged);
+      setTagVersion((value) => value + 1);
+      rememberPetCache(queryKey, { items: merged, total: result.total, page: nextPage, updatedAt: Date.now() });
+      setPets(merged);
+      setTotal(result.total);
+      setPage(nextPage);
+    } catch (error) {
+      toast(`更多宠物加载失败:${(error as Error).message}`, true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [category, debouncedSearch, hasMore, loading, loadingMore, page, pets, queryKey, toast]);
+
   useEffect(() => {
-    refresh();
-    return bridge.onStatusChanged(refresh);
-  }, [refresh]);
+    const timer = window.setTimeout(() => setDebouncedSearch(search), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    petViewCache.category = category;
+    petViewCache.search = search;
+    petViewCache.installFilter = installFilter;
+  }, [category, installFilter, search]);
+
+  useEffect(() => {
+    loadFirstPage();
+  }, [loadFirstPage]);
+
+  useEffect(() => {
+    refreshLocalState();
+    // 应用状态变化只同步本机状态，不能连带重新请求远程商店列表。
+    return bridge.onStatusChanged(refreshLocalState);
+  }, [refreshLocalState]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scrollRoot = rootRef.current?.closest(".page-keepalive");
+    if (!sentinel || !scrollRoot || !hasMore || loading || loadingMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      { root: scrollRoot, rootMargin: "320px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, loading, loadingMore]);
 
   // 获取所有 tags 去重做分类
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    pets.forEach((p) => {
-      if (p.tags) p.tags.split(",").forEach((t) => set.add(t.trim()));
-      if (p.category) set.add(p.category);
-    });
-    return Array.from(set).sort();
-  }, [pets]);
+  const allTags = useMemo(() => Array.from(knownPetTags).sort(), [tagVersion]);
 
   const filteredPets = useMemo(() => {
     let result = pets;
-    const q = search.trim().toLowerCase();
-    if (q) {
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.description ?? "").toLowerCase().includes(q) ||
-          (p.tags ?? "").toLowerCase().includes(q),
-      );
-    }
-    if (category) {
-      result = result.filter(
-        (p) =>
-          p.category === category ||
-          (p.tags ?? "").split(",").map((t) => t.trim()).includes(category),
-      );
-    }
     if (installFilter === "installed") {
       result = result.filter((pet) => installedSlugs.has(pet.slug));
     } else if (installFilter === "uninstalled") {
       result = result.filter((pet) => !installedSlugs.has(pet.slug));
     }
     return result;
-  }, [pets, search, category, installFilter, installedSlugs]);
+  }, [pets, installFilter, installedSlugs]);
 
   const selectedPet = useMemo(
     () => pets.find((pet) => pet.slug === selectedSlug) ?? null,
@@ -286,11 +446,22 @@ export default function Pets() {
     }
   };
 
-  const toggleDesktopPet = async (pet: PetItem) => {
-    if (activePet === pet.slug) {
+  const hideDesktopPet = async (slug: string) => {
+    setBusy(slug);
+    try {
       await bridge.setPet(null);
       setActivePet(null);
       toast("宠物已收起");
+    } catch (error) {
+      toast((error as Error).message, true);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const toggleDesktopPet = async (pet: PetItem) => {
+    if (activePet === pet.slug) {
+      await hideDesktopPet(pet.slug);
       return;
     }
     await enableDesktopPet(pet.slug);
@@ -356,16 +527,19 @@ export default function Pets() {
                 {installedSlugs.has(selectedPet.slug)
                   ? "✓ 已安装到 Codex"
                   : installing === selectedPet.slug
-                    ? "安装中…"
+                    ? <ButtonLoadingLabel>安装中…</ButtonLoadingLabel>
                     : "安装到 Codex"}
               </button>
               <button
                 className={`btn ${activePet === selectedPet.slug ? "" : "ghost"}`}
                 onClick={() => toggleDesktopPet(selectedPet)}
-                disabled={busy === selectedPet.slug}
+                disabled={busy !== null}
               >
-                <DesktopPetIcon active={activePet === selectedPet.slug} />
-                {activePet === selectedPet.slug ? "收起桌面宠物" : "上桌"}
+                {busy === selectedPet.slug ? (
+                  <ButtonLoadingLabel>{activePet === selectedPet.slug ? "收起中…" : "上桌中…"}</ButtonLoadingLabel>
+                ) : (
+                  <><DesktopPetIcon active={activePet === selectedPet.slug} />{activePet === selectedPet.slug ? "收起桌面宠物" : "上桌"}</>
+                )}
               </button>
               {installedSlugs.has(selectedPet.slug) && (
                 <PetMoreMenu
@@ -400,16 +574,17 @@ export default function Pets() {
   }
 
   return (
-    <div>
+    <div ref={rootRef}>
       {/* 顶部 */}
       <div className="page-header">
         <h1 className="page-title">宠物商店</h1>
         {activePet && (
           <button
             className="btn ghost"
-            onClick={() => bridge.setPet(null).then(() => { toast("宠物已收起"); setActivePet(null); })}
+            disabled={busy !== null}
+            onClick={() => hideDesktopPet(activePet)}
           >
-            收起桌面宠物
+            {busy === activePet ? <ButtonLoadingLabel>收起中…</ButtonLoadingLabel> : "收起桌面宠物"}
           </button>
         )}
       </div>
@@ -448,7 +623,10 @@ export default function Pets() {
               { value: "installed", label: "已安装" },
             ]}
           />
-          <RefreshButton loading={loading} onClick={refresh} />
+          <RefreshButton
+            loading={loading || refreshing}
+            onClick={() => Promise.all([loadFirstPage(true), refreshLocalState()]).then(() => undefined)}
+          />
         </div>
       </div>
 
@@ -500,13 +678,13 @@ export default function Pets() {
                     <button
                       className={`btn ${installedSlugs.has(pet.slug) ? "ghost installed-btn" : "primary"}`}
                       style={{ flex: 1 }}
-                      disabled={installing === pet.slug || installedSlugs.has(pet.slug)}
+                      disabled={installing !== null || installedSlugs.has(pet.slug)}
                       onClick={() => installToCodex(pet)}
                     >
                       {installedSlugs.has(pet.slug)
                         ? "✓ 已安装"
                         : installing === pet.slug
-                          ? "安装中…"
+                          ? <ButtonLoadingLabel>安装中…</ButtonLoadingLabel>
                           : "安装到 Codex"}
                     </button>
                   )}
@@ -514,11 +692,14 @@ export default function Pets() {
                   <button
                     className={`btn ${activePet === pet.slug ? "" : "ghost"}`}
                     onClick={() => toggleDesktopPet(pet)}
-                    disabled={busy === pet.slug}
+                    disabled={busy !== null}
                     title={activePet === pet.slug ? "从桌面收起" : "悬浮在桌面上"}
                   >
-                    <DesktopPetIcon active={activePet === pet.slug} />
-                    {activePet === pet.slug ? "收起" : "上桌"}
+                    {busy === pet.slug ? (
+                      <ButtonLoadingLabel>{activePet === pet.slug ? "收起中…" : "上桌中…"}</ButtonLoadingLabel>
+                    ) : (
+                      <><DesktopPetIcon active={activePet === pet.slug} />{activePet === pet.slug ? "收起" : "上桌"}</>
+                    )}
                   </button>
                   {/* 更多（卸载等） */}
                   {installedSlugs.has(pet.slug) && (
@@ -528,6 +709,11 @@ export default function Pets() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {!loading && hasMore && (
+        <div className={`store-load-more ${loadingMore ? "" : "silent"}`} ref={sentinelRef}>
+          {loadingMore && <span><i className="store-load-spinner" />正在加载更多宠物…</span>}
         </div>
       )}
     </div>

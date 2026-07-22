@@ -8,6 +8,14 @@ export default defineConfig({
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, "src/preload/index.ts"),
+          pet: resolve(__dirname, "src/preload/pet.ts"),
+        },
+      },
+    },
   },
   renderer: {
     plugins: [react()],

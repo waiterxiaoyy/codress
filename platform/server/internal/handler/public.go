@@ -195,7 +195,18 @@ func (h *Public) ListPets(c *gin.Context) {
 		query = query.Where("targets LIKE ?", `%"`+target+`"%`)
 	}
 	if category := c.Query("category"); category != "" {
-		query = query.Where("category = ?", category)
+		query = query.Where(
+			"category = ? OR tags = ? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?",
+			category,
+			category,
+			category+",%",
+			"%,"+category,
+			"%,"+category+",%",
+		)
+	}
+	if q := c.Query("q"); q != "" {
+		like := "%" + q + "%"
+		query = query.Where("name LIKE ? OR description LIKE ? OR tags LIKE ? OR author LIKE ?", like, like, like, like)
 	}
 	var total int64
 	query.Count(&total)

@@ -228,7 +228,7 @@ func TestFullFlow(t *testing.T) {
 
 	// 宠物:创建 → 传图 → 发布 → 公开列表(codex)
 	code, body = adminC.postJSON("/api/admin/pets", map[string]any{
-		"slug": "pixel-cat", "name": "像素猫", "targets": []string{"codex"}, "animation": "bounce",
+		"slug": "pixel-cat", "name": "像素猫", "category": "pixel", "tags": "cat,animated", "targets": []string{"codex"}, "animation": "bounce",
 	})
 	mustStatus(t, code, 200, "create pet", body)
 	petID := fmt.Sprintf("%v", body["id"])
@@ -240,6 +240,16 @@ func TestFullFlow(t *testing.T) {
 	mustStatus(t, code, 200, "public pets", body)
 	if int(body["total"].(float64)) != 1 {
 		t.Fatalf("expected 1 pet, got %v", body["total"])
+	}
+	code, body = anon.getJSON("/api/v1/pets?target=codex&q=cat&page=1&pageSize=1")
+	mustStatus(t, code, 200, "search pets", body)
+	if int(body["total"].(float64)) != 1 || len(body["items"].([]any)) != 1 {
+		t.Fatalf("expected one searched pet, got %v", body)
+	}
+	code, body = anon.getJSON("/api/v1/pets?target=codex&category=animated")
+	mustStatus(t, code, 200, "filter pet tags", body)
+	if int(body["total"].(float64)) != 1 {
+		t.Fatalf("expected one tagged pet, got %v", body)
 	}
 	code, body = anon.postJSON("/api/v1/pets/pixel-cat/download", nil)
 	mustStatus(t, code, 200, "pet download", body)

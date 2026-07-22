@@ -36,6 +36,8 @@ export interface PetItem {
   tags?: string;
   author?: string;
   downloads?: number;
+  hash?: string;
+  sizeBytes?: number;
 }
 
 export interface PetManifest {
@@ -235,8 +237,10 @@ const fallbackBridge: CodressBridge = {
   storePets: (params: Record<string, unknown>) => {
     const search = new URLSearchParams();
     if (params.target) search.set("target", String(params.target));
+    if (params.category) search.set("category", String(params.category));
+    if (params.q) search.set("q", String(params.q));
     search.set("page", String(params.page ?? 1));
-    search.set("pageSize", "48");
+    search.set("pageSize", String(params.pageSize ?? 24));
     return apiFetch(`/api/v1/pets?${search}`);
   },
   storeCategories: (type: string) => apiFetch(`/api/v1/categories?type=${type}`),

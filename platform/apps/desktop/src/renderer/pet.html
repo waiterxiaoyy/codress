@@ -10,8 +10,12 @@
         height: 100%;
         background: transparent;
         overflow: hidden;
-        -webkit-app-region: drag;
+        -webkit-app-region: no-drag;
         user-select: none;
+        cursor: grab;
+      }
+      body.dragging {
+        cursor: grabbing;
       }
       .stage {
         height: 100%;
@@ -83,6 +87,45 @@
       const imageSrc = params.get("image") || "";
       const petName = params.get("name") || "";
       const animation = params.get("animation") || "idle";
+
+      let pointerStart = null;
+      let dragged = false;
+      let dragFrame = 0;
+      let suppressOpenUntil = 0;
+      const petBridge = window.codressPet;
+
+      document.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        pointerStart = { x: event.screenX, y: event.screenY };
+        dragged = false;
+        document.body.classList.add("dragging");
+        document.body.setPointerCapture?.(event.pointerId);
+        petBridge?.startDrag();
+        event.preventDefault();
+      });
+      document.addEventListener("pointermove", (event) => {
+        if (!pointerStart || !(event.buttons & 1)) return;
+        if (Math.hypot(event.screenX - pointerStart.x, event.screenY - pointerStart.y) >= 4) dragged = true;
+        if (dragFrame) return;
+        dragFrame = requestAnimationFrame(() => {
+          dragFrame = 0;
+          petBridge?.moveDrag();
+        });
+      });
+      const finishDrag = () => {
+        if (!pointerStart) return;
+        if (dragged) suppressOpenUntil = performance.now() + 500;
+        pointerStart = null;
+        document.body.classList.remove("dragging");
+        petBridge?.endDrag();
+      };
+      document.addEventListener("pointerup", finishDrag);
+      document.addEventListener("pointercancel", finishDrag);
+      document.addEventListener("dblclick", (event) => {
+        if (event.button === 0 && !dragged && performance.now() >= suppressOpenUntil) {
+          petBridge?.openMainWindow();
+        }
+      });
 
       document.getElementById("name").textContent = petName;
 

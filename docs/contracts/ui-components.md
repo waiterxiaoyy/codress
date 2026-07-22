@@ -56,6 +56,12 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 - Shared styles: `platform/apps/desktop/src/renderer/src/global.css`
 - Store wrapper: `platform/apps/desktop/src/renderer/src/components/StoreControls.tsx`
 
+## Async action feedback
+
+- Buttons that start installation, activation, removal or another visible asynchronous mutation must disable conflicting actions immediately and show `ButtonLoadingLabel` until completion.
+- Loading copy describes the active operation, for example `安装中…`, `上桌中…` or `收起中…`; changing only the disabled state is not sufficient feedback.
+- Infinite-scroll sentinels stay visually silent while idle. Show a loading row only while the next page request is actually in flight.
+
 ## Color themes
 
 - Renderer surfaces support `auto`, `light` and `dark`; `auto` reacts to `prefers-color-scheme` changes without restart.
@@ -64,3 +70,17 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 - Status colors may remain semantic red, green or accent colors, but their background and contrast must be checked in both themes.
 - New components must be checked in forced light, forced dark and automatic modes.
 - Do not infer a remote content image's theme or recolor user/store artwork globally.
+
+## Page lifetime and animated media
+
+- Sidebar pages mount lazily on first visit and remain mounted when the user changes sections; filters, detail state and scroll containers must survive navigation.
+- Each kept-alive page owns its scroll container. Code that observes scrolling or intersections must use `.page-keepalive` as its root rather than the shared `.content` shell.
+- Hidden pages must pause animation, polling and other continuous visual work. Keeping component state alive does not authorize background rendering.
+- Realtime application-status events may refresh local status, but must not implicitly refetch an unrelated remote store list.
+- Animated store previews load lazily and run only while their card is near the visible viewport and the document is visible.
+
+## Desktop pet interaction
+
+- A single primary-button gesture is reserved for dragging the desktop pet; a click without movement does not open Codress.
+- Double-clicking the pet opens or focuses the Codress main window. A gesture that crossed the drag threshold must not also open the app.
+- “上桌中…” completes with the pet window's visible state: settings and asset preparation happen before the final show operation, so the UI must not remain loading after the pet is already visible.
