@@ -9,6 +9,11 @@ import { DesktopUpdater } from "./updater";
 // 确保 Codress 自身不受 WorkBuddy 调试端口环境变量影响
 delete process.env.WORKBUDDY_REMOTE_DEBUGGING_PORT;
 
+// Keep development state and the single-instance lock separate from an installed build.
+if (!app.isPackaged) {
+  app.setPath("userData", `${app.getPath("userData")}-dev`);
+}
+
 let mainWindow: BrowserWindow | null = null;
 let ctx: AppContext | null = null;
 
