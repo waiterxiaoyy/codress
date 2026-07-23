@@ -8,6 +8,22 @@ export interface InstalledSkin {
   target: string;
   dir: string;
   imageFile: string;
+  source: "store" | "local";
+  createdAt?: string;
+  appearance?: string;
+  customization?: Record<string, string | number>;
+}
+
+export interface LocalSkinOptions {
+  name: string;
+  appearance: "auto" | "light" | "dark";
+  colors: {
+    background: string;
+    panel: string;
+    text: string;
+    accent: string;
+  };
+  customization: Record<string, string | number>;
 }
 
 // WorkBuddy 完整默认配色（对齐 skill 的 stellar-office 默认主题）
@@ -70,11 +86,24 @@ export class SkinLibrary {
       try {
         const metaFile = target === "workbuddy" ? "catalog.json" : "theme.json";
         const raw = JSON.parse(await fs.readFile(path.join(themeDir, metaFile), "utf8"));
-        const name =
-          target === "workbuddy" ? raw.themes?.[0]?.name ?? slug : raw.name ?? slug;
-        const imageFile =
-          target === "workbuddy" ? raw.themes?.[0]?.image ?? "" : raw.image ?? "";
-        installed.push({ slug, name, target, dir: themeDir, imageFile });
+        const metadata = target === "workbuddy" ? raw.themes?.[0] ?? {} : raw;
+        const inferredTimestamp = slug.startsWith("local-")
+          ? Number.parseInt(slug.slice(6), 36)
+          : Number.NaN;
+        const inferredCreatedAt = Number.isFinite(inferredTimestamp)
+          ? new Date(inferredTimestamp).toISOString()
+          : undefined;
+        installed.push({
+          slug,
+          name: metadata.name ?? slug,
+          target,
+          dir: themeDir,
+          imageFile: metadata.image ?? "",
+          source: metadata.source === "local" || slug.startsWith("local-") ? "local" : "store",
+          createdAt: metadata.createdAt ?? inferredCreatedAt,
+          appearance: metadata.appearance,
+          customization: metadata.customization,
+        });
       } catch {
         /* 跳过损坏目录 */
       }
@@ -112,7 +141,11 @@ export class SkinLibrary {
 
     if (manifest.colors && Object.keys(manifest.colors).length > 0) {
       theme.colors = manifest.colors;
+      theme.explicitColorKeys = Object.keys(manifest.colors);
     }
+    if (manifest.source) theme.source = manifest.source;
+    if (manifest.createdAt) theme.createdAt = manifest.createdAt;
+    if (manifest.customization) theme.customization = manifest.customization;
 
     return theme;
   }
@@ -141,6 +174,9 @@ export class SkinLibrary {
           quote: manifest.quote || "MAKE WORK FEEL LIGHTER",
           image: imageFile,
           colors,
+          ...(manifest.source ? { source: manifest.source } : {}),
+          ...(manifest.createdAt ? { createdAt: manifest.createdAt } : {}),
+          ...(manifest.customization ? { customization: manifest.customization } : {}),
           // art 字段透传（WorkBuddy inject 可选用）
           ...(Object.keys(art).length > 0 ? {
             art: {
@@ -176,7 +212,73 @@ export class SkinLibrary {
         JSON.stringify(this.codexTheme(manifest, imageFile), null, 2)
       );
     }
-    return { slug: manifest.slug, name: manifest.name, target, dir, imageFile };
+    return {
+      slug: manifest.slug,
+      name: manifest.name,
+      target,
+      dir,
+      imageFile,
+      source: manifest.source ?? "store",
+      createdAt: manifest.createdAt,
+      appearance: manifest.appearance,
+      customization: manifest.customization,
+    };
+  }
+
+  async importImageData(
+    target: string,
+    imageData: Buffer,
+    options: LocalSkinOptions,
+  ): Promise<InstalledSkin> {
+    const slug = `local-${Date.now().toString(36)}`;
+    const name = options.name.trim() || "我的皮肤";
+    const manifest: SkinManifest = {
+      slug,
+      name,
+      targets: [target],
+      appearance: options.appearance,
+      backgroundUrl: "",
+      source: "local",
+      createdAt: new Date().toISOString(),
+      customization: options.customization,
+      colors: {
+        background: options.colors.background,
+        panel: options.colors.panel,
+        panelAlt: options.colors.panel,
+        text: options.colors.text,
+        muted: options.colors.text,
+        accent: options.colors.accent,
+        accentAlt: options.colors.accent,
+        secondary: options.colors.accent,
+        highlight: options.colors.accent,
+      },
+    };
+    const dir = this.themeDirFor(target, slug);
+    const imageFile = "background.jpg";
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, imageFile), imageData);
+    if (target === "workbuddy") {
+      await fs.writeFile(
+        path.join(dir, "catalog.json"),
+        JSON.stringify(this.workbuddyCatalog(manifest, imageFile), null, 2),
+      );
+    } else {
+      await fs.writeFile(
+        path.join(dir, "theme.json"),
+        JSON.stringify(this.codexTheme(manifest, imageFile), null, 2),
+      );
+    }
+    return {
+      slug,
+      name,
+      target,
+      dir,
+      imageFile,
+      source: "local",
+      createdAt: manifest.createdAt,
+      appearance: manifest.appearance,
+      customization: manifest.customization,
+    };
   }
 
   /** 任意本地图片 → 一套皮肤(自适应配色交给注入运行时)。 */

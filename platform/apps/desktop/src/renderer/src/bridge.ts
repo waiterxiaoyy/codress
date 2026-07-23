@@ -121,8 +121,45 @@ export interface ApplyOutcome {
   verifyPass?: boolean;
 }
 
+export interface LocalSkinImage {
+  dataUrl: string;
+  name: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+}
+
+export interface LocalSkinInput {
+  name: string;
+  imageDataUrl: string;
+  appearance: "auto" | "light" | "dark";
+  colors: {
+    background: string;
+    panel: string;
+    text: string;
+    accent: string;
+  };
+  customization: Record<string, string | number>;
+}
+
+export interface LocalSkinOutcome extends ApplyOutcome {
+  slug: string;
+  name: string;
+}
+
+export interface LibrarySkinItem {
+  slug: string;
+  name: string;
+  target: string;
+  source: "store" | "local";
+  createdAt?: string;
+  appearance?: string;
+  customization?: Record<string, string | number>;
+}
+
 export interface CodressBridge {
   onStatusChanged(listener: () => void): () => void;
+  onLibraryChanged(listener: () => void): () => void;
   appStatus(): Promise<AdapterStatus[]>;
   clientInfo(): Promise<{ version: string; platform: "mac" | "win" | "other" }>;
   latestClient(): Promise<ClientRelease | null>;
@@ -161,12 +198,14 @@ export interface CodressBridge {
   storeCategories(type: string): Promise<{ items: { slug: string; name: string }[] }>;
   favorites(): Promise<{ items: { itemType: string; itemSlug: string }[] }>;
   toggleFavorite(itemType: string, itemSlug: string): Promise<{ favorited: boolean }>;
-  libraryList(target: string): Promise<{ slug: string; name: string; target: string }[]>;
+  libraryList(target: string): Promise<LibrarySkinItem[]>;
   applySkin(target: string, slug: string, allowRestart?: boolean): Promise<ApplyOutcome>;
   pauseSkin(target: string): Promise<void>;
   resumeSkin(target: string): Promise<void>;
   restoreSkin(target: string): Promise<void>;
   importImage(target: string): Promise<ApplyOutcome>;
+  pickSkinImage(): Promise<LocalSkinImage | null>;
+  createLocalSkin(target: string, input: LocalSkinInput): Promise<LocalSkinOutcome>;
   setPet(slug: string | null): Promise<void>;
   installPetToCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
   activatePetInCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
@@ -187,6 +226,7 @@ async function apiFetch<T>(path: string): Promise<T> {
 
 const fallbackBridge: CodressBridge = {
   onStatusChanged: noop,
+  onLibraryChanged: noop,
   appStatus: () => Promise.resolve([]),
   clientInfo: () => Promise.resolve({ version: "Web", platform: "other" }),
   latestClient: () => Promise.resolve(null),
@@ -252,6 +292,8 @@ const fallbackBridge: CodressBridge = {
   resumeSkin: noopAsync,
   restoreSkin: noopAsync,
   importImage: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  pickSkinImage: () => Promise.resolve(null),
+  createLocalSkin: () => Promise.reject(new Error("请在安装后的桌面客户端中创建皮肤")),
   setPet: noopAsync,
   installPetToCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
   activatePetInCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),

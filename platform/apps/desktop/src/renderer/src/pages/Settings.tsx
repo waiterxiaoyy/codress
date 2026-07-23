@@ -36,7 +36,6 @@ export default function Settings() {
   const toast = useToast();
   const [settings, setSettings] = useState<SettingsData | null>(null);
   const [statuses, setStatuses] = useState<AdapterStatus[]>([]);
-  const [apiBase, setApiBase] = useState("");
   const [pathDrafts, setPathDrafts] = useState<Record<string, string>>({});
   const [savingPath, setSavingPath] = useState<string | null>(null);
   const [clientInfo, setClientInfo] = useState<{ version: string; platform: "mac" | "win" | "other" } | null>(null);
@@ -48,7 +47,6 @@ export default function Settings() {
   const refresh = useCallback(async () => {
     const [nextSettings, nextStatuses] = await Promise.all([bridge.getSettings(), bridge.appStatus()]);
     setSettings(nextSettings);
-    setApiBase(nextSettings.apiBase);
     setStatuses(nextStatuses);
     setPathDrafts((current) => {
       const next = { ...current };
@@ -179,21 +177,6 @@ export default function Settings() {
           ))}
         </div>
       </section>
-
-      <div className="field settings-api-field">
-        <label>服务端地址（皮肤商店 API）</label>
-        <div className="row">
-          <input value={apiBase} onChange={(event) => setApiBase(event.target.value)} />
-          <button
-            className="btn"
-            onClick={() =>
-              bridge.patchSettings({ apiBase: apiBase.replace(/\/$/, "") }).then(() => toast("已保存"))
-            }
-          >
-            保存
-          </button>
-        </div>
-      </div>
 
       <hr className="divider" />
       <div className="settings-section-heading">

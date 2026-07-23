@@ -30,6 +30,9 @@ export interface SkinManifest {
   previewLightUrl?: string;
   previewDarkUrl?: string;
   downloads?: number;
+  source?: "store" | "local";
+  createdAt?: string;
+  customization?: Record<string, string | number>;
 }
 
 export interface PetManifest {

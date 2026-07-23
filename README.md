@@ -1,331 +1,210 @@
 <p align="center">
-  <img src="https://codress.dev/logo.png" alt="Codress" width="120" />
-</p>
-
-<h1 align="center">Codress</h1>
-
-<p align="center">
-  <b>One-click skin switching for AI code editors. No hacks, no patches, fully reversible.</b>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./images/codress-banner-dark.png">
+    <img src="./images/codress-banner.png" alt="Codress" width="380">
+  </picture>
 </p>
 
 <p align="center">
-  <a href="https://codress.dev">Official Website</a> ·
+  <strong>Refresh your AI workspace. Keep inspiration close.</strong><br>
+  One-click themes, desktop pets, and local asset management for Codex and WorkBuddy.
+</p>
+
+<p align="center">
+  <strong>English</strong> ·
+  <a href="./README_zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
+  <a href="https://codress.dev">Website</a> ·
+  <a href="https://github.com/waiterxiaoyy/codress/releases">Download</a> ·
   <a href="#quick-start">Quick Start</a> ·
-  <a href="#features">Features</a> ·
-  <a href="#faq">FAQ</a>
+  <a href="#local-development">Development</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-blue" alt="platform" />
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
-  <img src="https://img.shields.io/badge/electron-33-purple" alt="electron" />
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-111111" alt="macOS and Windows">
+  <img src="https://img.shields.io/badge/Electron-33-111111" alt="Electron 33">
+  <img src="https://img.shields.io/badge/Node-%E2%89%A520-111111" alt="Node 20 or newer">
+  <img src="https://img.shields.io/badge/Go-1.24+-111111" alt="Go 1.24 or newer">
 </p>
 
 ---
-
-**English** | [中文](#中文文档)
 
 ## What is Codress?
 
-Codress is a desktop app that lets you **instantly reskin** Electron-based AI code editors — including **Codex**, **WorkBuddy**, and more coming soon — without modifying any official files.
+Codress is a desktop appearance tool for Electron-based AI workspaces. It applies themes through a local Chrome DevTools Protocol (CDP) connection without replacing application files or modifying official installation packages. You can restore the original appearance at any time.
 
-It works by injecting a custom CSS theme through Chrome DevTools Protocol (CDP), so everything is:
-
-- ✅ **Non-invasive** — no files are patched or replaced
-- ✅ **Reversible** — restore to default with one click
-- ✅ **Safe** — runs entirely locally, no data leaves your machine
+Browsing the store and downloading assets requires a network connection. Applying, switching, restoring, and managing downloaded assets happens on the user's computer.
 
 ## Features
 
-| Module | Description |
-|--------|-------------|
-| **Theme Store** | Browse & apply thousands of community themes with live preview |
-| **One-click Apply** | Select a skin → click "Apply" → done. The editor restyles instantly |
-| **Multi-app Support** | Switch between Codex, WorkBuddy (and more) from a single panel |
-| **Desktop Pets** | Animated companions that live on your desktop while you code |
-| **Auto-restart** | If CDP isn't enabled, Codress can restart the target app for you |
-| **Favorites & Search** | Star your favorites, filter by category, search by name |
-| **Local Import** | Use any local image as a background skin |
-| **Admin Panel** | Manage skins, AI-generate metadata, control publish status |
+| Module | Capability |
+| --- | --- |
+| Theme Store | Browse, search, and filter themes for Codex and WorkBuddy |
+| One-click Apply | Detect the target app and enable its local theming channel when needed |
+| Local Theme Creator | Preview and adjust composition, image treatment, appearance, and a shared background/panel/text/accent palette before saving |
+| Restore Default | Remove injected styles and return to the original appearance |
+| Desktop Pets | Browse, install, and enable Codex v2 pets or run them as floating desktop companions |
+| My Library | Manage cached themes, installed pets, and running desktop pets |
+| Appearance | Light, dark, and system modes with automatic system-theme updates |
+| Auto Update | Check GitHub Releases, download updates, and restart to install |
+| Admin Console | Manage themes, pets, categories, adapters, client versions, and operational data |
 
-## Supported Editors
+The local theme creator works without an account and keeps artwork on the user's computer. Account sync, remote favorites, community publishing, and the account-backed creator workbench remain hidden until those workflows are ready.
 
-| Editor | Status | Platform |
-|--------|--------|----------|
-| Codex (by OpenAI) | ✅ Supported | macOS / Windows |
-| WorkBuddy | ✅ Supported | macOS / Windows |
-| More editors | 🚧 Coming soon | — |
+## Support Matrix
+
+| Target | Themes | Pets | Platform |
+| --- | --- | --- | --- |
+| Codex | Supported | Codex v2 and floating desktop pets | macOS / Windows |
+| WorkBuddy | Supported | Not available yet | macOS / Windows |
 
 ## Quick Start
 
-### 1. Download
+### Install
 
-Get the latest release from [codress.dev](https://codress.dev) or the [Releases](https://github.com/user/codress/releases) page.
+Download the package for your platform from [GitHub Releases](https://github.com/waiterxiaoyy/codress/releases):
 
-| Platform | File |
-|----------|------|
-| macOS (Apple Silicon) | `Codress-x.x.x-arm64.dmg` |
-| macOS (Intel) | `Codress-x.x.x-x64.dmg` |
-| Windows | `Codress-x.x.x-setup.exe` |
+| Platform | Package |
+| --- | --- |
+| macOS Apple Silicon | `Codress-<version>-mac-arm64.dmg` |
+| macOS Intel | `Codress-<version>-mac-x64.dmg` |
+| Windows x64 | `Codress-<version>-win-x64.exe` |
 
-### 2. Install & Launch
+Official macOS packages require signing and notarization. Locally built unsigned packages may trigger a Gatekeeper warning.
 
-1. Open the downloaded `.dmg` / `.exe` and drag Codress to Applications (macOS) or follow the installer (Windows).
-2. Launch **Codress**.
+### Apply Your First Theme
 
-### 3. Apply Your First Skin
+1. Open Codress and go to **Themes**.
+2. Select Codex or WorkBuddy.
+3. Browse themes or narrow the list with search and categories.
+4. Click **Apply**.
+5. If the target app's local theming channel is not enabled, confirm one restart.
 
-1. In the **Theme Store** tab, pick an editor (Codex / WorkBuddy) from the icon switcher.
-2. Browse skins or search by name.
-3. Click **"一键应用"** (One-click Apply).
-4. If the target editor doesn't have CDP enabled, Codress will prompt you to restart it — confirm and the skin applies automatically.
+Use **Restore Default** in the top-right corner of the Themes page to return to the original interface.
 
-### 4. Restore Default
+### Use a Pet
 
-Click the **"恢复默认"** button at the top-right of the Theme Store to revert to the original appearance.
+1. Open **Pets** and select a pet.
+2. Install it into Codex or run it as an independent floating desktop pet.
+3. Manage installed and running pets from **My Library**.
 
 ## How It Works
 
-```
-┌─────────────┐         CDP (WebSocket)         ┌──────────────────┐
-│   Codress   │ ──────────────────────────────▶  │  Target Editor   │
-│  (Desktop)  │   inject CSS / remove CSS        │  (Codex / WB)    │
-└─────────────┘                                  └──────────────────┘
-       │
-       │ HTTP
-       ▼
-┌─────────────┐
-│   Server    │  skin catalog, user accounts, favorites
-│   (Go/Gin)  │
-└─────────────┘
+```text
+Codress Desktop
+├── HTTPS ────────────────> Codress API
+│                          themes, pets, categories, versions
+│
+├── 127.0.0.1 CDP ───────> Codex / WorkBuddy
+│                          apply or remove controlled CSS/runtime
+│
+└── Local Library ───────> user data directory
+                           settings, theme cache, pets, local assets
 ```
 
-1. Codress detects installed editors and launches them with remote debugging enabled.
-2. It connects via CDP and injects the selected skin's CSS into every open window.
-3. When you switch or restore, it simply replaces or removes the injected stylesheet.
+Security boundaries:
 
-**No binary patching. No file replacement. No root/admin privileges needed.**
+- CDP connections are limited to loopback addresses.
+- WebSocket targets are checked against expected shapes and processes.
+- Store themes contain images and metadata, not arbitrary executable code.
+- The injection runtime ships with the Codress client and is not dynamically loaded from theme packages.
+- Codress does not modify target application directories or signed application files.
 
-## FAQ
+## Repository Structure
 
-**Q: Will this break my editor or void its license?**
-A: No. Codress only injects CSS through the standard Chrome DevTools Protocol. No editor files are modified.
+```text
+codress/
+├── index.html                         # website landing page
+├── images/                            # website, README, and brand assets
+├── docs/                              # architecture and UI contracts
+└── platform/
+    ├── apps/
+    │   ├── desktop/                   # Electron desktop client
+    │   │   ├── src/main/              # CDP, launcher, pets, updater, IPC
+    │   │   └── src/renderer/          # React desktop UI
+    │   └── admin/                     # React + Ant Design admin console
+    ├── packages/skin-schema/          # shared theme data contract
+    ├── server/                        # Go API
+    └── deploy/                        # MySQL, seed data, deployment config
+```
 
-**Q: Do I need an account?**
-A: No. You can browse and apply skins without logging in. An account is only needed for favorites and cloud sync.
+## Local Development
 
-**Q: Can I create my own skin?**
-A: Yes! Use the admin panel to upload a background image, set color variables, and publish to your local store. AI-assisted metadata generation is also available.
+Requirements:
 
-**Q: What if the editor updates?**
-A: Since Codress doesn't modify any files, editor updates won't conflict. Just re-apply your skin after updating.
+- Node.js 20+
+- pnpm
+- Go 1.24+
+- Docker or an available MySQL 8 instance
 
-**Q: Is it safe?**
-A: Codress runs entirely locally. The only network requests are to fetch the skin catalog from your configured server. No telemetry, no tracking.
-
-## Development
+Install frontend dependencies:
 
 ```bash
-# Install dependencies
+cd platform
 pnpm install
-
-# Run desktop client in dev mode
-pnpm dev:desktop
-
-# Build for macOS
-pnpm pack:mac
-
-# Run the backend server
-cd server && go run cmd/main.go
 ```
 
-### Publish a desktop update
-
-1. Bump `platform/apps/desktop/package.json` to the new version and commit it.
-2. Push the matching tag, for example `git tag v1.0.1 && git push origin v1.0.1`.
-3. The `Release desktop app` workflow builds macOS/Windows installers and updater metadata, then publishes one complete GitHub Release.
-
-For signed macOS releases, configure the repository secrets `MAC_CERTIFICATE`, `MAC_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`. Windows signing can optionally use `WIN_CERTIFICATE` and `WIN_CERTIFICATE_PASSWORD`. Installed clients check the signed GitHub Release at startup and show a green update icon next to `CODRESS` when a newer version exists.
-
-## Project Structure
-
-```
-codress/
-├── platform/
-│   ├── apps/
-│   │   ├── desktop/          # Electron desktop client
-│   │   │   ├── src/main/     # Main process (adapters, CDP, launcher)
-│   │   │   └── src/renderer/ # React UI (Theme Store, Pets, Settings)
-│   │   └── admin/            # Admin panel (skin management)
-│   ├── server/               # Go backend (Gin + GORM + MySQL)
-│   └── deploy/               # Deployment configs & seed data
-├── index.html                # Landing page
-├── nginx.conf                # Nginx config
-└── docker-compose.yml        # Docker orchestration
-```
-
-## License
-
-[MIT](./LICENSE)
-
----
-
-<a name="中文文档"></a>
-
-# 中文文档
-
-<p align="center">
-  <b>给 AI 代码编辑器一键换肤。无侵入，无补丁，完全可逆。</b>
-</p>
-
-<p align="center">
-  <a href="https://codress.dev">官方网站</a> ·
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#功能特性">功能特性</a> ·
-  <a href="#常见问题">常见问题</a>
-</p>
-
----
-
-## Codress 是什么？
-
-Codress 是一款桌面应用，让你能够**一键切换** Electron 架构的 AI 代码编辑器的皮肤 —— 目前支持 **Codex**、**WorkBuddy**，更多编辑器陆续接入中。
-
-它通过 Chrome DevTools Protocol (CDP) 注入自定义 CSS 主题，因此：
-
-- ✅ **无侵入** —— 不修改任何官方文件
-- ✅ **可逆** —— 一键恢复默认外观
-- ✅ **安全** —— 纯本地运行，数据不外传
-
-## 功能特性
-
-| 模块 | 说明 |
-|------|------|
-| **主题商店** | 浏览并应用海量社区主题，实时预览 |
-| **一键应用** | 选择皮肤 → 点击"一键应用" → 即刻生效 |
-| **多应用支持** | 在同一面板中切换 Codex、WorkBuddy 等多款编辑器 |
-| **桌面宠物** | 可爱的动画伙伴，陪你一起写代码 |
-| **自动重启** | 若目标编辑器未开启 CDP，Codress 自动帮你重启 |
-| **收藏与搜索** | 收藏喜欢的皮肤，按分类筛选，按名称搜索 |
-| **本地图片导入** | 使用任意本地图片作为背景皮肤 |
-| **管理后台** | 管理皮肤、AI 生成元数据、控制上下架 |
-
-## 支持的编辑器
-
-| 编辑器 | 状态 | 平台 |
-|--------|------|------|
-| Codex (OpenAI) | ✅ 已支持 | macOS / Windows |
-| WorkBuddy | ✅ 已支持 | macOS / Windows |
-| 更多编辑器 | 🚧 即将支持 | — |
-
-## 快速开始
-
-### 1. 下载
-
-前往 [codress.dev](https://codress.dev) 或 [Releases](https://github.com/user/codress/releases) 页面下载最新版本。
-
-| 平台 | 文件 |
-|------|------|
-| macOS (Apple Silicon) | `Codress-x.x.x-arm64.dmg` |
-| macOS (Intel) | `Codress-x.x.x-x64.dmg` |
-| Windows | `Codress-x.x.x-setup.exe` |
-
-### 2. 安装并启动
-
-1. macOS：打开 `.dmg`，将 Codress 拖入"应用程序"文件夹。Windows：运行安装程序。
-2. 启动 **Codress**。
-
-### 3. 应用第一个皮肤
-
-1. 在 **主题商店** 页面，通过图标切换器选择目标编辑器（Codex / WorkBuddy）。
-2. 浏览皮肤或搜索名称。
-3. 点击 **"一键应用"**。
-4. 如果目标编辑器未开启 CDP 通道，Codress 会提示重启 —— 确认后皮肤自动生效。
-
-### 4. 恢复默认
-
-点击主题商店右上角的 **"恢复默认"** 按钮即可还原原始外观。
-
-## 工作原理
-
-```
-┌─────────────┐         CDP (WebSocket)         ┌──────────────────┐
-│   Codress   │ ──────────────────────────────▶  │   目标编辑器      │
-│  (桌面端)    │   注入 CSS / 移除 CSS           │  (Codex / WB)    │
-└─────────────┘                                  └──────────────────┘
-       │
-       │ HTTP
-       ▼
-┌─────────────┐
-│   Server    │  皮肤目录、用户账号、收藏管理
-│   (Go/Gin)  │
-└─────────────┘
-```
-
-1. Codress 检测已安装的编辑器，并以远程调试模式启动它们。
-2. 通过 CDP 连接后，将选定皮肤的 CSS 注入到每个打开的窗口中。
-3. 切换或恢复时，简单地替换或移除注入的样式表。
-
-**不修改二进制文件。不替换任何文件。不需要管理员权限。**
-
-## 常见问题
-
-**Q: 会不会损坏编辑器或影响许可证？**
-A: 不会。Codress 仅通过标准的 Chrome DevTools Protocol 注入 CSS，不修改任何编辑器文件。
-
-**Q: 需要注册账号吗？**
-A: 不需要。无需登录即可浏览和应用皮肤。账号仅用于收藏和云同步功能。
-
-**Q: 可以自己创建皮肤吗？**
-A: 可以！使用管理后台上传背景图、设置颜色变量即可发布。还支持 AI 辅助生成皮肤元数据。
-
-**Q: 编辑器更新后怎么办？**
-A: 由于 Codress 不修改任何文件，编辑器更新不会产生冲突。更新后重新应用皮肤即可。
-
-**Q: 安全吗？**
-A: Codress 完全本地运行。唯一的网络请求是从你配置的服务器获取皮肤目录。无遥测、无追踪。
-
-## 开发指南
+Start the desktop client:
 
 ```bash
-# 安装依赖
-pnpm install
-
-# 开发模式运行桌面端
 pnpm dev:desktop
+```
 
-# 打包 macOS
+Start the API and database:
+
+```bash
+cd deploy
+docker compose up -d mysql
+
+cd ../server
+go run ./cmd/api
+```
+
+Start the admin console:
+
+```bash
+cd platform
+pnpm dev:admin
+```
+
+The admin development server runs at `http://127.0.0.1:5174` and proxies `/api` and `/static` to the local API. Replace the JWT secret and administrator password in `.env` before production deployment.
+
+## Build and Test
+
+```bash
+cd platform
+
+# Type-check and build
+pnpm build:desktop
+pnpm build:admin
+
+# Desktop tests
+pnpm --filter @codress/desktop test
+
+# macOS / Windows installers
 pnpm pack:mac
-
-# 运行后端服务
-cd server && go run cmd/main.go
+pnpm pack:win
 ```
 
-### 发布桌面客户端更新
-
-1. 修改 `platform/apps/desktop/package.json` 中的版本号并提交。
-2. 推送与版本号一致的标签，例如 `git tag v1.0.1 && git push origin v1.0.1`。
-3. GitHub Actions 的 `Release desktop app` 会构建 Windows/macOS 安装包及更新元数据，全部完成后再正式发布 Release。
-
-macOS 正式发布前，需要在仓库 Secrets 中配置 `MAC_CERTIFICATE`、`MAC_CERTIFICATE_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD` 和 `APPLE_TEAM_ID`；Windows 可选配置 `WIN_CERTIFICATE` 和 `WIN_CERTIFICATE_PASSWORD`。已安装客户端启动时会检查签名后的 GitHub Release，发现新版后在左侧 `CODRESS` 旁显示绿色更新图标。
-
-## 项目结构
-
-```
-codress/
-├── platform/
-│   ├── apps/
-│   │   ├── desktop/          # Electron 桌面客户端
-│   │   │   ├── src/main/     # 主进程（适配器、CDP、启动器）
-│   │   │   └── src/renderer/ # React UI（主题商店、宠物、设置）
-│   │   └── admin/            # 管理后台（皮肤管理）
-│   ├── server/               # Go 后端（Gin + GORM + MySQL）
-│   └── deploy/               # 部署配置与种子数据
-├── index.html                # 官网落地页
-├── nginx.conf                # Nginx 配置
-└── docker-compose.yml        # Docker 编排
+```bash
+cd platform/server
+go test ./...
 ```
 
-## 开源协议
+## Desktop Release
 
-[MIT](./LICENSE)
+1. Update the version in `platform/apps/desktop/package.json`.
+2. Commit the change and push a matching tag such as `v1.0.1`.
+3. GitHub Actions builds the macOS and Windows installers.
+4. The draft Release is published only after both platform builds succeed.
+
+macOS releases require signing and notarization secrets. Windows code signing is optional.
+
+## Roadmap
+
+- Add more local composition and interface-preview presets
+- Restore account sync and remote favorites
+- Open community creation and store submissions
+- Add adapters for more Electron AI workspaces

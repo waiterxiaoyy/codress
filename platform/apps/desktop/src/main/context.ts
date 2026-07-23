@@ -202,6 +202,21 @@ export class AppContext extends EventEmitter {
     return this.applySkin(target, installed.slug, { allowRestart: false });
   }
 
+  async createLocalSkin(
+    target: string,
+    imageData: Buffer,
+    options: {
+      name: string;
+      appearance: "auto" | "light" | "dark";
+      colors: { background: string; panel: string; text: string; accent: string };
+      customization: Record<string, string | number>;
+    },
+  ): Promise<ApplyOutcome & { slug: string; name: string }> {
+    const installed = await this.library.importImageData(target, imageData, options);
+    const outcome = await this.applySkin(target, installed.slug, { allowRestart: false });
+    return { ...outcome, slug: installed.slug, name: installed.name };
+  }
+
   async pauseSkin(target: string) {
     const daemon = this.daemons.get(target);
     if (daemon) await daemon.pause();

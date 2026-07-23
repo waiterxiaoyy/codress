@@ -1,5 +1,6 @@
 import { Layout, Menu, Button } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import codressBanner from "../assets/codress-banner.png";
 
 const items = [
   { key: "/", label: "看板" },
@@ -18,8 +19,9 @@ export default function AdminLayout() {
   return (
     <Layout style={{ minHeight: "100vh", background: "#fff" }}>
       <Layout.Sider theme="light" width={180} style={{ borderRight: "1px solid #eee" }}>
-        <div style={{ padding: "20px 24px", fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
-          CODRESS
+        <div className="admin-brand">
+          <img src={codressBanner} alt="Codress" />
+          <span>ADMIN</span>
         </div>
         <Menu
           mode="inline"

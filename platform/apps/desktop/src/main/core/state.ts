@@ -11,8 +11,9 @@ export interface Settings {
   ports: Partial<Record<string, number>>;
 }
 
+const DEVELOPMENT = process.env.NODE_ENV === "development";
 const DEFAULTS: Settings = {
-  apiBase: process.env.NODE_ENV === "development" ? "http://127.0.0.1:8080" : "https://codress.dev",
+  apiBase: DEVELOPMENT ? "http://127.0.0.1:8080" : "https://codress.dev",
   userToken: null,
   userName: null,
   activePet: null,
@@ -34,6 +35,7 @@ export class SettingsStore {
     try {
       const raw = JSON.parse(await fs.readFile(this.file, "utf8"));
       this.data = { ...DEFAULTS, ...raw };
+      if (!DEVELOPMENT) this.data.apiBase = DEFAULTS.apiBase;
     } catch {
       this.data = { ...DEFAULTS };
     }
@@ -45,12 +47,13 @@ export class SettingsStore {
   }
 
   async patch(update: Partial<Settings>): Promise<Settings> {
+    const safeUpdate = DEVELOPMENT ? update : { ...update, apiBase: DEFAULTS.apiBase };
     this.data = {
       ...this.data,
-      ...update,
-      activeSkins: { ...this.data.activeSkins, ...(update.activeSkins ?? {}) },
-      appPaths: { ...this.data.appPaths, ...(update.appPaths ?? {}) },
-      ports: { ...this.data.ports, ...(update.ports ?? {}) },
+      ...safeUpdate,
+      activeSkins: { ...this.data.activeSkins, ...(safeUpdate.activeSkins ?? {}) },
+      appPaths: { ...this.data.appPaths, ...(safeUpdate.appPaths ?? {}) },
+      ports: { ...this.data.ports, ...(safeUpdate.ports ?? {}) },
     };
     await fs.mkdir(path.dirname(this.file), { recursive: true });
     await fs.writeFile(this.file, JSON.stringify(this.data, null, 2), "utf8");

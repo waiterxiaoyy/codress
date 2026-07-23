@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { bridge, type AdapterStatus, type SkinItem } from "../bridge";
+import {
+  bridge,
+  type AdapterStatus,
+  type LocalSkinImage,
+  type LocalSkinInput,
+  type SkinItem,
+} from "../bridge";
 import { useToast } from "../toast";
 import codexIcon from "../assets/codex.png";
 import workbuddyIcon from "../assets/workbuddy.png";
 import { CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
+import { ThemeCreatorModal } from "../components/ThemeCreatorModal";
+import { warmImageUrls } from "../storePreload";
 
 const TARGETS = [
   { id: "codex", label: "Codex", icon: codexIcon },
@@ -28,6 +36,7 @@ const themeViewCache = {
   search: "",
   scrollTop: 0,
 };
+let themePreloadPromise: Promise<void> | null = null;
 
 function themeCacheKey(target: string, category: string, search: string) {
   return `${target}:${category}:${search.trim().toLowerCase()}`;
@@ -41,6 +50,33 @@ function setThemeCache(key: string, entry: ThemeListCacheEntry) {
     if (oldestKey) themeListCache.delete(oldestKey);
     else break;
   }
+}
+
+export function preloadThemeStore(): Promise<void> {
+  const key = themeCacheKey(themeViewCache.target, themeViewCache.category, themeViewCache.search);
+  const cached = themeListCache.get(key);
+  if (cached && Date.now() - cached.updatedAt < THEME_CACHE_TTL) {
+    warmImageUrls(cached.items.map((item) => item.previewLightUrl ?? item.backgroundUrl));
+    return Promise.resolve();
+  }
+  if (themePreloadPromise) return themePreloadPromise;
+
+  themePreloadPromise = bridge.storeSkins({
+    target: themeViewCache.target,
+    page: 1,
+    pageSize: THEME_PAGE_SIZE,
+  }).then((result) => {
+    setThemeCache(key, {
+      items: result.items,
+      total: result.total,
+      page: 1,
+      updatedAt: Date.now(),
+    });
+    warmImageUrls(result.items.map((item) => item.previewLightUrl ?? item.backgroundUrl));
+  }).finally(() => {
+    themePreloadPromise = null;
+  });
+  return themePreloadPromise;
 }
 
 function SearchIcon() {
@@ -109,15 +145,15 @@ export default function Themes() {
   const [total, setTotal] = useState(initialCache?.total ?? 0);
   const [page, setPage] = useState(initialCache?.page ?? 0);
   const [status, setStatus] = useState<AdapterStatus | null>(null);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [busySlug, setBusySlug] = useState<string | null>(null);
-  const [loggedIn, setLoggedIn] = useState(false);
   const [search, setSearch] = useState(themeViewCache.search);
   const [debouncedSearch, setDebouncedSearch] = useState(themeViewCache.search);
   const [restartPending, setRestartPending] = useState<{ slug: string; name: string } | null>(null);
   const [loading, setLoading] = useState(!initialCache);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [pickingImage, setPickingImage] = useState(false);
+  const [creatorImage, setCreatorImage] = useState<LocalSkinImage | null>(null);
 
   const queryKey = themeCacheKey(target, category, debouncedSearch);
   const activeQueryKey = useRef(queryKey);
@@ -215,14 +251,9 @@ export default function Themes() {
   }, [loadFirstPage]);
 
   useEffect(() => {
-    Promise.all([bridge.storeCategories("skin"), bridge.getSettings()])
-      .then(async ([categoryList, settings]) => {
+    bridge.storeCategories("skin")
+      .then((categoryList) => {
         setCategories(categoryList.items);
-        setLoggedIn(Boolean(settings.userToken));
-        if (settings.userToken) {
-          const favs = await bridge.favorites().catch(() => ({ items: [] }));
-          setFavorites(new Set(favs.items.filter((item) => item.itemType === "skin").map((item) => item.itemSlug)));
-        }
       })
       .catch((error) => toast(`商店信息加载失败:${(error as Error).message}`, true));
   }, [toast]);
@@ -303,15 +334,40 @@ export default function Themes() {
     }
   };
 
-  const toggleFav = async (slug: string) => {
-    if (!loggedIn) { toast("收藏需要先在「我的」页登录", true); return; }
-    const result = await bridge.toggleFavorite("skin", slug);
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (result.favorited) next.add(slug);
-      else next.delete(slug);
-      return next;
-    });
+  const beginLocalCreation = async () => {
+    if (pickingImage) return;
+    setPickingImage(true);
+    try {
+      const picked = await bridge.pickSkinImage();
+      if (picked) setCreatorImage(picked);
+    } catch (error) {
+      const message = (error as Error).message;
+      toast(
+        message.includes("No handler registered")
+          ? "Codress 主进程已更新，请完全退出客户端后重新打开"
+          : message,
+        true,
+      );
+    } finally {
+      setPickingImage(false);
+    }
+  };
+
+  const saveLocalSkin = async (input: LocalSkinInput) => {
+    try {
+      const result = await bridge.createLocalSkin(target, input);
+      setCreatorImage(null);
+      if (result.ok) {
+        toast(`已保存并应用「${result.name}」`);
+      } else if (result.needsRestart) {
+        setRestartPending({ slug: result.slug, name: result.name });
+        toast(`「${result.name}」已保存到我的皮肤`);
+      } else {
+        toast(`皮肤已保存，但应用失败：${result.message ?? "请稍后重试"}`, true);
+      }
+    } catch (error) {
+      toast((error as Error).message, true);
+    }
   };
 
   return (
@@ -368,16 +424,18 @@ export default function Themes() {
           />
           <RefreshButton loading={loading || refreshing} onClick={() => loadFirstPage(true)} />
           <button
-            className="app-icon-add-btn"
-            title="本地图片做皮肤"
-            onClick={() => bridge.importImage(target).then((r) => {
-              if (r.ok) toast("本地图片已生成皮肤并应用");
-              else if (r.message && r.message !== "已取消") toast(r.message, true);
-            })}
+            className={`app-icon-add-btn ${pickingImage ? "busy" : ""}`}
+            title="用本地图片创作皮肤"
+            disabled={pickingImage}
+            onClick={beginLocalCreation}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            {pickingImage ? (
+              <span className="store-load-spinner" />
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -409,9 +467,6 @@ export default function Themes() {
                   >
                     {status?.activeSkin === skin.slug ? "重新应用" : busySlug === skin.slug ? "应用中…" : "一键应用"}
                   </button>
-                  <button className="btn ghost" onClick={() => toggleFav(skin.slug)}>
-                    {favorites.has(skin.slug) ? "★" : "☆"}
-                  </button>
                 </div>
               </div>
             </div>
@@ -438,6 +493,15 @@ export default function Themes() {
           appName={status?.name ?? target}
           onConfirm={confirmRestart}
           onCancel={() => setRestartPending(null)}
+        />
+      )}
+
+      {creatorImage && (
+        <ThemeCreatorModal
+          image={creatorImage}
+          targetName={TARGETS.find((item) => item.id === target)?.label ?? target}
+          onClose={() => setCreatorImage(null)}
+          onSave={saveLocalSkin}
         />
       )}
     </div>

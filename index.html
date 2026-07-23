@@ -4,7 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Codress — 换个界面，让灵感常驻</title>
-<meta name="description" content="编辑器皮肤与桌面宠物市场。数千套主题任选，纯本地运行，不修改客户端。">
+<meta name="description" content="Codress 为 Codex 与 WorkBuddy 提供一键换肤、桌面宠物和本地资产管理，不修改官方安装文件，随时恢复默认。">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://codress.dev/">
+<link rel="icon" type="image/png" href="images/codress-icon.png">
+<link rel="apple-touch-icon" href="images/codress-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Codress">
+<meta property="og:title" content="Codress — 换个界面，让灵感常驻">
+<meta property="og:description" content="为 Codex 与 WorkBuddy 一键应用皮肤和桌面宠物，不修改官方安装文件。">
+<meta property="og:url" content="https://codress.dev/">
+<meta property="og:image" content="https://codress.dev/images/codress-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Codress — 换个界面，让灵感常驻">
+<meta name="twitter:description" content="为 Codex 与 WorkBuddy 一键应用皮肤和桌面宠物。">
+<meta name="twitter:image" content="https://codress.dev/images/codress-og.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -47,9 +63,10 @@ nav{
   border-bottom:1px solid rgba(0,0,0,.06);
 }
 .nav-logo{
-  font-size:18px;font-weight:800;letter-spacing:-.4px;
+  display:inline-flex;align-items:center;
   color:var(--black);
 }
+.nav-logo img{width:142px;height:auto;object-fit:contain}
 .nav-links{display:flex;align-items:center;gap:4px}
 .nav-links a{
   padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;
@@ -379,7 +396,10 @@ footer .footer-inner{
   display:flex;justify-content:space-between;align-items:center;
   flex-wrap:wrap;gap:16px;font-size:13px;color:var(--gray);
 }
-footer .footer-brand{font-weight:600;color:var(--black)}
+footer .footer-brand{
+  display:inline-flex;align-items:center;color:var(--black)
+}
+footer .footer-brand img{width:104px;height:auto;object-fit:contain}
 footer .flinks{display:flex;gap:24px}
 footer .flinks a{transition:color .2s}
 footer .flinks a:hover{color:var(--black)}
@@ -413,7 +433,9 @@ footer .flinks a:hover{color:var(--black)}
 <body>
 
 <nav>
-  <a href="#" class="nav-logo">Codress</a>
+  <a href="#" class="nav-logo">
+    <img src="images/codress-banner.png" alt="Codress">
+  </a>
   <div class="nav-links">
     <a href="#themes" data-i18n="nav.skins">皮肤</a>
     <a href="#pets" data-i18n="nav.pets">宠物</a>
@@ -425,9 +447,9 @@ footer .flinks a:hover{color:var(--black)}
 
 <section class="hero" id="hero">
   <div class="container">
-    <div class="hero-badge"><span class="dot"></span><span data-i18n="hero.badge">适配 Codex · CodeBuddy 等 Agent 工作台</span></div>
+    <div class="hero-badge"><span class="dot"></span><span data-i18n="hero.badge">适配 Codex · WorkBuddy 等 Agent 工作台</span></div>
     <h1><span data-i18n="hero.title1">换个界面</span><span class="gradient" data-i18n="hero.title2">，让灵感常驻</span></h1>
-    <p data-i18n="hero.desc">告别千篇一律的编辑器外观。数千套皮肤与桌面宠物，一键切换，不修改任何官方文件，随时恢复默认。</p>
+    <p data-i18n="hero.desc">告别千篇一律的编辑器外观。精选皮肤与桌面宠物，一键切换，不修改任何官方安装文件，随时恢复默认。</p>
     <div class="hero-actions">
       <a href="#download" class="btn btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -519,16 +541,16 @@ footer .flinks a:hover{color:var(--black)}
 <section class="features-section">
   <div class="container">
     <div class="section-head">
-      <div class="section-eyebrow" data-i18n="features.eyebrow">安全纯本地</div>
-      <h2 data-i18n="features.title">无需联网，不碰 App</h2>
+      <div class="section-eyebrow" data-i18n="features.eyebrow">安全边界清晰</div>
+      <h2 data-i18n="features.title">联网逛商店，本地完成应用</h2>
     </div>
     <div class="features">
       <div class="feature-card">
         <div class="feature-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <h3 data-i18n="features.f1_title">无需联网</h3>
-        <p data-i18n="features.f1_desc">主题文件、设置和切换过程全部留存在本机，不需要网络连接。</p>
+        <h3 data-i18n="features.f1_title">本地注入</h3>
+        <p data-i18n="features.f1_desc">联网获取商店资源，下载后的应用、切换和恢复过程在本机完成。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">
@@ -541,8 +563,8 @@ footer .flinks a:hover{color:var(--black)}
         <div class="feature-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
         </div>
-        <h3 data-i18n="features.f3_title">随时切换或还原</h3>
-        <p data-i18n="features.f3_desc">一键恢复默认外观，不留任何修改痕迹。皮肤和宠物都是安全的。</p>
+        <h3 data-i18n="features.f3_title">无需账号</h3>
+        <p data-i18n="features.f3_desc">浏览、应用皮肤、安装宠物和管理本地资产均无需登录。</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">
@@ -592,7 +614,12 @@ footer .flinks a:hover{color:var(--black)}
 <footer>
   <div class="container">
     <div class="footer-inner">
-      <span><span class="footer-brand">Codress</span> &copy; 2026</span>
+      <span>
+        <span class="footer-brand">
+          <img src="images/codress-banner.png" alt="Codress">
+        </span>
+        &copy; 2026
+      </span>
       <div class="flinks">
         <a href="#themes" data-i18n="nav.skins">皮肤</a>
         <a href="#pets" data-i18n="nav.pets">宠物</a>
@@ -609,7 +636,7 @@ footer .flinks a:hover{color:var(--black)}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83" stroke-linecap="round"/></svg>
     </div>
     <h3 data-i18n="modal.title">敬请期待</h3>
-    <p data-i18n="modal.desc">Codress 正在紧锣密鼓开发中，即将上线。收藏本站，第一时间获取更新通知。</p>
+    <p data-i18n="modal.desc">公开下载包正在准备中。你可以先收藏本站或关注 GitHub Release 获取更新。</p>
     <div class="bookmark-tip">
       <div class="tip-title" data-i18n="modal.tip_title">⭐ 收藏本站</div>
       <div class="tip-desc"><span data-i18n="modal.tip_desc">按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新</span></div>
@@ -626,10 +653,10 @@ const i18n = {
     'nav.pets': '宠物',
     'nav.guide': '使用指南',
     'nav.download': '下载',
-    'hero.badge': '适配 Codex · CodeBuddy 等 Agent 工作台',
+    'hero.badge': '适配 Codex · WorkBuddy 等 Agent 工作台',
     'hero.title1': '换个界面',
     'hero.title2': '，让灵感常驻',
-    'hero.desc': '告别千篇一律的编辑器外观。数千套皮肤与桌面宠物，一键切换，不修改任何官方文件，随时恢复默认。',
+    'hero.desc': '告别千篇一律的编辑器外观。精选皮肤与桌面宠物，一键切换，不修改任何官方安装文件，随时恢复默认。',
     'hero.btn_download': '立即下载',
     'hero.btn_browse': '浏览市场',
     'compare.eyebrow': '对比',
@@ -651,14 +678,14 @@ const i18n = {
     'steps.s2_desc': '浏览皮肤和宠物，实时预览效果，找到你今天的风格。',
     'steps.s3_title': '一键应用',
     'steps.s3_desc': '连接本地编辑器，即刻生效。不喜欢随时恢复默认，不留痕迹。',
-    'features.eyebrow': '安全纯本地',
-    'features.title': '无需联网，不碰 App',
-    'features.f1_title': '无需联网',
-    'features.f1_desc': '主题文件、设置和切换过程全部留存在本机，不需要网络连接。',
+    'features.eyebrow': '安全边界清晰',
+    'features.title': '联网逛商店，本地完成应用',
+    'features.f1_title': '本地注入',
+    'features.f1_desc': '联网获取商店资源，下载后的应用、切换和恢复过程在本机完成。',
     'features.f2_title': '不修改安装包',
     'features.f2_desc': '不修改官方文件，不影响应用更新和签名验证。',
-    'features.f3_title': '随时切换或还原',
-    'features.f3_desc': '一键恢复默认外观，不留任何修改痕迹。皮肤和宠物都是安全的。',
+    'features.f3_title': '无需账号',
+    'features.f3_desc': '浏览、应用皮肤、安装宠物和管理本地资产均无需登录。',
     'features.f4_title': 'Win / Mac 全覆盖',
     'features.f4_desc': '同时支持 Windows 和 macOS，体验一致，打包签名安全可靠。',
     'download.eyebrow': '下载',
@@ -668,7 +695,7 @@ const i18n = {
     'download.btn_win': '下载 .exe',
     'footer.guide': '指南',
     'modal.title': '敬请期待',
-    'modal.desc': 'Codress 正在紧锣密鼓开发中，即将上线。收藏本站，第一时间获取更新通知。',
+    'modal.desc': '公开下载包正在准备中。你可以先收藏本站或关注 GitHub Release 获取更新。',
     'modal.tip_title': '⭐ 收藏本站',
     'modal.tip_desc': '按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新',
     'modal.close': '我知道了',
@@ -678,10 +705,10 @@ const i18n = {
     'nav.pets': 'Pets',
     'nav.guide': 'Guide',
     'nav.download': 'Download',
-    'hero.badge': 'Works with Codex · CodeBuddy & other Agent workspaces',
+    'hero.badge': 'Works with Codex · WorkBuddy and other Agent workspaces',
     'hero.title1': 'New Look',
     'hero.title2': ', Fresh Inspiration',
-    'hero.desc': 'Say goodbye to boring editor UIs. Thousands of skins & desktop pets, one-click switch, no modification to official files, revert anytime.',
+    'hero.desc': 'Refresh your editor with curated skins and desktop pets. Switch in one click, keep official app files untouched, and revert anytime.',
     'hero.btn_download': 'Download Now',
     'hero.btn_browse': 'Browse Market',
     'compare.eyebrow': 'Compare',
@@ -703,14 +730,14 @@ const i18n = {
     'steps.s2_desc': 'Browse skins and pets, preview in real-time, find your style for today.',
     'steps.s3_title': 'One-Click Apply',
     'steps.s3_desc': 'Connect to your local editor, takes effect instantly. Revert anytime, no traces left.',
-    'features.eyebrow': 'Safe & Local',
-    'features.title': 'No internet, no app modification',
-    'features.f1_title': 'Works Offline',
-    'features.f1_desc': 'Theme files, settings, and switching all stay local. No network connection needed.',
+    'features.eyebrow': 'Clear Safety Boundaries',
+    'features.title': 'Browse online, apply locally',
+    'features.f1_title': 'Local Injection',
+    'features.f1_desc': 'Connect to browse the store; applying, switching, and restoring downloaded assets happens locally.',
     'features.f2_title': 'No App Modification',
     'features.f2_desc': 'Doesn\'t modify official files. Won\'t affect updates or signature verification.',
-    'features.f3_title': 'Switch or Revert Anytime',
-    'features.f3_desc': 'One-click restore to default. No traces left. Skins and pets are completely safe.',
+    'features.f3_title': 'No Account Required',
+    'features.f3_desc': 'Browse and apply skins, install pets, and manage local assets without signing in.',
     'features.f4_title': 'Win / Mac Supported',
     'features.f4_desc': 'Supports both Windows and macOS with consistent experience and secure packaging.',
     'download.eyebrow': 'Download',
@@ -720,7 +747,7 @@ const i18n = {
     'download.btn_win': 'Download .exe',
     'footer.guide': 'Guide',
     'modal.title': 'Coming Soon',
-    'modal.desc': 'Codress is under active development and launching soon. Bookmark this page to stay updated.',
+    'modal.desc': 'Public download packages are being prepared. Bookmark this page or follow GitHub Releases for updates.',
     'modal.tip_title': '⭐ Bookmark This Page',
     'modal.tip_desc': 'Press <kbd>Ctrl</kbd> + <kbd>D</kbd> (Mac: <kbd>⌘</kbd> + <kbd>D</kbd>) to bookmark and follow updates',
     'modal.close': 'Got it',

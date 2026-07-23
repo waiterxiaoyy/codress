@@ -6,6 +6,11 @@ const api = {
     ipcRenderer.on("codress:status-changed", wrapped);
     return () => ipcRenderer.removeListener("codress:status-changed", wrapped);
   },
+  onLibraryChanged(listener: () => void) {
+    const wrapped = () => listener();
+    ipcRenderer.on("codress:library-changed", wrapped);
+    return () => ipcRenderer.removeListener("codress:library-changed", wrapped);
+  },
   appStatus: () => ipcRenderer.invoke("app:status"),
   clientInfo: () => ipcRenderer.invoke("app:info"),
   latestClient: () => ipcRenderer.invoke("app:update:latest"),
@@ -52,6 +57,9 @@ const api = {
   resumeSkin: (target: string) => ipcRenderer.invoke("skin:resume", target),
   restoreSkin: (target: string) => ipcRenderer.invoke("skin:restore", target),
   importImage: (target: string) => ipcRenderer.invoke("skin:importImage", target),
+  pickSkinImage: () => ipcRenderer.invoke("skin:pickImage"),
+  createLocalSkin: (target: string, input: Record<string, unknown>) =>
+    ipcRenderer.invoke("skin:createLocal", target, input),
 
   setPet: (slug: string | null) => ipcRenderer.invoke("pet:set", slug),
   installPetToCodex: (slug: string) => ipcRenderer.invoke("pet:install", slug),

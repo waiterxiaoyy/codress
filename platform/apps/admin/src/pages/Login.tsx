@@ -1,6 +1,7 @@
 import { Button, Card, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { api, errorText } from "../api";
+import codressBanner from "../assets/codress-banner.png";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,8 +24,10 @@ export default function Login() {
       }}
     >
       <Card style={{ width: 360, border: "1px solid #e5e5e5" }} styles={{ body: { padding: 32 } }}>
-        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>CODRESS</div>
-        <div style={{ color: "#888", marginBottom: 24 }}>皮肤与桌面宠物 · 管理端</div>
+        <div className="admin-login-brand">
+          <img src={codressBanner} alt="Codress" />
+          <span>皮肤与桌面宠物 · 管理中心</span>
+        </div>
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item name="username" label="用户名" rules={[{ required: true }]}>
             <Input placeholder="admin" autoFocus />

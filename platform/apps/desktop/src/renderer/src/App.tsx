@@ -1,13 +1,14 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { ToastProvider } from "./toast";
-import Themes from "./pages/Themes";
-import Pets from "./pages/Pets";
+import Themes, { preloadThemeStore } from "./pages/Themes";
+import Pets, { preloadPetStore } from "./pages/Pets";
 import Mine from "./pages/Mine";
 import Settings from "./pages/Settings";
-import Creator from "./pages/Creator";
 import { bridge, type UpdateState } from "./bridge";
 import { applyTheme, watchTheme } from "./theme";
 import { PageVisibilityProvider } from "./components/PageVisibility";
+import codressLogo from "./assets/codress-logo.png";
+import codressBanner from "./assets/codress-banner.png";
 
 function IconThemes() {
   return (
@@ -36,16 +37,6 @@ function IconMine() {
     <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8.2" r="3.6" />
       <path d="M4.8 20c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" />
-    </svg>
-  );
-}
-
-function IconCreator() {
-  return (
-    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l1.5 4.1L18 8.5l-4.5 1.4L12 14l-1.5-4.1L6 8.5l4.5-1.4L12 3z" />
-      <path d="M18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z" />
-      <path d="M5.5 13l.7 1.8 1.8.7-1.8.7L5.5 18l-.7-1.8-1.8-.7 1.8-.7.7-1.8z" />
     </svg>
   );
 }
@@ -82,18 +73,31 @@ function IconCollapse({ collapsed }: { collapsed: boolean }) {
 const pages = [
   { key: "themes", label: "主题", icon: IconThemes, component: Themes },
   { key: "pets", label: "宠物", icon: IconPets, component: Pets },
-  { key: "creator", label: "创作", icon: IconCreator, component: Creator },
   { key: "mine", label: "我的", icon: IconMine, component: Mine },
   { key: "settings", label: "设置", icon: IconSettings, component: Settings },
 ] as const;
 
 const COLLAPSED_KEY = "codress.sidebar.collapsed";
+const STARTUP_MIN_MS = 520;
+const STARTUP_MAX_MS = 2200;
+let startupWarmupPromise: Promise<void> | null = null;
+
+function warmupStartupData(): Promise<void> {
+  if (!startupWarmupPromise) {
+    startupWarmupPromise = Promise.allSettled([
+      preloadThemeStore(),
+      preloadPetStore(),
+    ]).then(() => undefined);
+  }
+  return startupWarmupPromise;
+}
 
 export default function App() {
   const [active, setActive] = useState<(typeof pages)[number]["key"]>("themes");
   const [mountedPages, setMountedPages] = useState<Set<(typeof pages)[number]["key"]>>(() => new Set(["themes"]));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
+  const [starting, setStarting] = useState(true);
   useEffect(() => {
     applyTheme();
     return watchTheme();
@@ -104,6 +108,28 @@ export default function App() {
   useEffect(() => {
     bridge.getUpdateState().then(setUpdateState).catch(() => undefined);
     return bridge.onUpdateState(setUpdateState);
+  }, []);
+  useEffect(() => {
+    let active = true;
+    let minimumTimer = 0;
+    let deadlineTimer = 0;
+    const minimum = new Promise<void>((resolve) => {
+      minimumTimer = window.setTimeout(resolve, STARTUP_MIN_MS);
+    });
+    const deadline = new Promise<void>((resolve) => {
+      deadlineTimer = window.setTimeout(resolve, STARTUP_MAX_MS);
+    });
+    Promise.race([
+      Promise.all([warmupStartupData(), minimum]).then(() => undefined),
+      deadline,
+    ]).then(() => {
+      if (active) setStarting(false);
+    });
+    return () => {
+      active = false;
+      window.clearTimeout(minimumTimer);
+      window.clearTimeout(deadlineTimer);
+    };
   }, []);
   const updateAvailable = updateState && ["available", "downloading", "downloaded"].includes(updateState.status);
   const showPage = (key: (typeof pages)[number]["key"]) => {
@@ -117,10 +143,23 @@ export default function App() {
   };
   return (
     <ToastProvider>
-      <div className={`shell ${collapsed ? "collapsed" : ""}`}>
+      {starting ? (
+        <div className="startup-screen" role="status" aria-label="Codress 正在启动">
+          <div className="startup-brand">
+            <img className="startup-banner" src={codressBanner} alt="Codress" />
+          </div>
+          <div className="startup-status">
+            <span className="startup-spinner" aria-hidden="true" />
+            <span>正在准备主题与宠物…</span>
+          </div>
+        </div>
+      ) : <div className={`shell ${collapsed ? "collapsed" : ""}`}>
         <aside className="side">
           <div className="brand" title="Codress">
-            <span>{collapsed ? "C" : "CODRESS"}</span>
+            <span className="brand-identity">
+              <img className="brand-banner" src={codressBanner} alt="Codress" />
+              <img className="brand-logo" src={codressLogo} alt="" aria-hidden="true" />
+            </span>
             {updateAvailable && (
               <button
                 className="brand-update-btn"
@@ -179,7 +218,7 @@ export default function App() {
             );
           })}
         </main>
-      </div>
+      </div>}
     </ToastProvider>
   );
 }

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { app, BrowserWindow, screen, type WebContents } from "electron";
+import { installWindowGuards } from "./window-guards";
 
 export interface ActivePet {
   slug: string;
@@ -44,8 +45,10 @@ export class PetManager {
           contextIsolation: true,
           nodeIntegration: false,
           webSecurity: false, // 允许 file:// 加载本地图片
+          devTools: !app.isPackaged,
         },
       });
+      installWindowGuards(this.window.webContents, false);
       this.window.setAlwaysOnTop(true, "screen-saver");
       this.window.on("closed", () => {
         this.window = null;

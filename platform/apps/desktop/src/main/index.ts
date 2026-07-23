@@ -1,10 +1,11 @@
 import path from "node:path";
-import { BrowserWindow, app, protocol } from "electron";
+import { BrowserWindow, Menu, app, protocol } from "electron";
 import { AppContext } from "./context";
 import { registerIpc } from "./ipc";
 import { createTray } from "./tray";
 import { PetManager, petPageLocator } from "./pets";
 import { DesktopUpdater } from "./updater";
+import { installWindowGuards } from "./window-guards";
 
 // 确保 Codress 自身不受 WorkBuddy 调试端口环境变量影响
 delete process.env.WORKBUDDY_REMOTE_DEBUGGING_PORT;
@@ -40,16 +41,10 @@ function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      devTools: !app.isPackaged,
     },
   });
-  if (!app.isPackaged) {
-    mainWindow.webContents.on("before-input-event", (event, input) => {
-      if (input.type === "keyDown" && input.key === "F12") {
-        event.preventDefault();
-        mainWindow?.webContents.toggleDevTools();
-      }
-    });
-  }
+  installWindowGuards(mainWindow.webContents, !app.isPackaged);
   const devUrl = process.env.ELECTRON_RENDERER_URL;
   if (devUrl) mainWindow.loadURL(devUrl);
   else mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
@@ -65,6 +60,8 @@ if (!singleLock) {
   app.on("second-instance", () => createMainWindow());
 
   app.whenReady().then(async () => {
+    if (app.isPackaged) Menu.setApplicationMenu(null);
+
     // 暴露 resources 目录给渲染进程:app-asset://<file> → resources/<file>
     protocol.registerFileProtocol("app-asset", (request, cb) => {
       const url = new URL(request.url);

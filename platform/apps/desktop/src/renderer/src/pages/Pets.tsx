@@ -3,6 +3,7 @@ import { bridge, type PetItem } from "../bridge";
 import { useToast } from "../toast";
 import { ButtonLoadingLabel, CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
 import { usePageVisibility } from "../components/PageVisibility";
+import { warmImageUrls } from "../storePreload";
 
 /** 更多操作菜单（三竖点） */
 function PetMoreMenu({ slug, name, onUninstall }: { slug: string; name: string; onUninstall: () => void }) {
@@ -69,6 +70,7 @@ interface PetListCacheEntry {
 const petListCache = new Map<string, PetListCacheEntry>();
 const knownPetTags = new Set<string>();
 const petViewCache = { category: "", search: "", installFilter: "" };
+let petPreloadPromise: Promise<void> | null = null;
 
 function petCacheKey(category: string, search: string) {
   return `${category}:${search.trim().toLowerCase()}`;
@@ -91,6 +93,35 @@ function collectPetTags(items: PetItem[]) {
       if (tag.trim()) knownPetTags.add(tag.trim());
     }
   }
+}
+
+export function preloadPetStore(): Promise<void> {
+  const key = petCacheKey(petViewCache.category, petViewCache.search);
+  const cached = petListCache.get(key);
+  if (cached && Date.now() - cached.updatedAt < PET_CACHE_TTL) {
+    warmImageUrls(cached.items.map((item) => item.spriteSheet ?? item.imageUrl), 4);
+    return Promise.resolve();
+  }
+  if (petPreloadPromise) return petPreloadPromise;
+
+  petPreloadPromise = bridge.storePets({
+    target: "codex",
+    page: 1,
+    pageSize: PET_PAGE_SIZE,
+  }).then((result) => {
+    const entry = {
+      items: result.items,
+      total: result.total,
+      page: 1,
+      updatedAt: Date.now(),
+    };
+    collectPetTags(entry.items);
+    rememberPetCache(key, entry);
+    warmImageUrls(entry.items.map((item) => item.spriteSheet ?? item.imageUrl), 4);
+  }).finally(() => {
+    petPreloadPromise = null;
+  });
+  return petPreloadPromise;
 }
 
 function DesktopPetIcon({ active }: { active: boolean }) {
