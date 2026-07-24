@@ -31,6 +31,8 @@ nsis:
   deleteAppDataOnUninstall: false
 mac:
   icon: build/icon.icns
+  hardenedRuntime: true
+  notarize: true
   target:
     - target: dmg
       arch: [arm64, x64]
