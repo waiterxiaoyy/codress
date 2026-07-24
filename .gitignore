@@ -1,6 +1,18 @@
 # 本地脚本（部署、爬虫等，含敏感信息不公开）
 scripts/
 
+# 本地生产部署配置（服务器地址、路径和发布脚本不入库）
+platform/deploy/live/
+platform/deploy/publish-live.sh
+platform/deploy/README.md
+platform/deploy/*.env
+
+# 生成的主题/宠物图片仅通过管理端上传，不进入 GitHub
+platform/deploy/seed/**/*.jpg
+platform/deploy/seed/**/*.jpeg
+platform/deploy/seed/**/*.png
+platform/deploy/seed/**/*.webp
+
 # 构建产物
 .build/
 

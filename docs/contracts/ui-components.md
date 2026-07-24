@@ -70,6 +70,16 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 - Status colors may remain semantic red, green or accent colors, but their background and contrast must be checked in both themes.
 - New components must be checked in forced light, forced dark and automatic modes.
 - Do not infer a remote content image's theme or recolor user/store artwork globally.
+- Selected navigation rows must explicitly inherit their semantic foreground into label and icon descendants; component-library or SVG defaults must not reintroduce a conflicting text color.
+
+### Injected target overlays
+
+- Codex header controls, selected sidebar rows and document-level portal surfaces must use the active skin's semantic panel, text, muted, line and accent values.
+- Portalled menus, listboxes and popovers receive the runtime-owned `.dream-skin-popover-surface` hook; skin CSS must not depend only on generated Codex utility-class names.
+- A selected sidebar row must override descendant primary-text tokens as well as its parent color so the native shell cannot reintroduce dark text inside a dark skin.
+- Reasoning, search and tool-result rows must explicitly map primary text, muted text and monospace output to skin semantics; setting color only on the main container is insufficient.
+- Preserve semantic success and error colors inside overlays. Generic primary/secondary text may be themed, but change counts and validation states must remain green/red.
+- Overlay QA covers dark, light and image-derived automatic shells; default, hover, focus, selected and disabled states; reasoning/tool output; and a busy image behind the header.
 
 ## Page lifetime and animated media
 

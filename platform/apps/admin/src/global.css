@@ -5,6 +5,31 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+:root {
+  --admin-menu-selected-bg: #111;
+  --admin-menu-selected-text: #fff;
+  --admin-menu-hover-bg: #f3f3f3;
+  --admin-menu-hover-text: #111;
+}
+
+/* Ant Menu 会给标题与图标分别设置颜色，选中态必须覆盖所有后代。 */
+.ant-menu-light .ant-menu-item:hover {
+  color: var(--admin-menu-hover-text);
+  background: var(--admin-menu-hover-bg);
+}
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-light .ant-menu-item-selected:hover,
+.ant-menu-light .ant-menu-item-selected .ant-menu-title-content,
+.ant-menu-light .ant-menu-item-selected .anticon,
+.ant-menu-light .ant-menu-item-selected svg {
+  color: var(--admin-menu-selected-text);
+}
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-light .ant-menu-item-selected:hover {
+  background: var(--admin-menu-selected-bg);
+  font-weight: 600;
+}
+
 .admin-brand {
   display: grid;
   gap: 5px;
@@ -60,4 +85,76 @@ body {
 .mono {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 12px;
+}
+
+.admin-preview-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #f5f5f5;
+}
+.admin-preview-panel > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-preview-mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10, 12, 16, .82), rgba(10, 12, 16, .18));
+}
+.admin-preview-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: 31% 1fr;
+  min-height: 300px;
+  color: var(--preview-text, #fff);
+}
+.admin-preview-sidebar {
+  padding: 20px 12px;
+  border-right: 1px solid color-mix(in srgb, var(--preview-text, #fff) 20%, transparent);
+  background: color-mix(in srgb, var(--preview-panel, #151922) 86%, transparent);
+}
+.admin-preview-brand { margin: 0 8px 22px; font-weight: 800; letter-spacing: .08em; }
+.admin-preview-nav {
+  margin: 6px 0;
+  padding: 9px 10px;
+  border-radius: 7px;
+  color: color-mix(in srgb, var(--preview-text, #fff) 68%, transparent);
+}
+.admin-preview-nav.selected {
+  color: var(--preview-selected-text, #fff);
+  background: color-mix(in srgb, var(--preview-accent, #708090) 34%, transparent);
+  font-weight: 650;
+}
+.admin-preview-content { padding: 28px; }
+.admin-preview-card {
+  max-width: 420px;
+  margin-top: 30px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--preview-text, #fff) 18%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--preview-panel, #151922) 88%, transparent);
+}
+.admin-preview-muted {
+  color: color-mix(in srgb, var(--preview-text, #fff) 62%, transparent);
+}
+
+.pet-detail-preview {
+  display: grid;
+  place-items: center;
+  min-height: 280px;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  background:
+    linear-gradient(45deg, #f4f4f4 25%, transparent 25%),
+    linear-gradient(-45deg, #f4f4f4 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f4f4f4 75%),
+    linear-gradient(-45deg, transparent 75%, #f4f4f4 75%);
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
 }

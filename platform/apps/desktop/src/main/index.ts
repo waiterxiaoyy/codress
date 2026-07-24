@@ -17,6 +17,8 @@ if (!app.isPackaged) {
 
 let mainWindow: BrowserWindow | null = null;
 let ctx: AppContext | null = null;
+let pendingPreviewUrl: string | null = null;
+let pendingPreviewResult: { ok: boolean; message: string } | null = null;
 
 const resourcesRoot = app.isPackaged
   ? path.join(process.resourcesPath, "resources")
@@ -48,16 +50,93 @@ function createMainWindow() {
   const devUrl = process.env.ELECTRON_RENDERER_URL;
   if (devUrl) mainWindow.loadURL(devUrl);
   else mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+  mainWindow.webContents.once("did-finish-load", () => {
+    if (pendingPreviewResult && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("codress:preview-result", pendingPreviewResult);
+      pendingPreviewResult = null;
+    }
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
+function previewApiBase(raw: string | null) {
+  const fallback = app.isPackaged ? "https://codress.dev" : "http://127.0.0.1:8080";
+  if (!raw) return fallback;
+  const parsed = new URL(raw);
+  const loopback = parsed.protocol === "http:"
+    && (parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost");
+  if ((parsed.protocol === "https:" && parsed.hostname === "codress.dev") || loopback) {
+    return parsed.origin;
+  }
+  throw new Error("调试链接的服务地址不受信任");
+}
+
+async function handlePreviewUrl(raw: string) {
+  if (!ctx) {
+    pendingPreviewUrl = raw;
+    return;
+  }
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "codress:" || url.hostname !== "preview") return;
+    const ticket = url.searchParams.get("ticket");
+    if (!ticket || !/^[A-Za-z0-9_-]{40,64}$/.test(ticket)) throw new Error("调试票据格式无效");
+    const base = previewApiBase(url.searchParams.get("api"));
+    const response = await fetch(`${base}/api/v1/preview-sessions/exchange`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticket }),
+    });
+    const body = await response.json() as {
+      error?: string;
+      target?: string;
+      skin?: import("./core/api").SkinManifest;
+    };
+    if (!response.ok || !body.skin || !body.target) {
+      throw new Error(body.error || "无法读取皮肤调试快照");
+    }
+    createMainWindow();
+    const outcome = await ctx.applyPreviewSkin(body.target, body.skin);
+    sendPreviewResult({
+      ok: outcome.ok,
+      message: outcome.ok
+        ? `已临时应用「${body.skin.name}」到 ${body.target === "codex" ? "Codex" : "WorkBuddy"}`
+        : outcome.message || "皮肤已注入，但校验未通过",
+    });
+  } catch (error) {
+    createMainWindow();
+    sendPreviewResult({
+      ok: false,
+      message: (error as Error).message,
+    });
+  }
+}
+
+function sendPreviewResult(result: { ok: boolean; message: string }) {
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isLoading()) {
+    mainWindow.webContents.send("codress:preview-result", result);
+  } else {
+    pendingPreviewResult = result;
+  }
+}
+
+app.setAsDefaultProtocolClient("codress");
+app.on("open-url", (event, url) => {
+  event.preventDefault();
+  void handlePreviewUrl(url);
+});
+
 const singleLock = app.requestSingleInstanceLock();
 if (!singleLock) {
   app.quit();
 } else {
-  app.on("second-instance", () => createMainWindow());
+  app.on("second-instance", (_event, argv) => {
+    createMainWindow();
+    const previewUrl = argv.find((item) => item.startsWith("codress://"));
+    if (previewUrl) void handlePreviewUrl(previewUrl);
+  });
 
   app.whenReady().then(async () => {
     if (app.isPackaged) Menu.setApplicationMenu(null);
@@ -95,6 +174,12 @@ if (!singleLock) {
     );
     registerIpc(ctx, () => mainWindow, updater, createMainWindow);
     createMainWindow();
+    const launchPreviewUrl = process.argv.find((item) => item.startsWith("codress://"));
+    const queuedPreviewUrl = pendingPreviewUrl;
+    pendingPreviewUrl = null;
+    if (queuedPreviewUrl || launchPreviewUrl) {
+      void handlePreviewUrl(queuedPreviewUrl ?? launchPreviewUrl!);
+    }
     createTray(ctx, resourcesRoot, createMainWindow);
     updater.start();
 

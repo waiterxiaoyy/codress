@@ -97,6 +97,7 @@ export default function App() {
   const [mountedPages, setMountedPages] = useState<Set<(typeof pages)[number]["key"]>>(() => new Set(["themes"]));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
+  const [previewNotice, setPreviewNotice] = useState<{ ok: boolean; message: string } | null>(null);
   const [starting, setStarting] = useState(true);
   useEffect(() => {
     applyTheme();
@@ -109,6 +110,10 @@ export default function App() {
     bridge.getUpdateState().then(setUpdateState).catch(() => undefined);
     return bridge.onUpdateState(setUpdateState);
   }, []);
+  useEffect(() => bridge.onPreviewResult((result) => {
+    setPreviewNotice(result);
+    window.setTimeout(() => setPreviewNotice(null), 8000);
+  }), []);
   useEffect(() => {
     let active = true;
     let minimumTimer = 0;
@@ -154,6 +159,12 @@ export default function App() {
           </div>
         </div>
       ) : <div className={`shell ${collapsed ? "collapsed" : ""}`}>
+        {previewNotice && (
+          <div className={`preview-notice ${previewNotice.ok ? "success" : "error"}`} role="status">
+            <span>{previewNotice.message}</span>
+            <button type="button" onClick={() => setPreviewNotice(null)} aria-label="关闭">×</button>
+          </div>
+        )}
         <aside className="side">
           <div className="brand" title="Codress">
             <span className="brand-identity">

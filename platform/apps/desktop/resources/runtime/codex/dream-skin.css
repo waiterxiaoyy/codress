@@ -253,10 +253,17 @@ html.codex-dream-skin aside.app-shell-left-panel button[aria-label^="切换模�
 
 html.codex-dream-skin aside.app-shell-left-panel [class~="bg-token-list-hover-background"],
 html.codex-dream-skin aside.app-shell-left-panel [aria-current="page"] {
-  background: rgb(var(--ds-accent-rgb) / .12) !important;
-  border: 1px solid rgb(var(--ds-accent-rgb) / .22) !important;
+  background: rgb(var(--ds-accent-rgb) / .18) !important;
+  border: 1px solid rgb(var(--ds-accent-rgb) / .30) !important;
   box-shadow: 0 4px 16px rgb(var(--ds-bg-rgb) / .12) !important;
   color: var(--ds-text) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  :is([class~="bg-token-list-hover-background"], [aria-current="page"])
+  :is(span, p, [class*="text-token-text-primary"], [class*="text-token-foreground"]) {
+  color: var(--ds-text) !important;
+  -webkit-text-fill-color: var(--ds-text) !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel [aria-current="page"] svg {
@@ -412,6 +419,42 @@ html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"
   text-shadow:
     0 1px 2px rgb(var(--ds-bg-rgb) / .72),
     0 0 10px rgb(var(--ds-bg-rgb) / .46);
+}
+
+/* Reasoning, search and tool-result rows own descendant text tokens instead
+   of inheriting the role=main color. Theme those stable semantic tokens while
+   leaving success/error token families available for status feedback. */
+html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"]
+  :is([class*="text-token-text-primary"], [class*="text-token-foreground"]) {
+  color: var(--ds-text) !important;
+  -webkit-text-fill-color: var(--ds-text) !important;
+}
+
+html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"]
+  :is([class*="text-token-text-secondary"], [class*="text-token-text-tertiary"],
+      [class*="text-token-input-placeholder"]) {
+  color: rgb(var(--ds-muted-rgb) / .94) !important;
+  -webkit-text-fill-color: rgb(var(--ds-muted-rgb) / .94) !important;
+  opacity: 1 !important;
+}
+
+html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"]
+  :is(pre, code, samp, kbd) {
+  color: rgb(var(--ds-text-rgb) / .92) !important;
+  -webkit-text-fill-color: rgb(var(--ds-text-rgb) / .92) !important;
+}
+
+html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"]
+  :is([class*="text-token-success"], [class*="text-token-positive"]) {
+  color: #31b85b !important;
+  -webkit-text-fill-color: #31b85b !important;
+}
+
+html.codex-dream-skin main.main-surface:not(.dream-skin-home-shell) [role="main"]
+  :is([class*="text-token-error"], [class*="text-token-danger"],
+      [class*="text-token-negative"]) {
+  color: #e85d67 !important;
+  -webkit-text-fill-color: #e85d67 !important;
 }
 
 html.codex-dream-skin[data-dream-shell="light"] main.main-surface:not(.dream-skin-home-shell) [role="main"] {
@@ -822,6 +865,123 @@ html.codex-dream-skin[data-dream-art-wide="true"] main.main-surface
   > header.app-header-tint svg {
   color: rgb(var(--ds-muted-rgb) / .96) !important;
   filter: drop-shadow(0 1px 2px rgb(var(--ds-bg-rgb) / .72));
+}
+
+/* Header controls sit directly over artwork. Keep compact icon actions quiet,
+   while dropdown-like pills own an opaque semantic surface. */
+html.codex-dream-skin main.main-surface > header.app-header-tint button {
+  color: var(--ds-muted) !important;
+  border-color: transparent !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint
+  button:is([aria-haspopup], [aria-expanded]) {
+  color: var(--ds-text) !important;
+  background: rgb(var(--ds-panel-rgb) / .92) !important;
+  border: 1px solid rgb(var(--ds-muted-rgb) / .22) !important;
+  box-shadow:
+    0 6px 18px rgb(var(--ds-bg-rgb) / .18),
+    inset 0 1px rgb(var(--ds-text-rgb) / .08) !important;
+  backdrop-filter: blur(12px) saturate(106%) !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint button *,
+html.codex-dream-skin main.main-surface > header.app-header-tint button svg {
+  color: currentColor !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint button:hover:not(:disabled) {
+  color: var(--ds-text) !important;
+  background: rgb(var(--ds-accent-rgb) / .12) !important;
+  border-color: rgb(var(--ds-accent-rgb) / .24) !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint
+  button:is([aria-haspopup], [aria-expanded="true"]):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ds-panel) 88%, var(--ds-accent) 12%) !important;
+  border-color: rgb(var(--ds-accent-rgb) / .34) !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint button:focus-visible {
+  outline: 2px solid rgb(var(--ds-accent-rgb) / .72) !important;
+  outline-offset: 2px !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint button:disabled {
+  color: rgb(var(--ds-muted-rgb) / .72) !important;
+  background: rgb(var(--ds-panel-rgb) / .72) !important;
+  border-color: rgb(var(--ds-muted-rgb) / .14) !important;
+  opacity: .82 !important;
+}
+
+/* Portalled menus, project/environment cards and listboxes must follow the
+   active skin instead of retaining Codex's opaque white default surface. */
+html.codex-dream-skin .dream-skin-popover-surface {
+  color: var(--ds-text) !important;
+  background: color-mix(in srgb, var(--ds-panel) 96%, var(--ds-bg) 4%) !important;
+  border: 1px solid rgb(var(--ds-muted-rgb) / .24) !important;
+  box-shadow:
+    0 18px 48px rgb(var(--ds-bg-rgb) / .34),
+    inset 0 1px rgb(var(--ds-text-rgb) / .08) !important;
+  backdrop-filter: blur(18px) saturate(108%) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is([class*="text-token-text-primary"], [class*="text-token-foreground"]) {
+  color: var(--ds-text) !important;
+  -webkit-text-fill-color: var(--ds-text) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is([class*="text-token-text-secondary"], [class*="text-token-text-tertiary"],
+      [class*="text-token-input-placeholder"]) {
+  color: var(--ds-muted) !important;
+  -webkit-text-fill-color: var(--ds-muted) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(button, a, [role="menuitem"], [role="option"]) {
+  color: var(--ds-text) !important;
+  border-color: transparent !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(button, a, [role="menuitem"], [role="option"]) * {
+  color: currentColor;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(button, a, [role="menuitem"], [role="option"]):hover:not(:disabled) {
+  color: var(--ds-text) !important;
+  background: rgb(var(--ds-accent-rgb) / .12) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is([aria-selected="true"], [aria-current="true"], [data-state="checked"]) {
+  color: var(--ds-text) !important;
+  background: rgb(var(--ds-accent-rgb) / .18) !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--ds-accent-rgb) / .30) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(hr, [role="separator"], [class*="border-token"]) {
+  border-color: rgb(var(--ds-muted-rgb) / .18) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(input, textarea, [contenteditable="true"]) {
+  color: var(--ds-text) !important;
+  background: rgb(var(--ds-panel-2-rgb) / .84) !important;
+  border-color: rgb(var(--ds-muted-rgb) / .24) !important;
+  caret-color: var(--ds-accent) !important;
+}
+
+html.codex-dream-skin .dream-skin-popover-surface
+  :is(button, [role="menuitem"], [role="option"]):focus-visible {
+  outline: 2px solid rgb(var(--ds-accent-rgb) / .68) !important;
+  outline-offset: -1px !important;
 }
 
 html.codex-dream-skin[data-dream-art-wide="true"] main.main-surface.dream-skin-home-shell

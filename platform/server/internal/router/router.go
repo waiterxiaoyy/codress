@@ -41,6 +41,7 @@ func New(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		v1.GET("/adapters/:appId", public.GetAdapter)
 		v1.GET("/client/latest", public.LatestClient)
 		v1.POST("/telemetry/verify", public.PostTelemetry)
+		v1.POST("/preview-sessions/exchange", handler.ExchangeSkinPreviewSession(db, cfg))
 
 		authGroup := v1.Group("/auth")
 		{
@@ -73,6 +74,7 @@ func New(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			authed.PUT("/skins/:id", admin.UpdateSkin)
 			authed.POST("/skins/:id/assets", admin.UploadSkinAssets)
 			authed.POST("/skins/:id/status", admin.SetSkinStatus)
+			authed.POST("/preview-sessions", admin.CreateSkinPreviewSession)
 			authed.DELETE("/skins/:id", admin.DeleteSkin)
 			// AI 生成
 			authed.POST("/skins/ai-generate", admin.GenerateSkinMeta)

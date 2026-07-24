@@ -281,6 +281,48 @@ export class SkinLibrary {
     };
   }
 
+  /** 管理端一次性调试快照。保留完整语义配置，但使用独立本地 slug，避免覆盖商店版本。 */
+  async importPreviewData(
+    target: string,
+    imageData: Buffer,
+    snapshot: SkinManifest,
+  ): Promise<InstalledSkin> {
+    const manifest: SkinManifest = {
+      ...snapshot,
+      slug: `local-preview-${snapshot.slug}-${Date.now().toString(36)}`,
+      name: `[预览] ${snapshot.name}`,
+      targets: [target],
+      source: "local",
+      createdAt: new Date().toISOString(),
+    };
+    const dir = this.themeDirFor(target, manifest.slug);
+    const imageFile = "background.jpg";
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, imageFile), imageData);
+    if (target === "workbuddy") {
+      await fs.writeFile(
+        path.join(dir, "catalog.json"),
+        JSON.stringify(this.workbuddyCatalog(manifest, imageFile), null, 2),
+      );
+    } else {
+      await fs.writeFile(
+        path.join(dir, "theme.json"),
+        JSON.stringify(this.codexTheme(manifest, imageFile), null, 2),
+      );
+    }
+    return {
+      slug: manifest.slug,
+      name: manifest.name,
+      target,
+      dir,
+      imageFile,
+      source: "local",
+      createdAt: manifest.createdAt,
+      appearance: manifest.appearance,
+      customization: manifest.customization,
+    };
+  }
+
   /** 任意本地图片 → 一套皮肤(自适应配色交给注入运行时)。 */
   async importImage(target: string, imagePath: string, name: string): Promise<InstalledSkin> {
     const slug = `local-${Date.now().toString(36)}`;

@@ -155,6 +155,19 @@ func TestFullFlow(t *testing.T) {
 	// 上传背景图 + 发布
 	code, body = adminC.upload("/api/admin/skins/"+skinID+"/assets", "background", "bg.png", tinyPNG)
 	mustStatus(t, code, 200, "upload background", body)
+	// 草稿调试使用短期、一次性 ticket，不向客户端暴露管理员 JWT。
+	code, body = adminC.postJSON("/api/admin/preview-sessions", map[string]any{
+		"skinId": body["id"], "target": "codex",
+	})
+	mustStatus(t, code, 200, "create preview session", body)
+	previewTicket, _ := body["ticket"].(string)
+	code, body = anon.postJSON("/api/v1/preview-sessions/exchange", map[string]string{"ticket": previewTicket})
+	mustStatus(t, code, 200, "exchange preview session", body)
+	if body["scope"] != "skin:preview" || body["target"] != "codex" {
+		t.Fatalf("unexpected preview payload: %v", body)
+	}
+	code, body = anon.postJSON("/api/v1/preview-sessions/exchange", map[string]string{"ticket": previewTicket})
+	mustStatus(t, code, 401, "preview session is one-use", body)
 	code, body = adminC.postJSON("/api/admin/skins/"+skinID+"/status", map[string]string{"status": "published"})
 	mustStatus(t, code, 200, "publish skin", body)
 

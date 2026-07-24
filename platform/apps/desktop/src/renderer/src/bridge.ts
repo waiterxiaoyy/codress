@@ -160,6 +160,7 @@ export interface LibrarySkinItem {
 export interface CodressBridge {
   onStatusChanged(listener: () => void): () => void;
   onLibraryChanged(listener: () => void): () => void;
+  onPreviewResult(listener: (result: { ok: boolean; message: string }) => void): () => void;
   appStatus(): Promise<AdapterStatus[]>;
   clientInfo(): Promise<{ version: string; platform: "mac" | "win" | "other" }>;
   latestClient(): Promise<ClientRelease | null>;
@@ -227,6 +228,7 @@ async function apiFetch<T>(path: string): Promise<T> {
 const fallbackBridge: CodressBridge = {
   onStatusChanged: noop,
   onLibraryChanged: noop,
+  onPreviewResult: noop,
   appStatus: () => Promise.resolve([]),
   clientInfo: () => Promise.resolve({ version: "Web", platform: "other" }),
   latestClient: () => Promise.resolve(null),

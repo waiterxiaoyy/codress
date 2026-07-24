@@ -16,6 +16,10 @@ publish:
   owner: waiterxiaoyy
   repo: codress
   releaseType: draft
+protocols:
+  - name: Codress Preview
+    schemes:
+      - codress
 win:
   icon: build/icon.ico
   target:

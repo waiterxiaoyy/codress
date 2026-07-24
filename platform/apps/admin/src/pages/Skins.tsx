@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Button, Checkbox, Col, Collapse, Form, Input, InputNumber,
-  Modal, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Upload, message,
+  Alert, Button, Checkbox, Col, Collapse, Form, Input, InputNumber,
+  Modal, Popconfirm, Row, Segmented, Select, Space, Table, Tag, Tooltip, Upload, message,
 } from "antd";
 import {
   BulbOutlined, CloudUploadOutlined, CopyOutlined,
@@ -20,7 +20,7 @@ interface SkinRow {
   id: number; slug: string; name: string; description: string;
   author: string; category: string; targets: string[];
   appearance: string; status: string; downloads: number; sort: number;
-  backgroundUrl: string; previewLightUrl: string;
+  backgroundUrl: string; previewLightUrl: string; previewDarkUrl?: string;
   art?: ArtConfig; colors?: Record<string, string>;
   tagline?: string; quote?: string; statusText?: string;
   brandSubtitle?: string; projectPrefix?: string; projectLabel?: string;
@@ -46,6 +46,75 @@ function Swatch({ color }: { color?: string }) {
   );
 }
 
+function hexLuminance(value?: string) {
+  if (!value || !/^#[0-9a-f]{6}$/i.test(value)) return null;
+  const channels = [1, 3, 5].map((index) => {
+    const channel = parseInt(value.slice(index, index + 2), 16) / 255;
+    return channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+  });
+  return .2126 * channels[0] + .7152 * channels[1] + .0722 * channels[2];
+}
+
+function contrastRatio(foreground?: string, background?: string) {
+  const fg = hexLuminance(foreground);
+  const bg = hexLuminance(background);
+  if (fg == null || bg == null) return null;
+  return (Math.max(fg, bg) + .05) / (Math.min(fg, bg) + .05);
+}
+
+function SkinWorkspacePreview({ skin, imageUrl }: { skin: SkinRow; imageUrl?: string }) {
+  const colors = skin.colors ?? {};
+  const contrast = contrastRatio(colors.text, colors.panel);
+  return (
+    <Space direction="vertical" size="small" style={{ width: "100%" }}>
+      <div
+        className="admin-preview-panel"
+        style={{
+          "--preview-text": colors.text || "#f4f6f8",
+          "--preview-panel": colors.panel || "#151922",
+          "--preview-accent": colors.accent || "#778da0",
+          "--preview-selected-text": colors.text || "#fff",
+        } as React.CSSProperties}
+      >
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt={`${skin.name} 工作区预览`}
+            style={{
+              objectPosition: `${(skin.art?.focusX ?? .5) * 100}% ${(skin.art?.focusY ?? .5) * 100}%`,
+            }}
+          />
+        )}
+        <div className="admin-preview-mask" />
+        <div className="admin-preview-shell">
+          <aside className="admin-preview-sidebar">
+            <div className="admin-preview-brand">CODRESS</div>
+            <div className="admin-preview-nav">生成主题图片</div>
+            <div className="admin-preview-nav selected">皮肤调试</div>
+            <div className="admin-preview-nav">宠物管理</div>
+          </aside>
+          <section className="admin-preview-content">
+            <div style={{ fontSize: 20, fontWeight: 700 }}>{skin.name}</div>
+            <div className="admin-preview-muted">{skin.tagline || "真实客户端语义层预览"}</div>
+            <div className="admin-preview-card">
+              <strong>环境信息</strong>
+              <p className="admin-preview-muted">检查正文、弱文字、边框和选中态是否清晰。</p>
+              <div className="admin-preview-nav selected">当前选中项目</div>
+            </div>
+          </section>
+        </div>
+      </div>
+      {contrast != null && (
+        <Alert
+          type={contrast >= 4.5 ? "success" : "warning"}
+          showIcon
+          message={`正文 / 面板对比度 ${contrast.toFixed(2)}:1${contrast >= 4.5 ? "，通过" : "，建议至少 4.5:1"}`}
+        />
+      )}
+    </Space>
+  );
+}
+
 export default function Skins() {
   const [rows, setRows] = useState<SkinRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -65,6 +134,7 @@ export default function Skins() {
   const [imgPromptLoading, setImgPromptLoading] = useState(false);
   const [imgPrompt, setImgPrompt] = useState("");
   const [applyLoading, setApplyLoading] = useState<number | null>(null);
+  const [assetPreviewMode, setAssetPreviewMode] = useState<"background" | "light" | "dark">("background");
   const imgPromptRef = useRef<HTMLTextAreaElement>(null);
 
   const load = useCallback(async () => {
@@ -189,17 +259,14 @@ export default function Skins() {
   const applyLocal = async (row: SkinRow) => {
     setApplyLoading(row.id);
     try {
-      // 通过 IPC bridge：调用本地客户端 API（如果管理端在 Electron 里运行）
-      // 否则提示用户手动操作
-      const win = window as unknown as { __codress_apply?: (slug: string, target: string) => Promise<void> };
-      if (typeof win.__codress_apply === "function") {
-        await win.__codress_apply(row.slug, "codex");
-        message.success(`已在本地 Codex 应用「${row.name}」`);
-      } else {
-        // 非 Electron 环境：复制 slug，提示在客户端手动搜索
-        await navigator.clipboard.writeText(row.slug);
-        message.info(`皮肤 slug「${row.slug}」已复制，在桌面客户端搜索并应用`);
-      }
+      if (!row.backgroundUrl) throw new Error("请先上传背景图");
+      const target = row.targets.includes("codex") ? "codex" : row.targets[0];
+      const { data } = await api.post("/admin/preview-sessions", { skinId: row.id, target });
+      const apiBase = import.meta.env.DEV ? "http://127.0.0.1:8080" : window.location.origin;
+      const deepLink = `codress://preview?ticket=${encodeURIComponent(data.ticket)}&api=${encodeURIComponent(apiBase)}`;
+      window.location.href = deepLink;
+      await navigator.clipboard.writeText(deepLink).catch(() => undefined);
+      message.success("已发送到 Codress 客户端；调试链接同时复制到剪贴板");
     } catch (error) {
       message.error(errorText(error));
     } finally {
@@ -210,12 +277,16 @@ export default function Skins() {
   /* ─── 上传 ─── */
   const uploadProps = (field: string) => ({
     showUploadList: false,
+    accept: ".png,.jpg,.jpeg,.webp",
     customRequest: async (options: { file: unknown; onSuccess?: (b: unknown) => void; onError?: (e: Error) => void }) => {
       const fd = new FormData();
       fd.append(field, options.file as Blob);
       try {
-        await api.post(`/admin/skins/${assetsFor!.id}/assets`, fd);
+        const file = options.file as File;
+        if (file.size > 16 * 1024 * 1024) throw new Error("图片不能超过 16 MB");
+        const { data } = await api.post(`/admin/skins/${assetsFor!.id}/assets`, fd);
         message.success(`${field} 上传成功`); options.onSuccess?.({});
+        setAssetsFor((current) => current ? { ...current, ...data } : current);
         load();
       } catch (error) {
         message.error(errorText(error)); options.onError?.(new Error(errorText(error)));
@@ -449,29 +520,68 @@ export default function Skins() {
       </Modal>
 
       {/* 素材上传 */}
-      <Modal title={`素材：${assetsFor?.name ?? ""}`} open={!!assetsFor}
-        footer={null} onCancel={() => setAssetsFor(null)} destroyOnClose>
-        <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          <div>
-            <div style={{ marginBottom: 8, color: "#888" }}>
-              背景图（必需 · 纯壁纸无UI · 建议 2560×1440 · ≤16MB）
-            </div>
-            {assetsFor?.backgroundUrl && (
-              <img src={assetsFor.backgroundUrl} alt="" style={{ width: "100%", borderRadius: 6, marginBottom: 8 }} />
-            )}
-            <Upload {...uploadProps("background")}>
-              <Button icon={<CloudUploadOutlined />}>上传背景图</Button>
-            </Upload>
-          </div>
-          <div>
-            <div style={{ marginBottom: 8, color: "#888" }}>浅色预览图（可选）</div>
-            <Upload {...uploadProps("previewLight")}><Button>上传浅色预览</Button></Upload>
-          </div>
-          <div>
-            <div style={{ marginBottom: 8, color: "#888" }}>暗色预览图（可选）</div>
-            <Upload {...uploadProps("previewDark")}><Button>上传暗色预览</Button></Upload>
-          </div>
-        </Space>
+      <Modal title={`皮肤工作台：${assetsFor?.name ?? ""}`} open={!!assetsFor}
+        width={980} footer={null} onCancel={() => setAssetsFor(null)} destroyOnClose>
+        {assetsFor && <Row gutter={20}>
+          <Col span={16}>
+            <Segmented
+              block
+              value={assetPreviewMode}
+              options={[
+                { value: "background", label: "真实背景" },
+                { value: "light", label: "浅色预览" },
+                { value: "dark", label: "暗色预览" },
+              ]}
+              onChange={(value) => setAssetPreviewMode(value as typeof assetPreviewMode)}
+              style={{ marginBottom: 12 }}
+            />
+            <SkinWorkspacePreview
+              skin={assetsFor}
+              imageUrl={assetPreviewMode === "light"
+                ? assetsFor.previewLightUrl || assetsFor.backgroundUrl
+                : assetPreviewMode === "dark"
+                  ? assetsFor.previewDarkUrl || assetsFor.backgroundUrl
+                  : assetsFor.backgroundUrl}
+            />
+          </Col>
+          <Col span={8}>
+            <Space direction="vertical" style={{ width: "100%" }} size="large">
+              <Alert
+                type="info"
+                showIcon
+                message="建议使用 16:9、2560×1440 的纯壁纸，主体避开菜单与正文区域。"
+              />
+              <div>
+                <strong>背景图（必需）</strong>
+                <div style={{ margin: "4px 0 10px", color: "#888", fontSize: 12 }}>≤16 MB，发布与客户端调试的原图</div>
+                <Upload {...uploadProps("background")}>
+                  <Button icon={<CloudUploadOutlined />} block>上传 / 替换背景图</Button>
+                </Upload>
+              </div>
+              <div>
+                <strong>商店预览图（可选）</strong>
+                <div style={{ margin: "4px 0 10px", color: "#888", fontSize: 12 }}>不上传时自动回退到背景图</div>
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  <Upload {...uploadProps("previewLight")}><Button block>上传浅色预览</Button></Upload>
+                  <Upload {...uploadProps("previewDark")}><Button block>上传暗色预览</Button></Upload>
+                </Space>
+              </div>
+              <Button
+                type="primary"
+                icon={<DesktopOutlined />}
+                loading={applyLoading === assetsFor.id}
+                disabled={!assetsFor.backgroundUrl}
+                onClick={() => applyLocal(assetsFor)}
+                block
+              >
+                在客户端临时调试
+              </Button>
+              <div style={{ color: "#888", fontSize: 12 }}>
+                调试票据两分钟内有效且只能使用一次；客户端不会获得管理员权限。
+              </div>
+            </Space>
+          </Col>
+        </Row>}
       </Modal>
 
       {/* AI 生成面板 */}

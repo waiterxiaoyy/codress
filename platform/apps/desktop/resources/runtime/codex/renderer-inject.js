@@ -579,6 +579,28 @@
     }
     for (const candidate of homeUtilityBars) candidate.classList.add("dream-skin-home-utility");
 
+    // Codex mounts dropdowns and environment details in document-level portals.
+    // Give those transient surfaces a stable hook instead of coupling the skin
+    // to generated utility-class names that change between Codex releases.
+    const overlaySurfaces = new Set(document.querySelectorAll([
+      "[data-radix-popper-content-wrapper] > *",
+      "[data-radix-menu-content]",
+      "[data-radix-popover-content]",
+      '[data-slot="popover-content"]',
+      '[data-slot="dropdown-menu-content"]',
+      '[role="menu"]',
+      '[role="listbox"]',
+      '[role="dialog"][data-state]',
+    ].join(",")));
+    for (const candidate of document.querySelectorAll(".dream-skin-popover-surface")) {
+      if (!overlaySurfaces.has(candidate)) candidate.classList.remove("dream-skin-popover-surface");
+    }
+    for (const candidate of overlaySurfaces) {
+      if (!candidate.closest?.(`#${CHROME_ID}`)) {
+        candidate.classList.add("dream-skin-popover-surface");
+      }
+    }
+
     if (!shellMain || !document.body) return;
     if (observedShellMain !== shellMain) {
       resizeObserver?.disconnect();
@@ -656,6 +678,7 @@
     document.querySelectorAll(".dream-skin-home").forEach((node) => node.classList.remove("dream-skin-home"));
     document.querySelectorAll(".dream-skin-home-shell").forEach((node) => node.classList.remove("dream-skin-home-shell"));
     document.querySelectorAll(".dream-skin-home-utility").forEach((node) => node.classList.remove("dream-skin-home-utility"));
+    document.querySelectorAll(".dream-skin-popover-surface").forEach((node) => node.classList.remove("dream-skin-popover-surface"));
     document.getElementById(STYLE_ID)?.remove();
     document.getElementById(CHROME_ID)?.remove();
     state?.observer?.disconnect();

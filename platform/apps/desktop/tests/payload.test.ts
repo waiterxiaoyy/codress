@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -98,5 +98,25 @@ describe("expressions", () => {
     expect(removeExpression(workbuddyAdapter)).toContain("__WORKBUDDY_DREAM_SKIN_STATE__");
     expect(verifyExpression(codexAdapter)).toContain("codex-dream-skin-style");
     expect(verifyExpression(workbuddyAdapter)).toContain("workbuddy-dream-skin-style");
+  });
+});
+
+describe("codex runtime skin coverage", () => {
+  it("themes selected sidebar text and portalled overlay surfaces", async () => {
+    const css = await readFile(
+      new URL("../resources/runtime/codex/dream-skin.css", import.meta.url),
+      "utf8"
+    );
+    const runtime = await readFile(
+      new URL("../resources/runtime/codex/renderer-inject.js", import.meta.url),
+      "utf8"
+    );
+    expect(css).toContain(".dream-skin-popover-surface");
+    expect(css).toContain('[class~="bg-token-list-hover-background"]');
+    expect(css).toContain("button:is([aria-haspopup], [aria-expanded])");
+    expect(css).toContain('[class*="text-token-text-tertiary"]');
+    expect(css).toContain(":is(pre, code, samp, kbd)");
+    expect(runtime).toContain("[data-radix-popper-content-wrapper] > *");
+    expect(runtime).toContain('role="listbox"');
   });
 });

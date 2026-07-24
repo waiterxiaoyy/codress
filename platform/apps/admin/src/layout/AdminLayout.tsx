@@ -16,6 +16,9 @@ const items = [
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const selectedKey = items
+    .filter((item) => item.key !== "/" && location.pathname.startsWith(item.key))
+    .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? "/";
   return (
     <Layout style={{ minHeight: "100vh", background: "#fff" }}>
       <Layout.Sider theme="light" width={180} style={{ borderRight: "1px solid #eee" }}>
@@ -26,7 +29,7 @@ export default function AdminLayout() {
         <Menu
           mode="inline"
           style={{ borderInlineEnd: "none" }}
-          selectedKeys={[location.pathname]}
+          selectedKeys={[selectedKey]}
           items={items}
           onClick={({ key }) => navigate(key)}
         />

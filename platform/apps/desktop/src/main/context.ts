@@ -217,6 +217,22 @@ export class AppContext extends EventEmitter {
     return { ...outcome, slug: installed.slug, name: installed.name };
   }
 
+  async applyPreviewSkin(target: string, snapshot: SkinManifest): Promise<ApplyOutcome> {
+    if (target !== "codex" && target !== "workbuddy") {
+      throw new Error("调试票据包含不支持的目标应用");
+    }
+    const response = await fetch(snapshot.backgroundUrl);
+    if (!response.ok) throw new Error(`预览背景下载失败：HTTP ${response.status}`);
+    const imageData = Buffer.from(await response.arrayBuffer());
+    if (imageData.length < 1 || imageData.length > 16 * 1024 * 1024) {
+      throw new Error("预览背景必须小于 16 MB");
+    }
+    const installed = await this.library.importPreviewData(target, imageData, snapshot);
+    const outcome = await this.applySkin(target, installed.slug, { allowRestart: false });
+    this.emit("library");
+    return outcome;
+  }
+
   async pauseSkin(target: string) {
     const daemon = this.daemons.get(target);
     if (daemon) await daemon.pause();

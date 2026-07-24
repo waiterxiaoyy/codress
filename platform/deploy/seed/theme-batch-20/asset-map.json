@@ -1,0 +1,22 @@
+{
+  "codex-sakura-signal": { "background": "backgrounds/codex-sakura-signal.jpg", "previewLight": "previews/codex-sakura-signal.jpg" },
+  "codex-neon-torii-protocol": { "background": "backgrounds/codex-neon-torii-protocol.jpg", "previewLight": "previews/codex-neon-torii-protocol.jpg" },
+  "codex-rainbyte-alley": { "background": "backgrounds/codex-rainbyte-alley.jpg", "previewLight": "previews/codex-rainbyte-alley.jpg" },
+  "codex-astral-compiler": { "background": "backgrounds/codex-astral-compiler.jpg", "previewLight": "previews/codex-astral-compiler.jpg" },
+  "codex-alpine-memory-line": { "background": "backgrounds/codex-alpine-memory-line.jpg", "previewLight": "previews/codex-alpine-memory-line.jpg" },
+  "codex-cloud-orchard": { "background": "backgrounds/codex-cloud-orchard.jpg", "previewLight": "previews/codex-cloud-orchard.jpg" },
+  "codex-snowfox-commit": { "background": "backgrounds/codex-snowfox-commit.jpg", "previewLight": "previews/codex-snowfox-commit.jpg" },
+  "codex-abyssal-library": { "background": "backgrounds/codex-abyssal-library.jpg", "previewLight": "previews/codex-abyssal-library.jpg" },
+  "codex-sea-breeze-notebook": { "background": "backgrounds/codex-sea-breeze-notebook.jpg", "previewLight": "previews/codex-sea-breeze-notebook.jpg" },
+  "codex-moonlit-archive-cathedral": { "background": "backgrounds/codex-moonlit-archive-cathedral.jpg", "previewLight": "previews/codex-moonlit-archive-cathedral.jpg" },
+  "workbuddy-pastel-team-morning": { "background": "backgrounds/workbuddy-pastel-team-morning.jpg", "previewLight": "previews/workbuddy-pastel-team-morning.jpg" },
+  "workbuddy-stellar-standup": { "background": "backgrounds/workbuddy-stellar-standup.jpg", "previewLight": "previews/workbuddy-stellar-standup.jpg" },
+  "workbuddy-pixel-sprint-98": { "background": "backgrounds/workbuddy-pixel-sprint-98.jpg", "previewLight": "previews/workbuddy-pixel-sprint-98.jpg" },
+  "workbuddy-cloud-pavilion-sync": { "background": "backgrounds/workbuddy-cloud-pavilion-sync.jpg", "previewLight": "previews/workbuddy-cloud-pavilion-sync.jpg" },
+  "workbuddy-island-focus-mode": { "background": "backgrounds/workbuddy-island-focus-mode.jpg", "previewLight": "previews/workbuddy-island-focus-mode.jpg" },
+  "workbuddy-drizzle-cafe-standup": { "background": "backgrounds/workbuddy-drizzle-cafe-standup.jpg", "previewLight": "previews/workbuddy-drizzle-cafe-standup.jpg" },
+  "workbuddy-aurora-basecamp": { "background": "backgrounds/workbuddy-aurora-basecamp.jpg", "previewLight": "previews/workbuddy-aurora-basecamp.jpg" },
+  "workbuddy-neon-rhythm-lab": { "background": "backgrounds/workbuddy-neon-rhythm-lab.jpg", "previewLight": "previews/workbuddy-neon-rhythm-lab.jpg" },
+  "workbuddy-greenhouse-after-rain": { "background": "backgrounds/workbuddy-greenhouse-after-rain.jpg", "previewLight": "previews/workbuddy-greenhouse-after-rain.jpg" },
+  "workbuddy-lantern-launch": { "background": "backgrounds/workbuddy-lantern-launch.jpg", "previewLight": "previews/workbuddy-lantern-launch.jpg" }
+}

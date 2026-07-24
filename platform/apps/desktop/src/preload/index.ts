@@ -11,6 +11,11 @@ const api = {
     ipcRenderer.on("codress:library-changed", wrapped);
     return () => ipcRenderer.removeListener("codress:library-changed", wrapped);
   },
+  onPreviewResult(listener: (result: { ok: boolean; message: string }) => void) {
+    const wrapped = (_event: Electron.IpcRendererEvent, result: { ok: boolean; message: string }) => listener(result);
+    ipcRenderer.on("codress:preview-result", wrapped);
+    return () => ipcRenderer.removeListener("codress:preview-result", wrapped);
+  },
   appStatus: () => ipcRenderer.invoke("app:status"),
   clientInfo: () => ipcRenderer.invoke("app:info"),
   latestClient: () => ipcRenderer.invoke("app:update:latest"),
