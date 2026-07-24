@@ -1,6 +1,6 @@
 {
   "name": "@codress/desktop",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "description": "Codress 桌面客户端 — 给 Codex / WorkBuddy 一键换肤与桌面宠物",
   "main": "out/main/index.js",
