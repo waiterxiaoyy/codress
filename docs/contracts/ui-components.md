@@ -53,6 +53,7 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 ## Source locations
 
 - Component: `platform/apps/desktop/src/renderer/src/components/UnifiedSelect.tsx`
+- Restart confirmation: `platform/apps/desktop/src/renderer/src/components/RestartApplyModal.tsx`
 - Shared styles: `platform/apps/desktop/src/renderer/src/global.css`
 - Store wrapper: `platform/apps/desktop/src/renderer/src/components/StoreControls.tsx`
 
@@ -60,6 +61,7 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 
 - Buttons that start installation, activation, removal or another visible asynchronous mutation must disable conflicting actions immediately and show `ButtonLoadingLabel` until completion.
 - Loading copy describes the active operation, for example `安装中…`, `上桌中…` or `收起中…`; changing only the disabled state is not sufficient feedback.
+- Skin application responses with `needsRestart` must show `RestartApplyModal` and retry the same skin with restart permission after the user confirms.
 - Infinite-scroll sentinels stay visually silent while idle. Show a loading row only while the next page request is actually in flight.
 
 ## Color themes

@@ -50,7 +50,7 @@ export function registerIpc(
   ipcMain.handle("app:update:check", () => updater.check());
   ipcMain.handle("app:update:install", () => updater.updateNow());
   ipcMain.handle("app:path:pick", async (_e, appId: string, currentPath?: string) => {
-    if (appId !== "codex" && appId !== "workbuddy" && appId !== "claude") return null;
+    if (appId !== "codex" && appId !== "workbuddy") return null;
     const win = getWindow();
     const picked = await dialog.showOpenDialog(win!, {
       title: process.platform === "darwin" ? "选择应用" : "选择应用可执行文件",
@@ -156,7 +156,7 @@ export function registerIpc(
     };
   });
   ipcMain.handle("skin:createLocal", async (_e, target: string, input: unknown) => {
-    if (target !== "codex" && target !== "workbuddy" && target !== "claude") throw new Error("不支持的目标应用");
+    if (target !== "codex" && target !== "workbuddy") throw new Error("不支持的目标应用");
     if (!input || typeof input !== "object") throw new Error("皮肤参数无效");
     const value = input as Record<string, unknown>;
     const match = typeof value.imageDataUrl === "string"

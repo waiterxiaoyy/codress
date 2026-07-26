@@ -1,4 +1,4 @@
-export type TargetAppId = "codex" | "workbuddy" | "claude";
+export type TargetAppId = "codex" | "workbuddy";
 
 /** DOM 探测标记:确认连接到的 CDP 页面确实是目标应用的渲染进程 */
 export interface ProbeMarkers {

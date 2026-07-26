@@ -53,7 +53,7 @@ export const claudeAdapter: AdapterDefinition = {
     ],
     processNames: ["Claude.exe", "claude.exe"],
     displayNamePattern: "claude",
-    appx: { namePattern: "Claude" },
+    appx: { namePattern: "Claude", launchMode: "unsupported" },
   },
   mac: {
     bundleIds: ["com.anthropic.claudedesktop"],

@@ -1,12 +1,10 @@
 import type { AdapterDefinition, TargetAppId } from "./types";
 import { codexAdapter } from "./codex";
 import { workbuddyAdapter } from "./workbuddy";
-import { claudeAdapter } from "./claude";
 
 export const adapters: Record<TargetAppId, AdapterDefinition> = {
   codex: codexAdapter,
   workbuddy: workbuddyAdapter,
-  claude: claudeAdapter,
 };
 
 export function adapterFor(id: string): AdapterDefinition {

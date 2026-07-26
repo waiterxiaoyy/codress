@@ -8,15 +8,12 @@ import geminiIcon from "../assets/ccswitch-gemini.svg";
 import kimiIcon from "../assets/ccswitch-kimi.svg";
 import codexIcon from "../assets/codex.png";
 import workbuddyIcon from "../assets/workbuddy.png";
-import claudeAppIcon from "../assets/claude.png";
-
-const APP_IDS = ["codex", "workbuddy", "claude"] as const;
+const APP_IDS = ["codex", "workbuddy"] as const;
 type AppId = (typeof APP_IDS)[number];
 
 const APP_ICONS: Record<AppId, string> = {
   codex: codexIcon,
   workbuddy: workbuddyIcon,
-  claude: claudeAppIcon,
 };
 
 const AGENT_ICONS: Record<AgentSourceId, string> = {
@@ -32,15 +29,11 @@ function pathExample(id: AppId) {
   if (IS_WINDOWS) {
     return id === "codex"
       ? "例如 C:\\Users\\you\\AppData\\Local\\Programs\\Codex\\Codex.exe"
-      : id === "claude"
-        ? "例如 C:\\Users\\you\\AppData\\Local\\AnthropicClaude\\claude.exe"
-        : "例如 C:\\Users\\you\\AppData\\Local\\Programs\\WorkBuddy\\WorkBuddy.exe";
+      : "例如 C:\\Users\\you\\AppData\\Local\\Programs\\WorkBuddy\\WorkBuddy.exe";
   }
   return id === "codex"
     ? "例如 /Applications/ChatGPT.app 或 /Applications/Codex.app"
-    : id === "claude"
-      ? "例如 /Applications/Claude.app"
-      : "例如 /Applications/WorkBuddy.app";
+    : "例如 /Applications/WorkBuddy.app";
 }
 
 const SOURCE_HELP: Record<AgentSourceId, string> = {
@@ -64,12 +57,11 @@ export default function Mine() {
   const dirtyPaths = useRef(new Set<string>());
 
   const refreshSkins = useCallback(async () => {
-    const [codexLib, workbuddyLib, claudeLib] = await Promise.all([
+    const [codexLib, workbuddyLib] = await Promise.all([
       bridge.libraryList("codex"),
       bridge.libraryList("workbuddy"),
-      bridge.libraryList("claude"),
     ]);
-    setInstalled([...codexLib, ...workbuddyLib, ...claudeLib]);
+    setInstalled([...codexLib, ...workbuddyLib]);
   }, []);
 
   const refreshTargetApps = useCallback(async () => {
@@ -232,7 +224,7 @@ export default function Mine() {
       <div className="settings-section-heading">
         <div>
           <h2>目标应用</h2>
-          <p>自动识别 Codex / WorkBuddy / Claude 的安装位置，也可以手动指定本机路径。</p>
+          <p>自动识别 Codex / WorkBuddy 的安装位置，也可以手动指定本机路径。</p>
         </div>
         <button className="btn ghost small" onClick={refreshTargetApps}>重新检测</button>
       </div>

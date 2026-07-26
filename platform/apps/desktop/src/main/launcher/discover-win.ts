@@ -73,10 +73,18 @@ function matchesProcessName(exePath: string, processNames: string[]): boolean {
 async function fromAppx(adapter: AdapterDefinition): Promise<WinDiscovery | null> {
   const appx = adapter.win.appx;
   if (!appx) return null;
+  const pattern = appx.namePattern.trim();
+  if (!pattern) return null;
   const info = await psJson<{ root: string; family: string; appId: string; exeRel: string }>(`
 $ErrorActionPreference = 'Stop'
 try {
-  $p = Get-AppxPackage -Name ${psQuote(appx.namePattern)} |
+  $needle = ${psQuote(pattern)}
+  $p = Get-AppxPackage |
+    Where-Object {
+      "$($_.Name)".IndexOf($needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+      "$($_.PackageFamilyName)".IndexOf($needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+      "$($_.InstallLocation)".IndexOf($needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+    } |
     Sort-Object -Property { [version]$_.Version } -Descending | Select-Object -First 1
   if (-not $p -or -not $p.InstallLocation) { exit 0 }
   $m = Get-AppxPackageManifest -Package $p

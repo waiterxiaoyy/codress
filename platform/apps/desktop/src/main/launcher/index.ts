@@ -176,14 +176,38 @@ export async function launchWithCdp(
     }
     return;
   }
-  if (install.kind === "win-appx" && install.aumid) {
+  if (
+    install.kind === "win-appx" &&
+    install.aumid &&
+    adapter.win.appx?.launchMode !== "direct-exe"
+  ) {
     // 注意:COM 激活无法注入环境变量,依赖 portEnvVar 的目标(WorkBuddy)没有商店版,
     // 实际不会走到这里;真出现时会因 CDP 超时报错,提示用户改用独立安装版
     const ok = await launchAppxWithArgs(install.aumid, args);
     if (ok) return;
   }
-  const child = spawn(install.path, args, { detached: true, stdio: "ignore", env });
-  child.unref();
+  await launchExecutableWithCdp(install.path, args, env);
+}
+
+function launchExecutableWithCdp(exePath: string, args: string[], env: NodeJS.ProcessEnv): Promise<void> {
+  const child = spawn(exePath, args, { detached: true, stdio: "ignore", env });
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timeout = setTimeout(() => {
+      finish(() => reject(new Error("process spawn timed out")));
+    }, 3000);
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      callback();
+    };
+    child.once("spawn", () => {
+      child.unref();
+      finish(resolve);
+    });
+    child.once("error", (error) => finish(() => reject(error)));
+  });
 }
 
 export async function waitForCdp(port: number, timeoutMs = 45000): Promise<boolean> {
@@ -197,7 +221,7 @@ export async function waitForCdp(port: number, timeoutMs = 45000): Promise<boole
 
 export type EnsureResult =
   | { ok: true; port: number }
-  | { ok: false; reason: "not-installed" | "needs-restart" | "cdp-timeout"; message: string };
+  | { ok: false; reason: "not-installed" | "needs-restart" | "launch-failed" | "cdp-timeout"; message: string };
 
 /**
  * 确保目标应用带 CDP 运行:
@@ -218,6 +242,13 @@ export async function ensureAppWithCdp(
       message: `${adapter.name} 未找到(已尝试自动检测常见目录、商店包、注册表与开始菜单),可在设置中手动指定路径`,
     };
   }
+  if (install.kind === "win-appx" && adapter.win.appx?.launchMode === "unsupported") {
+    return {
+      ok: false,
+      reason: "launch-failed",
+      message: `${adapter.name} 商店版/WindowsApps 安装不支持开启皮肤通道,请在“我的 → 目标应用”手动指定独立安装版 exe`,
+    };
+  }
   if (await isProcessRunning(adapter)) {
     if (!allowRestart) {
       return {
@@ -228,12 +259,45 @@ export async function ensureAppWithCdp(
     }
     await stopApp(adapter);
   }
-  await launchWithCdp(adapter, install, port);
-  if (!(await waitForCdp(port))) {
+  try {
+    await launchWithCdp(adapter, install, port);
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "launch-failed",
+      message: `${adapter.name} 启动失败:${(error as Error).message}`,
+    };
+  }
+  if (await waitForCdp(port, 8000)) return { ok: true, port };
+  if (
+    install.kind === "win-appx" &&
+    install.aumid &&
+    adapter.win.appx?.launchMode !== "direct-exe"
+  ) {
+    // Some packaged Electron apps accept activation but drop Chromium flags.
+    // Try the package executable directly before surfacing a timeout.
+    await stopApp(adapter).catch(() => undefined);
+    try {
+      await launchExecutableWithCdp(install.path, adapter.launchArgs(port), buildLaunchEnv(adapter, port));
+    } catch (error) {
+      return {
+        ok: false,
+        reason: "launch-failed",
+        message: `${adapter.name} 商店版未能开启皮肤通道,直接启动也失败:${(error as Error).message}`,
+      };
+    }
+  }
+  if (!(await waitForCdp(port, 30_000))) {
+    const running = await isProcessRunning(adapter);
+    const appxHint = install.kind === "win-appx"
+      ? "；当前检测到的是商店版/WindowsApps 安装,若持续失败请在“我的 → 目标应用”手动指定独立安装版 exe"
+      : "";
     return {
       ok: false,
       reason: "cdp-timeout",
-      message: `${adapter.name} 未在 45 秒内开放本机回环调试端口 ${port}`,
+      message: running
+        ? `${adapter.name} 已启动但未开放本机回环调试端口 ${port}${appxHint}`
+        : `${adapter.name} 未能被拉起或未开放本机回环调试端口 ${port}${appxHint}`,
     };
   }
   return { ok: true, port };
