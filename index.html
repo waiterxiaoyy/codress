@@ -554,34 +554,8 @@ nav{
   box-shadow:0 20px 60px rgba(0,0,0,.15);
 }
 .modal-overlay.show .modal{transform:scale(1) translateY(0)}
-.modal-icon{
-  width:56px;height:56px;border-radius:50%;margin:0 auto 20px;
-  background:var(--light-gray);display:flex;align-items:center;justify-content:center;
-}
 .modal h3{font-size:20px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
 .modal p{font-size:14px;color:var(--dark-gray);line-height:1.7;margin-bottom:24px}
-.modal .bookmark-tip{
-  padding:14px 18px;border-radius:10px;background:var(--off-white);
-  border:1px solid var(--border);text-align:left;margin-bottom:24px;
-}
-.modal .bookmark-tip .tip-title{
-  font-size:13px;font-weight:600;margin-bottom:6px;color:var(--black);
-}
-.modal .bookmark-tip .tip-desc{
-  font-size:12px;color:var(--dark-gray);line-height:1.6;
-}
-.modal .bookmark-tip kbd{
-  display:inline-block;padding:2px 6px;border-radius:4px;
-  background:var(--white);border:1px solid var(--border);
-  font-family:var(--font-mono);font-size:11px;color:var(--near-black);
-}
-.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.modal-actions .btn{padding:10px 20px;font-size:13px}
-.modal-close{
-  padding:10px 28px;border-radius:8px;font-size:14px;font-weight:500;
-  background:var(--black);color:var(--white);transition:all .2s;
-}
-.modal-close:hover{background:var(--near-black);transform:translateY(-1px)}
 
 /* Footer */
 footer{
@@ -904,24 +878,6 @@ footer .flinks a:hover{color:var(--black)}
   </div>
 </div>
 
-<div class="modal-overlay" id="dl-modal">
-  <div class="modal">
-    <div class="modal-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83" stroke-linecap="round"/></svg>
-    </div>
-    <h3 data-i18n="modal.title">敬请期待</h3>
-    <p data-i18n="modal.desc">当前平台的安装包正在准备中。你可以先收藏本站，或前往 GitHub Releases 查看已发布的版本。</p>
-    <div class="bookmark-tip">
-      <div class="tip-title" data-i18n="modal.tip_title">⭐ 收藏本站</div>
-      <div class="tip-desc"><span data-i18n="modal.tip_desc">按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新</span></div>
-    </div>
-    <div class="modal-actions">
-      <a class="btn btn-secondary" href="https://github.com/waiterxiaoyy/codress/releases" target="_blank" rel="noopener" data-i18n="modal.github">前往 GitHub Releases</a>
-      <button class="modal-close" onclick="closeModal()" data-i18n="modal.close">我知道了</button>
-    </div>
-  </div>
-</div>
-
 <script>
 // i18n
 const i18n = {
@@ -981,12 +937,6 @@ const i18n = {
     'download.btn_win': '下载 .exe',
     'download.all': '其他版本与历史更新见 GitHub Releases',
     'footer.guide': '指南',
-    'modal.title': '敬请期待',
-    'modal.desc': '当前平台的安装包正在准备中。你可以先收藏本站，或前往 GitHub Releases 查看已发布的版本。',
-    'modal.tip_title': '⭐ 收藏本站',
-    'modal.tip_desc': '按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新',
-    'modal.github': '前往 GitHub Releases',
-    'modal.close': '我知道了',
     'store.loading': '加载中…',
     'store.retry': '加载失败，点击重试',
     'store.empty': '暂无上架内容',
@@ -1066,12 +1016,6 @@ const i18n = {
     'download.btn_win': 'Download .exe',
     'download.all': 'Other builds and past versions on GitHub Releases',
     'footer.guide': 'Guide',
-    'modal.title': 'Coming Soon',
-    'modal.desc': 'The package for this platform is on its way. Bookmark this page, or check GitHub Releases for published builds.',
-    'modal.tip_title': '⭐ Bookmark This Page',
-    'modal.tip_desc': 'Press <kbd>Ctrl</kbd> + <kbd>D</kbd> (Mac: <kbd>⌘</kbd> + <kbd>D</kbd>) to bookmark and follow updates',
-    'modal.github': 'Open GitHub Releases',
-    'modal.close': 'Got it',
     'store.loading': 'Loading…',
     'store.retry': 'Failed to load — tap to retry',
     'store.empty': 'Nothing published yet',
@@ -1627,20 +1571,9 @@ async function dl(p){
   const info=await fetchLatestRelease();
   const asset=assetFor(p,info);
   if(asset){location.href=asset.url;return}
-  if(!info){window.open(RELEASES_URL,'_blank','noopener');return}
-  // 该平台安装包尚未发布:弹窗提示,内含 GitHub Releases 入口
-  const overlay=document.getElementById('dl-modal');
-  overlay.classList.add('show');
-  document.body.style.overflow='hidden';
+  // 没有对应平台的直链(或 API 不可达):直接去 GitHub Releases 下载
+  window.open(RELEASES_URL,'_blank','noopener');
 }
-function closeModal(){
-  const overlay=document.getElementById('dl-modal');
-  overlay.classList.remove('show');
-  document.body.style.overflow='';
-}
-document.getElementById('dl-modal').addEventListener('click',function(e){
-  if(e.target===this) closeModal();
-});
 
 // ===== 宠物详情弹窗 =====
 const petModal=document.getElementById('pet-modal');
