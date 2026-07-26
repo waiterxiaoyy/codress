@@ -203,6 +203,9 @@ export function registerIpc(
   ipcMain.on("pet-window:open-main", (event) => {
     if (ctx.pets.ownsWebContents(event.sender)) showMainWindow();
   });
+  ipcMain.on("pet-window:dismiss", (event) => {
+    if (ctx.pets.ownsWebContents(event.sender)) void ctx.setPet(null);
+  });
   ipcMain.on("pet-window:drag-start", (event) => {
     if (!ctx.pets.ownsWebContents(event.sender)) return;
     const win = BrowserWindow.fromWebContents(event.sender);

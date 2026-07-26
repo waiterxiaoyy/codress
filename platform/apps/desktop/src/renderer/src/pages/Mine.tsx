@@ -16,30 +16,40 @@ export default function Mine() {
     setInstalled([...codexLib, ...workbuddyLib]);
   }, []);
 
-  const refresh = useCallback(async () => {
+  /** 只同步本机宠物状态(上桌/安装),宠物名沿用已有数据,不重新请求远程商店列表。 */
+  const refreshLocalPets = useCallback(async (petNames?: Map<string, string>) => {
     const settings = await bridge.getSettings();
-    const [installedPetSlugs, petStore, codexPet] = await Promise.all([
+    const [installedPetSlugs, codexPet] = await Promise.all([
       bridge.getInstalledPets(),
-      bridge.storePets({ target: "codex" }).catch(() => ({ items: [], total: 0 })),
       bridge.getActivePetInCodex(),
     ]);
-    const petNames = new Map((petStore.items as PetItem[]).map((pet) => [pet.slug, pet.name]));
     const petSlugs = new Set(installedPetSlugs);
     if (settings.activePet) petSlugs.add(settings.activePet);
-    setLocalPets(Array.from(petSlugs).map((slug) => ({
-      slug,
-      name: petNames.get(slug) ?? slug,
-      installed: installedPetSlugs.includes(slug),
-      onDesktop: settings.activePet === slug,
-    })));
+    setLocalPets((previous) => {
+      const names = petNames ?? new Map(previous.map((pet) => [pet.slug, pet.name]));
+      return Array.from(petSlugs).map((slug) => ({
+        slug,
+        name: names.get(slug) ?? slug,
+        installed: installedPetSlugs.includes(slug),
+        onDesktop: settings.activePet === slug,
+      }));
+    });
     setActiveCodexPet(codexPet);
   }, []);
+
+  const refresh = useCallback(async () => {
+    const petStore = await bridge.storePets({ target: "codex" }).catch(() => ({ items: [] as PetItem[], total: 0 }));
+    const petNames = new Map(petStore.items.map((pet) => [pet.slug, pet.name]));
+    await refreshLocalPets(petNames);
+  }, [refreshLocalPets]);
 
   useEffect(() => {
     void Promise.all([refreshSkins(), refresh()]);
   }, [refresh, refreshSkins]);
 
   useEffect(() => bridge.onLibraryChanged(refreshSkins), [refreshSkins]);
+  // 宠物在其他入口(宠物窗口右键下桌、托盘、宠物商店页)变化时同步本页状态
+  useEffect(() => bridge.onStatusChanged(refreshLocalPets), [refreshLocalPets]);
 
   const creations = installed.filter((item) => item.source === "local");
   const cachedSkins = installed.filter((item) => item.source !== "local");
@@ -143,7 +153,7 @@ export default function Mine() {
                   onClick={async () => {
                     await bridge.setPet(pet.onDesktop ? null : pet.slug);
                     toast(pet.onDesktop ? "宠物已收起" : "宠物已上桌");
-                    refresh();
+                    void refreshLocalPets();
                   }}
                 >
                   {pet.onDesktop ? "收起" : "上桌"}
@@ -155,7 +165,7 @@ export default function Mine() {
                       const result = await bridge.uninstallPetFromCodex(pet.slug);
                       if (result.ok) {
                         toast("已从 Codex 卸载");
-                        refresh();
+                        void refreshLocalPets();
                       } else toast(result.message ?? "卸载失败", true);
                     }}
                   >

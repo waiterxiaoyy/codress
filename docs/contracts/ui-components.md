@@ -121,4 +121,5 @@ Verify all of the following whenever `UnifiedSelect` or its styles change:
 
 - A single primary-button gesture is reserved for dragging the desktop pet; a click without movement does not open Codress.
 - Double-clicking the pet opens or focuses the Codress main window. A gesture that crossed the drag threshold must not also open the app.
+- Right-clicking the pet opens an in-window context menu (打开 Codress / 下桌). Dismissing goes through `setPet(null)` so settings and the status broadcast stay authoritative; every client surface showing on-desk state (store page, 我的, tray) refreshes from that broadcast instead of local assumptions. The menu is HTML inside the pet window because the window is non-focusable — native popup menus are not used there.
 - “上桌中…” completes with the pet window's visible state: settings and asset preparation happen before the final show operation, so the UI must not remain loading after the pet is already visible.

@@ -47,6 +47,35 @@
       body:hover .name {
         opacity: 1;
       }
+      .menu {
+        position: fixed;
+        min-width: 116px;
+        background: #111;
+        border-radius: 4px;
+        padding: 4px;
+        display: none;
+        z-index: 10;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      }
+      .menu.open {
+        display: block;
+      }
+      .menu button {
+        display: block;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font: 12px/26px system-ui, sans-serif;
+        text-align: left;
+        padding: 0 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .menu button:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
       /* 单图模式动画 */
       .anim-idle img {
         animation: breathe 3.2s ease-in-out infinite;
@@ -82,6 +111,10 @@
   <body>
     <div class="stage" id="stage"></div>
     <div class="name" id="name"></div>
+    <div class="menu" id="menu">
+      <button id="menu-open">打开 Codress</button>
+      <button id="menu-dismiss">下桌</button>
+    </div>
     <script>
       const params = new URLSearchParams(location.search);
       const imageSrc = params.get("image") || "";
@@ -93,8 +126,33 @@
       let dragFrame = 0;
       let suppressOpenUntil = 0;
       const petBridge = window.codressPet;
+      const menu = document.getElementById("menu");
+
+      const hideMenu = () => menu.classList.remove("open");
+
+      // 右键菜单:窗口不可聚焦(不抢焦点),因此用窗口内 HTML 菜单而非原生菜单
+      document.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        if (pointerStart) return; // 拖拽中不弹菜单
+        menu.classList.add("open");
+        const rect = menu.getBoundingClientRect();
+        menu.style.left = Math.max(4, Math.min(event.clientX, window.innerWidth - rect.width - 4)) + "px";
+        menu.style.top = Math.max(4, Math.min(event.clientY, window.innerHeight - rect.height - 4)) + "px";
+      });
+      // 鼠标离开窗口即收起菜单(窗口拿不到焦点,监听不到 blur)
+      document.documentElement.addEventListener("mouseleave", hideMenu);
+      document.getElementById("menu-open").addEventListener("click", () => {
+        hideMenu();
+        petBridge?.openMainWindow();
+      });
+      document.getElementById("menu-dismiss").addEventListener("click", () => {
+        hideMenu();
+        petBridge?.dismiss();
+      });
 
       document.addEventListener("pointerdown", (event) => {
+        if (menu.contains(event.target)) return;
+        hideMenu();
         if (event.button !== 0) return;
         pointerStart = { x: event.screenX, y: event.screenY };
         dragged = false;
@@ -122,6 +180,7 @@
       document.addEventListener("pointerup", finishDrag);
       document.addEventListener("pointercancel", finishDrag);
       document.addEventListener("dblclick", (event) => {
+        if (menu.contains(event.target)) return;
         if (event.button === 0 && !dragged && performance.now() >= suppressOpenUntil) {
           petBridge?.openMainWindow();
         }
