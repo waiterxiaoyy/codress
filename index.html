@@ -85,17 +85,26 @@ nav{
 
 /* Hero */
 .hero{
-  padding:160px 0 72px;text-align:center;position:relative;
+  padding:150px 0 88px;text-align:center;position:relative;
   opacity:0;transform:translateY(20px);
   transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);
 }
 .hero.visible{opacity:1;transform:translateY(0)}
-.hero::before{
-  content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);
-  width:600px;height:600px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,0,0,.03) 0%,transparent 70%);
-  pointer-events:none;
+.hero .container{position:relative}
+.hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hero-bg .dots{
+  position:absolute;inset:0;
+  background-image:radial-gradient(rgba(10,10,10,.10) 1px,transparent 1.4px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse 62% 58% at 50% 32%,#000 22%,transparent 72%);
+  mask-image:radial-gradient(ellipse 62% 58% at 50% 32%,#000 22%,transparent 72%);
 }
+.hero-bg .glow{
+  position:absolute;width:560px;height:560px;border-radius:50%;
+  filter:blur(110px);transition:background 1.2s ease;
+}
+.hero-bg .glow-a{left:2%;top:2%;background:var(--glow-a,rgba(10,10,10,.04))}
+.hero-bg .glow-b{right:0;top:36%;background:var(--glow-b,rgba(10,10,10,.03))}
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;
   padding:6px 16px 6px 10px;border-radius:999px;
@@ -104,7 +113,8 @@ nav{
   margin-bottom:28px;max-width:100%;flex-wrap:wrap;justify-content:center;
 }
 .hero-badge .dot{
-  width:6px;height:6px;border-radius:50%;background:var(--black);
+  width:6px;height:6px;border-radius:50%;background:var(--accent,var(--black));
+  transition:background .8s;
   animation:pulse 2s ease-in-out infinite;
 }
 @keyframes pulse{
@@ -117,11 +127,12 @@ nav{
   color:var(--black);
 }
 .hero h1 .gradient{
-  color:var(--gray);
+  color:var(--h1-accent,var(--gray));
+  transition:color .9s ease;
 }
 .hero p{
   font-size:17px;color:var(--dark-gray);max-width:520px;
-  margin:0 auto 44px;line-height:1.75;
+  margin:0 auto 40px;line-height:1.75;
 }
 .hero-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
 .btn{
@@ -136,7 +147,7 @@ nav{
 .btn-primary:hover{
   background:var(--near-black);
   transform:translateY(-2px);
-  box-shadow:0 6px 20px rgba(0,0,0,.15);
+  box-shadow:0 6px 20px rgba(0,0,0,.12),0 10px 32px -8px var(--accent-soft,rgba(0,0,0,.1));
 }
 .btn-secondary{
   background:var(--white);color:var(--black);
@@ -147,6 +158,116 @@ nav{
   background:var(--off-white);
   transform:translateY(-1px);
   box-shadow:var(--shadow-sm);
+}
+
+/* Hero trust row */
+.hero-trust{
+  display:flex;justify-content:center;align-items:center;
+  gap:8px 22px;flex-wrap:wrap;
+  margin-top:28px;font-size:12.5px;color:var(--gray);
+}
+.hero-trust span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hero-trust svg{flex:0 0 auto;opacity:.7}
+
+/* Hero stage: live skin preview */
+.hero-stage{
+  max-width:860px;margin:64px auto 0;position:relative;
+  opacity:0;transform:translateY(30px);
+  transition:opacity .9s cubic-bezier(.16,1,.3,1) .18s,transform .9s cubic-bezier(.16,1,.3,1) .18s;
+}
+.hero.visible .hero-stage{opacity:1;transform:translateY(0)}
+.win-wrap{position:relative}
+.win{
+  position:relative;border-radius:16px;overflow:hidden;
+  background:var(--white);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 24px 70px -18px rgba(0,0,0,.16),0 40px 120px -32px var(--accent-shadow,rgba(0,0,0,.10));
+  transition:box-shadow 1.2s ease;
+}
+.win-bar{
+  position:relative;height:40px;display:flex;align-items:center;gap:7px;
+  padding:0 15px;border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,#FDFDFD,#F8F8F8);
+}
+.win-bar .wdot{width:11px;height:11px;border-radius:50%}
+.wdot.r{background:#FF5F57}
+.wdot.y{background:#FEBC2E}
+.wdot.g{background:#28C840}
+.win-title{
+  position:absolute;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:11.5px;color:var(--gray);
+  white-space:nowrap;max-width:56%;overflow:hidden;text-overflow:ellipsis;
+}
+.win-title b{color:var(--near-black);font-weight:600}
+.win-live{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--gray);
+}
+.win-live .ldot{
+  width:6px;height:6px;border-radius:50%;background:#28C840;
+  animation:pulse 2.2s ease-in-out infinite;
+}
+.win-body{position:relative;aspect-ratio:16/10;background:var(--off-white);overflow:hidden}
+.win-shot{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  opacity:0;transform:scale(1.015);
+  transition:opacity .6s ease,transform 1.3s ease;
+}
+.win-shot.on{opacity:1;transform:scale(1)}
+.win-toast{
+  position:absolute;right:16px;bottom:16px;z-index:3;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 15px;border-radius:999px;
+  background:rgba(20,20,20,.85);color:#fff;
+  font-size:12px;font-weight:500;letter-spacing:.2px;
+  backdrop-filter:blur(8px);white-space:nowrap;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .35s ease,transform .35s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+.win-toast.show{opacity:1;transform:translateY(0)}
+
+/* Skin rail */
+.skin-rail{
+  display:flex;gap:8px;justify-content:center;
+  margin-top:18px;padding:4px 2px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.skin-rail::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+  padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:500;
+  background:var(--white);border:1px solid var(--border);color:var(--dark-gray);
+  transition:all .22s cubic-bezier(.16,1,.3,1);
+}
+.chip .cdot{
+  width:9px;height:9px;border-radius:50%;background:var(--c,var(--black));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.chip svg{flex:0 0 auto}
+.chip:hover{border-color:var(--border-hover);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.chip.active{background:var(--near-black);border-color:var(--near-black);color:#fff}
+
+/* Pixel pet perched on the window */
+.pet{
+  position:absolute;right:44px;top:1px;z-index:5;
+  width:56px;height:52px;
+  transform:translateY(-100%);
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.16));
+}
+.pet svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
+.pet .px-ink{fill:#1A1A1A}
+.pet .px-acc{fill:var(--accent,#1A1A1A);transition:fill .8s}
+.pet .px-eye{fill:#fff}
+.pet .g-closed{visibility:hidden}
+.pet.blink .g-open{visibility:hidden}
+.pet.blink .g-closed{visibility:visible}
+.pet.hop{animation:petHop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes petHop{
+  0%{transform:translateY(-100%)}
+  38%{transform:translateY(calc(-100% - 12px))}
+  72%{transform:translateY(-100%) scaleY(.94)}
+  100%{transform:translateY(-100%)}
 }
 
 /* Marquee */
@@ -344,6 +465,9 @@ nav{
 .dl-card h4{font-size:18px;font-weight:600;margin-bottom:4px}
 .dl-card .ver{font-size:13px;color:var(--gray);margin-bottom:22px}
 .dl-card button{width:100%}
+.dl-all{margin-top:28px;font-size:13px}
+.dl-all a{color:var(--gray);text-decoration:underline;text-underline-offset:3px;transition:color .2s}
+.dl-all a:hover{color:var(--black)}
 
 /* Modal */
 .modal-overlay{
@@ -382,6 +506,8 @@ nav{
   background:var(--white);border:1px solid var(--border);
   font-family:var(--font-mono);font-size:11px;color:var(--near-black);
 }
+.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.modal-actions .btn{padding:10px 20px;font-size:13px}
 .modal-close{
   padding:10px 28px;border-radius:8px;font-size:14px;font-weight:500;
   background:var(--black);color:var(--white);transition:all .2s;
@@ -405,9 +531,18 @@ footer .flinks a{transition:color .2s}
 footer .flinks a:hover{color:var(--black)}
 
 @media(max-width:768px){
-  .hero{padding:130px 0 56px}
+  .hero{padding:124px 0 56px}
+  .hero h1{font-size:clamp(30px,8.6vw,44px)}
   .hero-badge{font-size:11px;padding:6px 14px;max-width:90%;text-align:center;white-space:normal;line-height:1.5}
   .hero-actions{flex-direction:column;align-items:center}
+  .hero-trust{gap:8px 14px;font-size:12px}
+  .hero-bg .glow{width:420px;height:420px;filter:blur(90px)}
+  .hero-stage{margin-top:52px}
+  .win-bar{height:36px;padding:0 12px}
+  .win-live{display:none}
+  .win-title{max-width:72%}
+  .skin-rail{justify-content:flex-start}
+  .pet{right:20px;width:42px;height:39px}
   .compare-grid{grid-template-columns:1fr}
   .compare-box img{height:auto;object-fit:contain;object-position:center}
   .steps{grid-template-columns:1fr}
@@ -446,6 +581,11 @@ footer .flinks a:hover{color:var(--black)}
 </nav>
 
 <section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="dots"></div>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+  </div>
   <div class="container">
     <div class="hero-badge"><span class="dot"></span><span data-i18n="hero.badge">适配 Codex · WorkBuddy 等 Agent 工作台</span></div>
     <h1><span data-i18n="hero.title1">换个界面</span><span class="gradient" data-i18n="hero.title2">，让灵感常驻</span></h1>
@@ -458,6 +598,45 @@ footer .flinks a:hover{color:var(--black)}
       <a href="#themes" class="btn btn-secondary">
         <span data-i18n="hero.btn_browse">浏览市场</span>
       </a>
+    </div>
+    <div class="hero-trust">
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.6-3 8.6-7 10-4-1.4-7-5.4-7-10V6l7-3z" stroke-linejoin="round"/></svg>
+        <span data-i18n="hero.trust1">不修改官方文件</span>
+      </span>
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="hero.trust2">一键恢复默认</span>
+      </span>
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4"/></svg>
+        <span data-i18n="hero.trust3">无需账号</span>
+      </span>
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20" stroke-linecap="round"/></svg>
+        <span>macOS · Windows</span>
+      </span>
+    </div>
+    <div class="hero-stage" id="hero-stage">
+      <div class="win-wrap">
+        <a class="pet" id="hero-pet" href="#pets" title="桌面宠物想陪你写代码 · 去看看" aria-label="桌面宠物想陪你写代码 · 去看看"></a>
+        <div class="win">
+          <div class="win-bar">
+            <span class="wdot r"></span><span class="wdot y"></span><span class="wdot g"></span>
+            <span class="win-title">Codex — <b id="win-skin-name">默认外观</b></span>
+            <span class="win-live"><span class="ldot"></span><span data-i18n="hero.local_ready">本地就绪</span></span>
+          </div>
+          <div class="win-body">
+            <img class="win-shot on" id="win-shot-a" src="images/skins/skin-default.png" alt="Codress — 默认外观">
+            <img class="win-shot" id="win-shot-b" alt="" aria-hidden="true">
+            <div class="win-toast" id="win-toast" role="status" aria-live="polite">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="win-toast-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="skin-rail" id="skin-rail" role="group" aria-label="皮肤预览切换"></div>
     </div>
   </div>
 </section>
@@ -590,7 +769,7 @@ footer .flinks a:hover{color:var(--black)}
           <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
         </div>
         <h4>macOS</h4>
-        <p class="ver">Apple Silicon · v1.0.0</p>
+        <p class="ver" id="ver-mac">Apple Silicon · v1.0.2</p>
         <button class="btn btn-primary" onclick="dl('mac')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span data-i18n="download.btn_mac">下载 .dmg</span>
@@ -601,13 +780,16 @@ footer .flinks a:hover{color:var(--black)}
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
         <h4>Windows</h4>
-        <p class="ver">x64 · v1.0.0</p>
+        <p class="ver" id="ver-win">x64 · v1.0.2</p>
         <button class="btn btn-primary" onclick="dl('win')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span data-i18n="download.btn_win">下载 .exe</span>
         </button>
       </div>
     </div>
+    <p class="dl-all">
+      <a href="https://github.com/waiterxiaoyy/codress/releases" target="_blank" rel="noopener" data-i18n="download.all">其他版本与历史更新见 GitHub Releases</a>
+    </p>
   </div>
 </section>
 
@@ -636,12 +818,15 @@ footer .flinks a:hover{color:var(--black)}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83" stroke-linecap="round"/></svg>
     </div>
     <h3 data-i18n="modal.title">敬请期待</h3>
-    <p data-i18n="modal.desc">公开下载包正在准备中。你可以先收藏本站或关注 GitHub Release 获取更新。</p>
+    <p data-i18n="modal.desc">当前平台的安装包正在准备中。你可以先收藏本站，或前往 GitHub Releases 查看已发布的版本。</p>
     <div class="bookmark-tip">
       <div class="tip-title" data-i18n="modal.tip_title">⭐ 收藏本站</div>
       <div class="tip-desc"><span data-i18n="modal.tip_desc">按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新</span></div>
     </div>
-    <button class="modal-close" onclick="closeModal()" data-i18n="modal.close">我知道了</button>
+    <div class="modal-actions">
+      <a class="btn btn-secondary" href="https://github.com/waiterxiaoyy/codress/releases" target="_blank" rel="noopener" data-i18n="modal.github">前往 GitHub Releases</a>
+      <button class="modal-close" onclick="closeModal()" data-i18n="modal.close">我知道了</button>
+    </div>
   </div>
 </div>
 
@@ -659,6 +844,15 @@ const i18n = {
     'hero.desc': '告别千篇一律的编辑器外观。精选皮肤与桌面宠物，一键切换，不修改任何官方安装文件，随时恢复默认。',
     'hero.btn_download': '立即下载',
     'hero.btn_browse': '浏览市场',
+    'hero.trust1': '不修改官方文件',
+    'hero.trust2': '一键恢复默认',
+    'hero.trust3': '无需账号',
+    'hero.chip_default': '恢复默认',
+    'hero.win_default': '默认外观',
+    'hero.applied': '已应用',
+    'hero.restored': '已恢复默认外观',
+    'hero.local_ready': '本地就绪',
+    'hero.pet_title': '桌面宠物想陪你写代码 · 去看看',
     'compare.eyebrow': '对比',
     'compare.title': '工作不必如此枯燥',
     'compare.desc': '告别黑白灰，换一种风格，也换一种打开编辑器的心情。',
@@ -693,11 +887,13 @@ const i18n = {
     'download.desc': '支持 macOS 和 Windows。不修改官方文件，随时可逆。',
     'download.btn_mac': '下载 .dmg',
     'download.btn_win': '下载 .exe',
+    'download.all': '其他版本与历史更新见 GitHub Releases',
     'footer.guide': '指南',
     'modal.title': '敬请期待',
-    'modal.desc': '公开下载包正在准备中。你可以先收藏本站或关注 GitHub Release 获取更新。',
+    'modal.desc': '当前平台的安装包正在准备中。你可以先收藏本站，或前往 GitHub Releases 查看已发布的版本。',
     'modal.tip_title': '⭐ 收藏本站',
     'modal.tip_desc': '按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新',
+    'modal.github': '前往 GitHub Releases',
     'modal.close': '我知道了',
   },
   en: {
@@ -711,6 +907,15 @@ const i18n = {
     'hero.desc': 'Refresh your editor with curated skins and desktop pets. Switch in one click, keep official app files untouched, and revert anytime.',
     'hero.btn_download': 'Download Now',
     'hero.btn_browse': 'Browse Market',
+    'hero.trust1': 'No official files modified',
+    'hero.trust2': 'One-click revert',
+    'hero.trust3': 'No account needed',
+    'hero.chip_default': 'Default',
+    'hero.win_default': 'Default',
+    'hero.applied': 'Applied',
+    'hero.restored': 'Default restored',
+    'hero.local_ready': 'Local ready',
+    'hero.pet_title': 'Desktop pets — come say hi',
     'compare.eyebrow': 'Compare',
     'compare.title': 'Work doesn\'t have to be boring',
     'compare.desc': 'Ditch the default gray. Switch to a style that sparks creativity every time you open your editor.',
@@ -745,11 +950,13 @@ const i18n = {
     'download.desc': 'Supports macOS and Windows. No official file modification, fully reversible.',
     'download.btn_mac': 'Download .dmg',
     'download.btn_win': 'Download .exe',
+    'download.all': 'Other builds and past versions on GitHub Releases',
     'footer.guide': 'Guide',
     'modal.title': 'Coming Soon',
-    'modal.desc': 'Public download packages are being prepared. Bookmark this page or follow GitHub Releases for updates.',
+    'modal.desc': 'The package for this platform is on its way. Bookmark this page, or check GitHub Releases for published builds.',
     'modal.tip_title': '⭐ Bookmark This Page',
     'modal.tip_desc': 'Press <kbd>Ctrl</kbd> + <kbd>D</kbd> (Mac: <kbd>⌘</kbd> + <kbd>D</kbd>) to bookmark and follow updates',
+    'modal.github': 'Open GitHub Releases',
     'modal.close': 'Got it',
   }
 };
@@ -777,6 +984,7 @@ function applyLang(lang) {
   // Re-render dynamic content
   renderThemes();
   renderPets();
+  if (window.__heroSyncLang) window.__heroSyncLang();
 }
 
 function toggleLang() {
@@ -865,7 +1073,220 @@ document.querySelectorAll('.compare-box').forEach(el=>observer.observe(el));
 // Init
 applyLang(currentLang);
 
-function dl(p){
+// ===== Hero: live skin-preview stage =====
+(function(){
+  const hero=document.getElementById('hero');
+  const stage=document.getElementById('hero-stage');
+  if(!hero||!stage) return;
+  const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const t=k=>(i18n[currentLang]&&i18n[currentLang][k])||k;
+
+  const HERO_SKINS=[
+    {id:'default',isDefault:true,img:'images/skins/skin-default.png',accent:'#0A0A0A'},
+    {id:'arina-shin',name:'Arina Shin',img:'images/skins/skin-01.jpg',accent:'#D6497B'},
+    {id:'day-dream',name:'DAY DREAM',img:'images/skins/skin-02.jpg',accent:'#C2452A'},
+    {id:'blue-hour',name:'BLUE HOUR',img:'images/skins/skin-05.jpg',accent:'#E8912C'},
+    {id:'miku',name:'Miku',img:'images/skins/skin-07.jpg',accent:'#27AFA5'},
+    {id:'neon-note',name:'NEON NOTE',img:'images/skins/skin-03.jpg',accent:'#4E8FD9'},
+    {id:'retro-qq',name:'RETRO QQ',img:'images/skins/skin-10.jpg',accent:'#2265D3'},
+  ];
+
+  const rail=document.getElementById('skin-rail');
+  const nameEl=document.getElementById('win-skin-name');
+  const toast=document.getElementById('win-toast');
+  const toastText=document.getElementById('win-toast-text');
+  const shotA=document.getElementById('win-shot-a');
+  const shotB=document.getElementById('win-shot-b');
+  const pet=document.getElementById('hero-pet');
+  let front=shotA,cur=0,pauseUntil=0,hovering=false,toastTimer=null;
+
+  function tint(hex,a){
+    const n=parseInt(hex.slice(1),16);
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  function skinName(s){return s.isDefault?t('hero.win_default'):s.name}
+
+  // Pixel pet: 14x13 grid rendered as crisp SVG rects.
+  // '#'=ink  'e'=eye white  'p'=pupil(accent)  'c'=collar(accent)  '.'=empty
+  const PET_ROWS=[
+    '..#........#..',
+    '.##........##.',
+    '.############.',
+    '##############',
+    '##ee######ee##',
+    '##ep######pe##',
+    '##############',
+    '.############.',
+    '..cccccccccc..',
+    '..##########.#',
+    '..##########.#',
+    '..##########.#',
+    '..##..####..##',
+  ];
+  function petRects(rows){
+    let out='';
+    rows.forEach(function(row,y){
+      for(let x=0;x<row.length;x++){
+        const ch=row[x];
+        if(ch==='.') continue;
+        const cls=ch==='e'?'px-eye':(ch==='c'||ch==='p')?'px-acc':'px-ink';
+        out+='<rect x="'+x+'" y="'+y+'" width="1" height="1" class="'+cls+'"/>';
+      }
+    });
+    return out;
+  }
+  const PET_CLOSED=PET_ROWS.map(function(r,i){
+    return i===4?'##############':i===5?'##ee######ee##':r;
+  });
+  pet.innerHTML='<svg viewBox="0 0 14 13" aria-hidden="true"><g class="g-open">'+petRects(PET_ROWS)+'</g><g class="g-closed">'+petRects(PET_CLOSED)+'</g></svg>';
+
+  // Swatch rail
+  rail.innerHTML=HERO_SKINS.map(function(s,i){
+    if(s.isDefault){
+      return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="true">'
+        +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        +'<span data-key="hero.chip_default">'+t('hero.chip_default')+'</span></button>';
+    }
+    return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="false">'
+      +'<span class="cdot" style="--c:'+s.accent+'"></span><span>'+s.name+'</span></button>';
+  }).join('');
+  const chips=[].slice.call(rail.querySelectorAll('.chip'));
+  rail.addEventListener('click',function(e){
+    const b=e.target.closest('.chip');
+    if(!b) return;
+    pauseUntil=Date.now()+12000;
+    switchTo(+b.dataset.i,false);
+  });
+
+  function applyAccent(s){
+    const a=s.accent,d=s.isDefault;
+    hero.style.setProperty('--accent',a);
+    hero.style.setProperty('--h1-accent',d?'#A3A3A3':a);
+    hero.style.setProperty('--accent-soft',d?'rgba(0,0,0,.10)':tint(a,.35));
+    hero.style.setProperty('--accent-shadow',d?'rgba(0,0,0,.10)':tint(a,.22));
+    hero.style.setProperty('--glow-a',d?'rgba(10,10,10,.04)':tint(a,.15));
+    hero.style.setProperty('--glow-b',d?'rgba(10,10,10,.03)':tint(a,.09));
+  }
+
+  function switchTo(i,silent){
+    if(i===cur) return;
+    const s=HERO_SKINS[i];
+    const back=front===shotA?shotB:shotA;
+    const done=function(){
+      cur=i;
+      back.classList.add('on');
+      if(back!==front) front.classList.remove('on');
+      front=back;
+      applyAccent(s);
+      nameEl.textContent=skinName(s);
+      back.alt='Codress — '+skinName(s);
+      back.removeAttribute('aria-hidden');
+      chips.forEach(function(c){
+        const on=+c.dataset.i===i;
+        c.classList.toggle('active',on);
+        c.setAttribute('aria-pressed',on?'true':'false');
+      });
+      if(!silent){
+        clearTimeout(toastTimer);
+        toastText.textContent=s.isDefault?t('hero.restored'):t('hero.applied')+' · '+s.name;
+        toast.classList.add('show');
+        toastTimer=setTimeout(function(){toast.classList.remove('show')},1800);
+        if(!RM){pet.classList.remove('hop');void pet.offsetWidth;pet.classList.add('hop');}
+      }
+    };
+    if(back.getAttribute('src')===s.img&&back.complete&&back.naturalWidth>0){done();return;}
+    back.onload=function(){back.onload=null;done();};
+    back.src=s.img;
+    if(back.complete&&back.naturalWidth>0){back.onload=null;done();}
+  }
+
+  chips[0].classList.add('active');
+  applyAccent(HERO_SKINS[0]);
+
+  // Auto-cycle: pause on hover/touch/interaction, only while visible
+  const wrap=stage.querySelector('.win-wrap');
+  wrap.addEventListener('mouseenter',function(){hovering=true});
+  wrap.addEventListener('mouseleave',function(){hovering=false});
+  stage.addEventListener('touchstart',function(){pauseUntil=Date.now()+10000},{passive:true});
+
+  function inView(){
+    const r=stage.getBoundingClientRect();
+    return r.bottom>0&&r.top<window.innerHeight;
+  }
+  function nextIdx(){return cur+1>=HERO_SKINS.length?1:cur+1}
+  function maybeSwitch(){
+    if(document.hidden||hovering||Date.now()<pauseUntil||!inView()) return;
+    switchTo(nextIdx(),false);
+  }
+  if(!RM){
+    setTimeout(function(){maybeSwitch();setInterval(maybeSwitch,4200);},1600);
+  }
+
+  // Preload previews
+  const first=new Image();first.src=HERO_SKINS[1].img;
+  window.addEventListener('load',function(){
+    HERO_SKINS.forEach(function(s){const im=new Image();im.src=s.img;});
+  });
+
+  // Pet blink
+  if(!RM){
+    setInterval(function(){
+      pet.classList.add('blink');
+      setTimeout(function(){pet.classList.remove('blink')},150);
+    },3600);
+  }
+
+  // Language sync for dynamic hero labels
+  window.__heroSyncLang=function(){
+    const d=rail.querySelector('[data-key="hero.chip_default"]');
+    if(d) d.textContent=t('hero.chip_default');
+    nameEl.textContent=skinName(HERO_SKINS[cur]);
+    front.alt='Codress — '+skinName(HERO_SKINS[cur]);
+    pet.title=t('hero.pet_title');
+    pet.setAttribute('aria-label',t('hero.pet_title'));
+  };
+  window.__heroSyncLang();
+})();
+
+// GitHub Releases 下载:预取最新 Release,点击直链对应平台安装包
+const GITHUB_REPO='waiterxiaoyy/codress';
+const RELEASES_URL='https://github.com/'+GITHUB_REPO+'/releases';
+let releasePromise=null;
+
+function fetchLatestRelease(){
+  if(releasePromise) return releasePromise;
+  releasePromise=fetch('https://api.github.com/repos/'+GITHUB_REPO+'/releases/latest')
+    .then(r=>r.ok?r.json():null)
+    .then(data=>{
+      if(!data||!Array.isArray(data.assets)) return null;
+      const info={
+        version:(data.tag_name||'').replace(/^v/,''),
+        assets:data.assets.map(a=>({name:a.name,url:a.browser_download_url}))
+      };
+      if(info.version){
+        document.getElementById('ver-mac').textContent='Apple Silicon · v'+info.version;
+        document.getElementById('ver-win').textContent='x64 · v'+info.version;
+      }
+      return info;
+    })
+    .catch(()=>null);
+  return releasePromise;
+}
+fetchLatestRelease();
+
+function assetFor(platform,info){
+  if(!info) return null;
+  const find=re=>info.assets.find(a=>re.test(a.name));
+  if(platform==='win') return find(/-win-.*\.exe$/i)||find(/\.exe$/i);
+  return find(/-mac-arm64\.dmg$/i)||find(/\.dmg$/i);
+}
+
+async function dl(p){
+  const info=await fetchLatestRelease();
+  const asset=assetFor(p,info);
+  if(asset){location.href=asset.url;return}
+  if(!info){window.open(RELEASES_URL,'_blank','noopener');return}
+  // 该平台安装包尚未发布:弹窗提示,内含 GitHub Releases 入口
   const overlay=document.getElementById('dl-modal');
   overlay.classList.add('show');
   document.body.style.overflow='hidden';
