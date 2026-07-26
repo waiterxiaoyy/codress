@@ -413,22 +413,29 @@ nav{
 .pet-card .pet-body h3{font-size:14px;font-weight:600;margin-bottom:3px}
 .pet-card .pet-body .by{font-size:12px;color:var(--gray)}
 
-/* 商店加载态 / 分页哨兵 */
-.grid-status{
-  grid-column:1/-1;text-align:center;padding:26px 0 6px;
-  font-size:13px;color:var(--gray);min-height:56px;
-}
-.grid-status button{
+/* 商店加载态 / 分页 */
+.grid-status{grid-column:1/-1;text-align:center;padding:24px 0 4px;font-size:13px;color:var(--gray);min-height:48px}
+.grid-status .retry{
   padding:8px 18px;border-radius:8px;font-size:13px;
   background:var(--light-gray);border:1px solid var(--border);color:var(--dark-gray);
 }
-.grid-status button:hover{background:var(--border)}
+.grid-status .retry:hover{background:var(--border)}
 .spinner{
   display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;
   border:2px solid var(--border);border-top-color:var(--dark-gray);border-radius:50%;
   animation:spin .8s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
+.pager{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap}
+.pager button{
+  min-width:34px;height:34px;padding:0 10px;border-radius:8px;font-size:13px;font-weight:500;
+  background:var(--white);border:1px solid var(--border);color:var(--dark-gray);
+  transition:all .18s;
+}
+.pager button:hover:not(:disabled){border-color:var(--border-hover);color:var(--black);transform:translateY(-1px)}
+.pager button:disabled{opacity:.35;cursor:not-allowed}
+.pager button.active{background:var(--near-black);border-color:var(--near-black);color:#fff;opacity:1;cursor:default}
+.pager .dots{color:var(--gray);padding:0 2px;font-size:13px}
 
 /* 宠物详情弹窗 */
 .pet-modal{max-width:460px;padding:34px 32px 28px;position:relative;text-align:center}
@@ -1113,6 +1120,8 @@ function applyLang(lang) {
   // Re-render dynamic content
   renderThemes();
   renderPets();
+  renderStatus('skins');
+  renderStatus('pets');
   if (window.__heroSyncLang) window.__heroSyncLang();
 }
 
@@ -1145,62 +1154,96 @@ const FALLBACK_PETS=[
   {slug:'dad-coder',name:'Dad Coder',author:'Codress',imageUrl:'images/pets/dad-coder.png',spriteSheet:null},
 ];
 
-const skinStore={items:[],total:-1,page:0,loading:false,failed:false,fallback:false};
-const petStore={items:[],total:-1,page:0,loading:false,failed:false,fallback:false};
+const skinStore={kind:'skins',pages:new Map(),total:-1,current:1,loading:false,failed:0,fallback:false};
+const petStore={kind:'pets',pages:new Map(),total:-1,current:1,loading:false,failed:0,fallback:false};
+const storeOf=k=>k==='skins'?skinStore:petStore;
+const totalPages=s=>s.total<0?0:Math.max(1,Math.ceil(s.total/PAGE_SIZE));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const t9=k=>(i18n[currentLang]&&i18n[currentLang][k])||'';
 
-async function fetchStore(kind){
-  const store=kind==='skins'?skinStore:petStore;
-  if(store.loading||store.fallback) return;
-  if(store.total>=0&&store.items.length>=store.total) return;
-  store.loading=true;store.failed=false;
+// 页码分页:每页 12 条;已拉取的页缓存在内存,切回秒开
+async function gotoPage(kind,page,scroll){
+  const store=storeOf(kind);
+  if(store.fallback&&!store.pages.has(page)) return;
+  const pages=totalPages(store);
+  if(pages&&(page<1||page>pages)) return;
+  if(store.pages.has(page)){
+    store.current=page;store.failed=0;
+    kind==='skins'?renderThemes():renderPets();
+    renderStatus(kind);
+    if(scroll) scrollToGrid(kind);
+    return;
+  }
+  if(store.loading) return;
+  store.loading=true;store.failed=0;
   renderStatus(kind);
   try{
-    const resp=await fetch(API_BASE+'/api/v1/'+kind+'?page='+(store.page+1)+'&pageSize='+PAGE_SIZE);
+    const resp=await fetch(API_BASE+'/api/v1/'+kind+'?page='+page+'&pageSize='+PAGE_SIZE);
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
-    store.page+=1;
     store.total=data.total||0;
-    const known=new Set(store.items.map(i=>i.slug));
-    (data.items||[]).forEach(item=>{if(!known.has(item.slug))store.items.push(item)});
+    store.pages.set(page,data.items||[]);
+    store.current=page;
     store.loading=false;
     kind==='skins'?renderThemes():renderPets();
+    if(scroll) scrollToGrid(kind);
   }catch(err){
     store.loading=false;
-    if(store.items.length===0){
-      // 首页拉取失败(离线/本地预览):退回内置数据,保证页面不空
+    if(store.pages.size===0){
+      // 首次拉取失败(离线/本地预览):退回内置数据,保证页面不空
       store.fallback=true;
-      store.items=kind==='skins'?FALLBACK_THEMES:FALLBACK_PETS;
-      store.total=store.items.length;
+      const items=kind==='skins'?FALLBACK_THEMES:FALLBACK_PETS;
+      store.pages.set(1,items);
+      store.total=items.length;
+      store.current=1;
       kind==='skins'?renderThemes():renderPets();
     }else{
-      store.failed=true;
+      store.failed=page;
     }
   }
   renderStatus(kind);
 }
 
+function scrollToGrid(kind){
+  const grid=document.getElementById(kind==='skins'?'theme-grid':'pet-grid');
+  window.scrollTo({top:grid.getBoundingClientRect().top+window.scrollY-88,behavior:'smooth'});
+}
+
+function pageList(current,pages){
+  if(pages<=7) return Array.from({length:pages},(_,i)=>i+1);
+  const wanted=new Set([1,2,pages-1,pages,current-1,current,current+1]);
+  const list=[...wanted].filter(p=>p>=1&&p<=pages).sort((a,b)=>a-b);
+  const out=[];let prev=0;
+  list.forEach(p=>{if(p-prev>1)out.push('…');out.push(p);prev=p});
+  return out;
+}
+
 function renderStatus(kind){
-  const store=kind==='skins'?skinStore:petStore;
+  const store=storeOf(kind);
   const el=document.getElementById(kind==='skins'?'theme-status':'pet-status');
   if(!el) return;
   if(store.loading){el.innerHTML='<span class="spinner"></span>'+esc(t9('store.loading'));return}
-  if(store.failed){el.innerHTML='<button type="button" onclick="fetchStore(\''+kind+'\')">'+esc(t9('store.retry'))+'</button>';return}
+  if(store.failed){
+    el.innerHTML='<button type="button" class="retry" onclick="gotoPage(\''+kind+'\','+store.failed+',false)">'+esc(t9('store.retry'))+'</button>';
+    return;
+  }
   if(store.total===0){el.textContent=t9('store.empty');return}
-  el.textContent='';
+  const pages=totalPages(store);
+  if(pages<=1||store.fallback){el.innerHTML='';return}
+  const parts=[];
+  parts.push('<button type="button" aria-label="prev" '+(store.current<=1?'disabled':'')
+    +' onclick="gotoPage(\''+kind+'\','+(store.current-1)+',true)">‹</button>');
+  pageList(store.current,pages).forEach(p=>{
+    if(p==='…'){parts.push('<span class="dots">…</span>');return}
+    parts.push('<button type="button" class="'+(p===store.current?'active':'')+'" '+(p===store.current?'disabled':'')
+      +' onclick="gotoPage(\''+kind+'\','+p+',true)">'+p+'</button>');
+  });
+  parts.push('<button type="button" aria-label="next" '+(store.current>=pages?'disabled':'')
+    +' onclick="gotoPage(\''+kind+'\','+(store.current+1)+',true)">›</button>');
+  el.innerHTML='<div class="pager">'+parts.join('')+'</div>';
 }
 
-// 分页哨兵:状态条接近视口时拉下一页(懒加载)
-const moreObserver=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    fetchStore(e.target.id==='theme-status'?'skins':'pets');
-  });
-},{rootMargin:'420px 0px'});
-moreObserver.observe(document.getElementById('theme-status'));
-moreObserver.observe(document.getElementById('pet-status'));
-setTimeout(()=>{fetchStore('skins');fetchStore('pets');},400);
+setTimeout(()=>{gotoPage('skins',1,false);gotoPage('pets',1,false);},400);
 
 // Marquee(走本地静态图,零网络成本)
 (function(){
@@ -1222,9 +1265,10 @@ function skinTagChips(s){
   return chips;
 }
 
-// Render themes(皮肤卡片:预览图优先用轻量 preview,没有则背景原图 + 原生懒加载)
+// Render themes(皮肤卡片:当前页数据;预览图原生懒加载)
 function renderThemes(){
-  document.getElementById('theme-grid').innerHTML=skinStore.items.map(s=>`
+  const items=skinStore.pages.get(skinStore.current)||[];
+  document.getElementById('theme-grid').innerHTML=items.map(s=>`
     <div class="card">
       <div class="card-preview">
         <img src="${esc(s.previewLightUrl||s.backgroundUrl)}" alt="${esc(s.name)}" loading="lazy" decoding="async">
@@ -1323,11 +1367,12 @@ const petCardObserver=new IntersectionObserver(entries=>{
   });
 },{rootMargin:'180px 0px'});
 
-// Render pets(有精灵图的画布动画,legacy 单图直接展示)
+// Render pets(当前页数据;有精灵图的画布动画,legacy 单图直接展示)
 function renderPets(){
   // 全量重渲前先注销旧动画器
   document.querySelectorAll('#pet-grid canvas.pet-canvas').forEach(c=>{if(c.__animRef)animators.delete(c.__animRef)});
-  document.getElementById('pet-grid').innerHTML=petStore.items.map(p=>`
+  const items=petStore.pages.get(petStore.current)||[];
+  document.getElementById('pet-grid').innerHTML=items.map(p=>`
     <div class="pet-card" data-slug="${esc(p.slug)}" role="button" tabindex="0" aria-label="${esc(p.name)}">
       <div class="pet-preview">
         ${p.spriteSheet
@@ -1604,7 +1649,8 @@ const pmAnim=makeAnimator(pmCanvas);
 let pmCurrent=null;
 
 function openPetModal(slug){
-  const p=petStore.items.find(x=>x.slug===slug);
+  let p=null;
+  petStore.pages.forEach(items=>{if(!p)p=items.find(x=>x.slug===slug)||null});
   if(!p) return;
   pmCurrent=p;
   document.getElementById('pm-name').textContent=p.name||p.slug;
