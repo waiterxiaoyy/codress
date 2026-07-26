@@ -130,6 +130,11 @@ export class AgentLinkBridge {
           : query.get("sid") || "default";
       if (!eventName) return;
       const toolResponse = payload.tool_response;
+      const notificationType = typeof payload.notification_type === "string"
+        ? payload.notification_type
+        : typeof payload.notificationType === "string"
+          ? payload.notificationType
+          : undefined;
       const isError = Boolean(
         toolResponse
         && typeof toolResponse === "object"
@@ -142,7 +147,7 @@ export class AgentLinkBridge {
         event: eventName,
         cwd: typeof payload.cwd === "string" ? payload.cwd : undefined,
         isError,
-        notificationType: typeof payload.notificationType === "string" ? payload.notificationType : undefined,
+        notificationType,
       });
       // payload(可能含 tool_input 代码片段)就地丢弃,不留任何副本
     } catch {

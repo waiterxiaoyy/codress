@@ -261,7 +261,7 @@ export interface CodressBridge {
 
 const noop = () => () => {};
 const noopAsync = () => Promise.resolve({} as never);
-const API_BASE = import.meta.env.DEV ? "http://127.0.0.1:8080" : "https://codress.dev";
+const API_BASE = "https://codress.dev";
 
 async function apiFetch<T>(path: string): Promise<T> {
   const resp = await fetch(`${API_BASE}${path}`);

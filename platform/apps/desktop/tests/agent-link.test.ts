@@ -154,6 +154,22 @@ describe("AgentLinkBridge", () => {
         cwd: "/work/demo",
         isError: false,
       });
+
+      const idleNotification = await fetch(url, {
+        method: "POST",
+        headers: { "X-Codress-Token": token },
+        body: JSON.stringify({
+          hook_event_name: "Notification",
+          session_id: "s1",
+          notification_type: "idle_prompt",
+        }),
+      });
+      expect(idleNotification.status).toBe(204);
+      await vi.waitFor(() => expect(received).toHaveLength(2));
+      expect(received[1]).toMatchObject({
+        event: "Notification",
+        notificationType: "idle_prompt",
+      });
     } finally {
       await bridge.stop();
     }

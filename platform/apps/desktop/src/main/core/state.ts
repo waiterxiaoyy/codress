@@ -26,7 +26,7 @@ export interface Settings {
 
 const DEVELOPMENT = process.env.NODE_ENV === "development";
 const DEFAULTS: Settings = {
-  apiBase: DEVELOPMENT ? "http://127.0.0.1:8080" : "https://codress.dev",
+  apiBase: "https://codress.dev",
   userToken: null,
   userName: null,
   activePet: null,

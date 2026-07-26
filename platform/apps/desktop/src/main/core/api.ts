@@ -3,6 +3,41 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
+const RETRYABLE_NETWORK_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "ETIMEDOUT",
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_SOCKET",
+]);
+
+function networkErrorCode(error: unknown): string {
+  let current = error;
+  for (let depth = 0; depth < 3 && current && typeof current === "object"; depth += 1) {
+    const code = (current as { code?: unknown }).code;
+    if (typeof code === "string") return code;
+    current = (current as { cause?: unknown }).cause;
+  }
+  return "";
+}
+
+function retryableRequest(init: RequestInit): boolean {
+  const method = (init.method ?? "GET").toUpperCase();
+  return method === "GET" || method === "HEAD";
+}
+
+async function fetchWithNetworkRetry(url: string, init: RequestInit = {}): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (!retryableRequest(init) || !RETRYABLE_NETWORK_CODES.has(networkErrorCode(error))) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    return fetch(url, init);
+  }
+}
+
 export interface SkinArt {
   safeArea?: "auto" | "left" | "right" | "center" | "none";
   taskMode?: "auto" | "ambient" | "banner" | "off";
@@ -91,7 +126,7 @@ export class ApiClient {
     if (init.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
     const token = this.getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
-    const resp = await fetch(`${this.getBase()}${pathName}`, { ...init, headers });
+    const resp = await fetchWithNetworkRetry(`${this.getBase()}${pathName}`, { ...init, headers });
     const body = (await resp.json().catch(() => ({}))) as T & { error?: string };
     if (!resp.ok) throw new Error(body?.error ?? `HTTP ${resp.status}`);
     return body;
@@ -207,7 +242,7 @@ export class ApiClient {
 
   /** 下载远程文件到本地路径。 */
   async downloadFile(url: string, dest: string): Promise<void> {
-    const resp = await fetch(url);
+    const resp = await fetchWithNetworkRetry(url);
     if (!resp.ok || !resp.body) throw new Error(`download failed: HTTP ${resp.status}`);
     await fs.mkdir(path.dirname(dest), { recursive: true });
     await pipeline(Readable.fromWeb(resp.body as never), createWriteStream(dest));

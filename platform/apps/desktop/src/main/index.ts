@@ -1,4 +1,5 @@
 import path from "node:path";
+import { setDefaultResultOrder } from "node:dns";
 import { BrowserWindow, Menu, app, protocol } from "electron";
 import { AppContext } from "./context";
 import { registerIpc } from "./ipc";
@@ -9,6 +10,11 @@ import { installWindowGuards } from "./window-guards";
 
 // 确保 Codress 自身不受 WorkBuddy 调试端口环境变量影响
 delete process.env.WORKBUDDY_REMOTE_DEBUGGING_PORT;
+
+// Prefer a working IPv6 route while retaining Node's automatic IPv4 fallback.
+// Some networks can establish TCP to Cloudflare over IPv4 but reset during TLS,
+// which otherwise prevents Happy Eyeballs from trying the healthy IPv6 route.
+setDefaultResultOrder("ipv6first");
 
 // Keep development state and the single-instance lock separate from an installed build.
 if (!app.isPackaged) {
@@ -62,7 +68,7 @@ function createMainWindow() {
 }
 
 function previewApiBase(raw: string | null) {
-  const fallback = app.isPackaged ? "https://codress.dev" : "http://127.0.0.1:8080";
+  const fallback = "https://codress.dev";
   if (!raw) return fallback;
   const parsed = new URL(raw);
   const loopback = parsed.protocol === "http:"
