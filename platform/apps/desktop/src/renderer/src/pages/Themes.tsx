@@ -9,6 +9,7 @@ import {
 import { useToast } from "../toast";
 import codexIcon from "../assets/codex.png";
 import workbuddyIcon from "../assets/workbuddy.png";
+import claudeIcon from "../assets/claude.png";
 import { CategorySelect, RefreshButton, StoreSkeleton } from "../components/StoreControls";
 import { ThemeCreatorModal } from "../components/ThemeCreatorModal";
 import { warmImageUrls } from "../storePreload";
@@ -16,6 +17,7 @@ import { warmImageUrls } from "../storePreload";
 const TARGETS = [
   { id: "codex", label: "Codex", icon: codexIcon },
   { id: "workbuddy", label: "WorkBuddy", icon: workbuddyIcon },
+  { id: "claude", label: "Claude", icon: claudeIcon },
 ];
 
 const THEME_PAGE_SIZE = 24;

@@ -243,7 +243,7 @@ export class AppContext extends EventEmitter {
   }
 
   async applyPreviewSkin(target: string, snapshot: SkinManifest): Promise<ApplyOutcome> {
-    if (target !== "codex" && target !== "workbuddy") {
+    if (target !== "codex" && target !== "workbuddy" && target !== "claude") {
       throw new Error("调试票据包含不支持的目标应用");
     }
     const response = await fetch(snapshot.backgroundUrl);

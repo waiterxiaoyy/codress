@@ -1,0 +1,891 @@
+/* ============================================================
+ * Claude Dream Skin — Codress 注入样式
+ * 目标: Claude Desktop (Electron, claude.ai SPA)
+ *
+ * 选择器策略:
+ *   Claude Desktop 使用 Tailwind + 自定义 data 属性布局。
+ *   侧边栏由 [data-sidebar-state] 控制；主区域由 main / [role="main"] 承载；
+ *   对话气泡、输入框、头部导航等均使用 Tailwind 类 + data 属性组合。
+ *   尽量用结构语义选择器 + 属性选择器,减少对生成类名的依赖。
+ * ============================================================ */
+
+/* ---- 变量定义(暗色基准,JS 运行时会覆盖) ---- */
+
+:root.claude-dream-skin {
+  color-scheme: dark !important;
+
+  --ds-bg: #111318;
+  --ds-panel: #191c22;
+  --ds-panel-2: #20242b;
+  --ds-green: #8298a3;
+  --ds-lime: #a0adb3;
+  --ds-cyan: #8da397;
+  --ds-purple: #9d94a3;
+  --ds-text: #edf0f1;
+  --ds-muted: #a3aaae;
+  --ds-line: rgba(130, 152, 163, .24);
+
+  --ds-bg-rgb: 17 19 24;
+  --ds-panel-rgb: 25 28 34;
+  --ds-panel-2-rgb: 32 36 43;
+  --ds-text-rgb: 237 240 241;
+  --ds-muted-rgb: 163 170 174;
+  --ds-accent-rgb: 130 152 163;
+  --ds-secondary-rgb: 141 163 151;
+  --ds-highlight-rgb: var(--ds-secondary-rgb);
+
+  --ds-accent: var(--ds-green);
+  --ds-accent-soft: var(--ds-lime);
+  --ds-secondary: var(--ds-cyan);
+  --ds-highlight: var(--ds-purple);
+  --ds-on-accent: rgb(var(--ds-bg-rgb) / 1);
+
+  --ds-focus-x: var(--dream-skin-focus-x, var(--dream-art-focus-x, 50%));
+  --ds-focus-y: var(--dream-skin-focus-y, var(--dream-art-focus-y, 50%));
+  --ds-art-position: var(--dream-art-position, var(--dream-skin-art-position, var(--ds-focus-x) var(--ds-focus-y)));
+  --ds-safe-side: left;
+
+  --ds-hero-scrim: linear-gradient(90deg,
+    rgb(var(--ds-bg-rgb) / .90) 0%,
+    rgb(var(--ds-bg-rgb) / .76) 50%,
+    rgb(var(--ds-bg-rgb) / .18) 84%,
+    transparent 100%);
+
+  --ds-task-shade: linear-gradient(90deg,
+    rgb(var(--ds-bg-rgb) / .56) 0%,
+    rgb(var(--ds-bg-rgb) / .36) 48%,
+    rgb(var(--ds-bg-rgb) / .12) 100%);
+
+  --ds-task-fade: linear-gradient(180deg,
+    rgb(var(--ds-bg-rgb) / .10) 0%,
+    rgb(var(--ds-bg-rgb) / .18) 32%,
+    rgb(var(--ds-bg-rgb) / .76) 68%,
+    rgb(var(--ds-bg-rgb) / 1) 100%);
+
+  --ds-immersive-edge: rgb(var(--ds-bg-rgb) / .40);
+  --ds-immersive-mid: rgb(var(--ds-bg-rgb) / .26);
+  --ds-immersive-far: rgb(var(--ds-bg-rgb) / .16);
+  --ds-immersive-sidebar: rgb(var(--ds-panel-rgb) / .46);
+  --ds-task-immersive-sidebar: rgb(var(--ds-panel-rgb) / .70);
+  --ds-immersive-chrome: rgb(var(--ds-panel-rgb) / .28);
+  --ds-immersive-composer: rgb(var(--ds-panel-rgb) / .44);
+  --ds-immersive-composer-solid: color-mix(in srgb,
+    rgb(var(--ds-panel-2-rgb)) 88%,
+    rgb(var(--ds-muted-rgb)) 12%);
+  --ds-immersive-line: rgb(var(--ds-muted-rgb) / .42);
+  --ds-task-immersive-edge: rgb(var(--ds-bg-rgb) / .82);
+  --ds-task-immersive-mid: rgb(var(--ds-bg-rgb) / .74);
+  --ds-task-immersive-far: rgb(var(--ds-bg-rgb) / .60);
+}
+
+/* ---- 浅色模式变量 ---- */
+
+html.claude-dream-skin[data-dream-shell="light"] {
+  color-scheme: light !important;
+
+  --ds-bg: #f3f5f6;
+  --ds-panel: #fafbfb;
+  --ds-panel-2: #e9edef;
+  --ds-text: #22272a;
+  --ds-muted: #687176;
+  --ds-line: rgba(91, 111, 121, .18);
+
+  --ds-bg-rgb: 243 245 246;
+  --ds-panel-rgb: 250 251 251;
+  --ds-panel-2-rgb: 233 237 239;
+  --ds-text-rgb: 34 39 42;
+  --ds-muted-rgb: 104 113 118;
+  --ds-accent-rgb: 84 112 126;
+  --ds-secondary-rgb: 102 128 116;
+  --ds-highlight-rgb: var(--ds-secondary-rgb);
+  --ds-on-accent: rgb(var(--ds-panel-rgb) / 1);
+
+  --ds-hero-scrim: linear-gradient(90deg,
+    rgb(var(--ds-panel-rgb) / .96) 0%,
+    rgb(var(--ds-panel-rgb) / .82) 50%,
+    rgb(var(--ds-panel-rgb) / .20) 84%,
+    transparent 100%);
+  --ds-task-shade: linear-gradient(90deg,
+    rgb(var(--ds-bg-rgb) / .68) 0%,
+    rgb(var(--ds-bg-rgb) / .40) 48%,
+    rgb(var(--ds-bg-rgb) / .12) 100%);
+  --ds-task-fade: linear-gradient(180deg,
+    rgb(var(--ds-bg-rgb) / .08) 0%,
+    rgb(var(--ds-bg-rgb) / .22) 34%,
+    rgb(var(--ds-bg-rgb) / .78) 70%,
+    rgb(var(--ds-bg-rgb) / 1) 100%);
+  --ds-immersive-edge: rgb(var(--ds-panel-rgb) / .44);
+  --ds-immersive-mid: rgb(var(--ds-panel-rgb) / .28);
+  --ds-immersive-far: rgb(var(--ds-panel-rgb) / .14);
+  --ds-immersive-sidebar: rgb(var(--ds-panel-rgb) / .48);
+  --ds-task-immersive-sidebar: rgb(var(--ds-panel-rgb) / .72);
+  --ds-immersive-chrome: rgb(var(--ds-panel-rgb) / .34);
+  --ds-immersive-composer: rgb(var(--ds-panel-rgb) / .46);
+  --ds-immersive-composer-solid: rgb(var(--ds-panel-rgb) / .74);
+  --ds-immersive-line: rgb(var(--ds-accent-rgb) / .24);
+  --ds-task-immersive-edge: rgb(var(--ds-panel-rgb) / .86);
+  --ds-task-immersive-mid: rgb(var(--ds-panel-rgb) / .78);
+  --ds-task-immersive-far: rgb(var(--ds-panel-rgb) / .66);
+}
+
+/* ---- safe area 方向 ---- */
+
+html.claude-dream-skin:is([data-dream-art-safe="left"], [data-dream-art-safe-area="left"]) {
+  --ds-safe-side: left;
+  --ds-art-position: 100% var(--ds-focus-y);
+}
+
+html.claude-dream-skin:is([data-dream-art-safe="right"], [data-dream-art-safe-area="right"]) {
+  --ds-safe-side: right;
+  --ds-art-position: 0% var(--ds-focus-y);
+  --ds-hero-scrim: linear-gradient(270deg,
+    rgb(var(--ds-bg-rgb) / .90) 0%,
+    rgb(var(--ds-bg-rgb) / .76) 50%,
+    rgb(var(--ds-bg-rgb) / .18) 84%,
+    transparent 100%);
+  --ds-task-shade: linear-gradient(270deg,
+    rgb(var(--ds-bg-rgb) / .56) 0%,
+    rgb(var(--ds-bg-rgb) / .36) 48%,
+    rgb(var(--ds-bg-rgb) / .12) 100%);
+}
+
+html.claude-dream-skin[data-dream-shell="light"]:is([data-dream-art-safe="right"], [data-dream-art-safe-area="right"]) {
+  --ds-hero-scrim: linear-gradient(270deg,
+    rgb(var(--ds-panel-rgb) / .96) 0%,
+    rgb(var(--ds-panel-rgb) / .82) 50%,
+    rgb(var(--ds-panel-rgb) / .20) 84%,
+    transparent 100%);
+}
+
+html.claude-dream-skin:is([data-dream-art-safe="center"], [data-dream-art-safe-area="center"]) {
+  --ds-safe-side: center;
+  --ds-hero-scrim: linear-gradient(180deg,
+    transparent 0%,
+    rgb(var(--ds-bg-rgb) / .20) 48%,
+    rgb(var(--ds-bg-rgb) / .80) 82%,
+    rgb(var(--ds-bg-rgb) / 1) 100%);
+}
+
+html.claude-dream-skin[data-dream-shell="light"]:is([data-dream-art-safe="center"], [data-dream-art-safe-area="center"]) {
+  --ds-hero-scrim: linear-gradient(180deg,
+    transparent 0%,
+    rgb(var(--ds-panel-rgb) / .22) 48%,
+    rgb(var(--ds-panel-rgb) / .84) 82%,
+    rgb(var(--ds-panel-rgb) / 1) 100%);
+}
+
+
+/* ===========================================================
+ * 1. 全局背景 + 背景图层
+ * =========================================================== */
+
+html.claude-dream-skin,
+html.claude-dream-skin body {
+  background: rgb(var(--ds-bg-rgb)) !important;
+  color: var(--ds-text) !important;
+}
+
+/* 背景图由 JS 注入到 #claude-dream-skin-chrome 的 ::before 层 */
+
+
+/* ===========================================================
+ * 2. 侧边栏
+ * Claude Desktop 侧边栏: [data-sidebar-state] 的子元素
+ * =========================================================== */
+
+html.claude-dream-skin [data-sidebar-state] {
+  background: var(--ds-immersive-sidebar) !important;
+  backdrop-filter: blur(32px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.4) !important;
+  border-color: var(--ds-line) !important;
+}
+
+/* 侧边栏内导航区域 */
+html.claude-dream-skin [data-sidebar-state] nav,
+html.claude-dream-skin [data-sidebar-state] aside {
+  background: transparent !important;
+}
+
+/* 侧边栏中的对话列表项 */
+html.claude-dream-skin [data-sidebar-state] a,
+html.claude-dream-skin [data-sidebar-state] button {
+  color: var(--ds-text) !important;
+}
+
+html.claude-dream-skin [data-sidebar-state] a:hover,
+html.claude-dream-skin [data-sidebar-state] button:hover {
+  background: rgb(var(--ds-accent-rgb) / .12) !important;
+}
+
+/* 侧边栏当前选中项 */
+html.claude-dream-skin [data-sidebar-state] a[data-active="true"],
+html.claude-dream-skin [data-sidebar-state] [data-state="active"],
+html.claude-dream-skin [data-sidebar-state] a[aria-current="page"] {
+  background: rgb(var(--ds-accent-rgb) / .18) !important;
+  color: var(--ds-accent) !important;
+}
+
+/* 侧边栏分割线 */
+html.claude-dream-skin [data-sidebar-state] hr,
+html.claude-dream-skin [data-sidebar-state] [role="separator"] {
+  border-color: var(--ds-line) !important;
+  opacity: .6;
+}
+
+/* 侧边栏头部(用户头像/logo 区域) */
+html.claude-dream-skin [data-sidebar-state] header {
+  background: transparent !important;
+  border-color: var(--ds-line) !important;
+}
+
+
+/* ===========================================================
+ * 3. 主内容区
+ * =========================================================== */
+
+html.claude-dream-skin main,
+html.claude-dream-skin [role="main"] {
+  background: transparent !important;
+}
+
+
+/* ===========================================================
+ * 4. 对话区域
+ * =========================================================== */
+
+/* 对话消息容器 */
+html.claude-dream-skin [data-test-render-count],
+html.claude-dream-skin [data-testid*="message"],
+html.claude-dream-skin article {
+  background: transparent !important;
+  color: var(--ds-text) !important;
+}
+
+/* 用户消息气泡 */
+html.claude-dream-skin [data-testid*="user-message"],
+html.claude-dream-skin [data-is-streaming="false"][data-testid*="human"] {
+  background: rgb(var(--ds-panel-2-rgb) / .72) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--ds-line) !important;
+}
+
+/* Claude 回复区域 */
+html.claude-dream-skin [data-testid*="assistant-message"],
+html.claude-dream-skin [data-is-streaming][data-testid*="assistant"] {
+  background: transparent !important;
+}
+
+/* 代码块 */
+html.claude-dream-skin pre,
+html.claude-dream-skin pre code,
+html.claude-dream-skin [data-testid*="code-block"],
+html.claude-dream-skin .code-block {
+  background: rgb(var(--ds-bg-rgb) / .80) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 10px !important;
+  color: var(--ds-text) !important;
+}
+
+/* 代码块头部(语言标签+复制按钮) */
+html.claude-dream-skin [data-testid*="code-block"] > div:first-child,
+html.claude-dream-skin .code-block > div:first-child {
+  background: rgb(var(--ds-panel-rgb) / .60) !important;
+  border-bottom: 1px solid var(--ds-line) !important;
+  color: var(--ds-muted) !important;
+}
+
+
+/* ===========================================================
+ * 5. 输入区(Composer)
+ * =========================================================== */
+
+/* 底部输入框外容器 */
+html.claude-dream-skin footer,
+html.claude-dream-skin [data-testid*="composer"],
+html.claude-dream-skin form[class*="composer"],
+html.claude-dream-skin div[class*="ComposerContainer"],
+html.claude-dream-skin div[class*="composer-container"] {
+  background: transparent !important;
+}
+
+/* 文本输入框 */
+html.claude-dream-skin [contenteditable="true"],
+html.claude-dream-skin textarea,
+html.claude-dream-skin div[role="textbox"],
+html.claude-dream-skin [data-placeholder] {
+  background: var(--ds-immersive-composer) !important;
+  backdrop-filter: blur(24px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 14px !important;
+  color: var(--ds-text) !important;
+  caret-color: var(--ds-accent) !important;
+}
+
+html.claude-dream-skin [contenteditable="true"]:focus,
+html.claude-dream-skin textarea:focus,
+html.claude-dream-skin div[role="textbox"]:focus-within {
+  border-color: var(--ds-accent) !important;
+  box-shadow: 0 0 0 2px rgb(var(--ds-accent-rgb) / .18) !important;
+}
+
+/* Placeholder 文本 */
+html.claude-dream-skin [data-placeholder]::before,
+html.claude-dream-skin [contenteditable="true"][data-placeholder]::before {
+  color: var(--ds-muted) !important;
+  opacity: .7;
+}
+
+/* 输入区工具栏(附件/模型选择) */
+html.claude-dream-skin [data-testid*="toolbar"],
+html.claude-dream-skin div[class*="toolbar"] {
+  background: transparent !important;
+}
+
+/* 发送按钮 */
+html.claude-dream-skin button[aria-label*="Send"],
+html.claude-dream-skin button[data-testid*="send"],
+html.claude-dream-skin button[type="submit"] {
+  background: var(--ds-accent) !important;
+  color: var(--ds-on-accent) !important;
+  border: none !important;
+  border-radius: 10px !important;
+}
+
+html.claude-dream-skin button[aria-label*="Send"]:hover,
+html.claude-dream-skin button[data-testid*="send"]:hover,
+html.claude-dream-skin button[type="submit"]:hover {
+  filter: brightness(1.12);
+}
+
+
+/* ===========================================================
+ * 6. 顶部导航
+ * =========================================================== */
+
+html.claude-dream-skin header,
+html.claude-dream-skin nav {
+  background: transparent !important;
+  border-color: var(--ds-line) !important;
+}
+
+
+/* ===========================================================
+ * 7. 弹出层 / 模态框 / 下拉菜单
+ * =========================================================== */
+
+html.claude-dream-skin .dream-skin-popover-surface,
+html.claude-dream-skin [data-radix-popper-content-wrapper] > *,
+html.claude-dream-skin [data-radix-menu-content],
+html.claude-dream-skin [data-radix-popover-content],
+html.claude-dream-skin [role="menu"],
+html.claude-dream-skin [role="listbox"],
+html.claude-dream-skin [role="dialog"],
+html.claude-dream-skin [data-state="open"][role="dialog"] {
+  background: var(--ds-immersive-composer-solid) !important;
+  backdrop-filter: blur(28px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.3) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 12px !important;
+  color: var(--ds-text) !important;
+}
+
+/* 下拉菜单项 hover */
+html.claude-dream-skin [role="menuitem"]:hover,
+html.claude-dream-skin [role="option"]:hover,
+html.claude-dream-skin [role="menuitem"][data-highlighted],
+html.claude-dream-skin [role="option"][data-highlighted] {
+  background: rgb(var(--ds-accent-rgb) / .14) !important;
+}
+
+/* 遮罩层 */
+html.claude-dream-skin [data-radix-overlay],
+html.claude-dream-skin [data-state="open"].fixed.inset-0,
+html.claude-dream-skin div[class*="overlay"] {
+  background: rgb(var(--ds-bg-rgb) / .60) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+
+/* ===========================================================
+ * 8. 按钮和交互元素
+ * =========================================================== */
+
+/* 主按钮 */
+html.claude-dream-skin button[class*="primary"],
+html.claude-dream-skin a[class*="primary"] {
+  background: var(--ds-accent) !important;
+  color: var(--ds-on-accent) !important;
+  border: none !important;
+}
+
+/* Ghost 按钮 */
+html.claude-dream-skin button[class*="ghost"],
+html.claude-dream-skin button[class*="outline"],
+html.claude-dream-skin button[class*="secondary"] {
+  color: var(--ds-text) !important;
+  border-color: var(--ds-line) !important;
+}
+
+html.claude-dream-skin button[class*="ghost"]:hover,
+html.claude-dream-skin button[class*="outline"]:hover,
+html.claude-dream-skin button[class*="secondary"]:hover {
+  background: rgb(var(--ds-accent-rgb) / .10) !important;
+}
+
+/* 图标按钮 */
+html.claude-dream-skin button svg {
+  color: inherit;
+}
+
+
+/* ===========================================================
+ * 9. 滚动条
+ * =========================================================== */
+
+html.claude-dream-skin ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.claude-dream-skin ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html.claude-dream-skin ::-webkit-scrollbar-thumb {
+  background: rgb(var(--ds-muted-rgb) / .22);
+  border-radius: 4px;
+}
+
+html.claude-dream-skin ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ds-muted-rgb) / .38);
+}
+
+
+/* ===========================================================
+ * 10. 选区和焦点
+ * =========================================================== */
+
+html.claude-dream-skin ::selection {
+  background: rgb(var(--ds-accent-rgb) / .32) !important;
+  color: var(--ds-text) !important;
+}
+
+html.claude-dream-skin :focus-visible {
+  outline-color: var(--ds-accent) !important;
+}
+
+
+/* ===========================================================
+ * 11. 装饰层(chrome overlay)— 由 JS 创建的 #claude-dream-skin-chrome
+ * =========================================================== */
+
+#claude-dream-skin-chrome {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity .4s ease;
+}
+
+/* 背景图层(铺满主内容区) */
+#claude-dream-skin-chrome::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--dream-skin-art);
+  background-size: cover;
+  background-position: var(--ds-art-position);
+  background-repeat: no-repeat;
+  opacity: .42;
+  transition: opacity .6s ease;
+}
+
+/* hero scrim 遮罩 */
+#claude-dream-skin-chrome::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ds-hero-scrim);
+}
+
+html.claude-dream-skin[data-dream-shell="light"] #claude-dream-skin-chrome::before {
+  opacity: .30;
+}
+
+/* 品牌信息 */
+.dream-skin-brand {
+  position: absolute;
+  bottom: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+  opacity: .32;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--ds-text);
+  z-index: 1;
+  transition: opacity .3s ease;
+}
+
+html.claude-dream-skin[data-dream-shell="light"] .dream-skin-brand { opacity: .24; }
+
+.dream-skin-brand:hover { opacity: .60; }
+
+.dream-skin-portal-mark {
+  font-size: 18px;
+  color: var(--ds-accent);
+  filter: drop-shadow(0 0 4px rgb(var(--ds-accent-rgb) / .36));
+}
+
+.dream-skin-brand b {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.dream-skin-brand small {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  line-height: 1.3;
+}
+
+/* 状态指示器 */
+.dream-skin-status {
+  position: absolute;
+  bottom: 44px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 8px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  opacity: .24;
+  z-index: 1;
+}
+
+.dream-skin-status i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  box-shadow: 0 0 5px var(--ds-accent);
+  animation: dream-skin-blink 3s ease-in-out infinite;
+}
+
+@keyframes dream-skin-blink {
+  0%, 100% { opacity: .5; }
+  50% { opacity: 1; }
+}
+
+/* 引言 */
+.dream-skin-quote {
+  position: absolute;
+  bottom: 28px;
+  padding: 0 28px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  opacity: .18;
+  z-index: 1;
+}
+
+/* 粒子效果 */
+.dream-skin-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.dream-skin-particles i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  opacity: 0;
+  animation: dream-skin-float 12s ease-in-out infinite;
+}
+
+.dream-skin-particles i:nth-child(1) { left: 18%; top: 62%; animation-delay: 0s; animation-duration: 14s; }
+.dream-skin-particles i:nth-child(2) { left: 72%; top: 38%; animation-delay: 2s; animation-duration: 11s; }
+.dream-skin-particles i:nth-child(3) { left: 44%; top: 78%; animation-delay: 4s; animation-duration: 16s; }
+.dream-skin-particles i:nth-child(4) { left: 86%; top: 22%; animation-delay: 1s; animation-duration: 13s; }
+.dream-skin-particles i:nth-child(5) { left: 32%; top: 44%; animation-delay: 6s; animation-duration: 15s; }
+.dream-skin-particles i:nth-child(6) { left: 58%; top: 16%; animation-delay: 3s; animation-duration: 12s; }
+.dream-skin-particles i:nth-child(7) { left: 10%; top: 88%; animation-delay: 5s; animation-duration: 17s; }
+.dream-skin-particles i:nth-child(8) { left: 78%; top: 72%; animation-delay: 7s; animation-duration: 14s; }
+
+@keyframes dream-skin-float {
+  0% { opacity: 0; transform: translateY(0) scale(.6); }
+  10% { opacity: .36; }
+  50% { opacity: .18; transform: translateY(-28px) scale(1); }
+  90% { opacity: .30; }
+  100% { opacity: 0; transform: translateY(-56px) scale(.6); }
+}
+
+/* 轨道装饰 */
+.dream-skin-orbit {
+  position: absolute;
+  top: 50%;
+  right: 12%;
+  width: 240px;
+  height: 240px;
+  margin-top: -120px;
+  border: 1px solid rgb(var(--ds-accent-rgb) / .06);
+  border-radius: 50%;
+  z-index: 1;
+  animation: dream-skin-spin 60s linear infinite;
+}
+
+.dream-skin-orbit::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  opacity: .28;
+  box-shadow: 0 0 8px var(--ds-accent);
+}
+
+@keyframes dream-skin-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+/* ===========================================================
+ * 12. 链接与文本
+ * =========================================================== */
+
+html.claude-dream-skin a:not([class]) {
+  color: var(--ds-accent) !important;
+}
+
+html.claude-dream-skin a:not([class]):hover {
+  color: var(--ds-accent-soft) !important;
+}
+
+
+/* ===========================================================
+ * 13. 表格
+ * =========================================================== */
+
+html.claude-dream-skin table {
+  border-color: var(--ds-line) !important;
+}
+
+html.claude-dream-skin th {
+  background: rgb(var(--ds-panel-2-rgb) / .60) !important;
+  border-color: var(--ds-line) !important;
+  color: var(--ds-text) !important;
+}
+
+html.claude-dream-skin td {
+  border-color: var(--ds-line) !important;
+  color: var(--ds-text) !important;
+}
+
+html.claude-dream-skin tr:hover td {
+  background: rgb(var(--ds-accent-rgb) / .06) !important;
+}
+
+
+/* ===========================================================
+ * 14. Tooltip
+ * =========================================================== */
+
+html.claude-dream-skin [role="tooltip"],
+html.claude-dream-skin [data-radix-tooltip-content] {
+  background: var(--ds-panel) !important;
+  border: 1px solid var(--ds-line) !important;
+  color: var(--ds-text) !important;
+  border-radius: 8px !important;
+}
+
+
+/* ===========================================================
+ * 15. 分隔线与边框统一
+ * =========================================================== */
+
+html.claude-dream-skin hr {
+  border-color: var(--ds-line) !important;
+}
+
+
+/* ===========================================================
+ * 16. 输入控件
+ * =========================================================== */
+
+html.claude-dream-skin input[type="text"],
+html.claude-dream-skin input[type="search"],
+html.claude-dream-skin input[type="email"],
+html.claude-dream-skin input[type="url"],
+html.claude-dream-skin select {
+  background: rgb(var(--ds-panel-2-rgb) / .70) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 8px !important;
+  color: var(--ds-text) !important;
+}
+
+html.claude-dream-skin input:focus,
+html.claude-dream-skin select:focus {
+  border-color: var(--ds-accent) !important;
+  box-shadow: 0 0 0 2px rgb(var(--ds-accent-rgb) / .16) !important;
+}
+
+
+/* ===========================================================
+ * 17. Artifact / 思考过程 折叠区
+ * =========================================================== */
+
+html.claude-dream-skin details,
+html.claude-dream-skin [data-testid*="thinking"],
+html.claude-dream-skin [data-testid*="artifact"] {
+  background: rgb(var(--ds-panel-rgb) / .50) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 10px !important;
+}
+
+html.claude-dream-skin summary {
+  color: var(--ds-muted) !important;
+}
+
+
+/* ===========================================================
+ * 18. 引用块 (blockquote)
+ * =========================================================== */
+
+html.claude-dream-skin blockquote {
+  border-left: 3px solid var(--ds-accent) !important;
+  color: var(--ds-muted) !important;
+  background: rgb(var(--ds-accent-rgb) / .06) !important;
+  border-radius: 0 8px 8px 0 !important;
+  padding: 8px 16px !important;
+}
+
+
+/* ===========================================================
+ * 19. 溢出防护
+ * =========================================================== */
+
+html.claude-dream-skin {
+  overflow-x: hidden !important;
+}
+
+
+/* ===========================================================
+ * 20. task mode (对话进行中)
+ * =========================================================== */
+
+html.claude-dream-skin[data-dream-task-mode="ambient"] #claude-dream-skin-chrome::before {
+  opacity: .36;
+}
+
+html.claude-dream-skin[data-dream-task-mode="banner"] #claude-dream-skin-chrome::before {
+  opacity: .52;
+}
+
+html.claude-dream-skin[data-dream-task-mode="off"] #claude-dream-skin-chrome::before {
+  opacity: 0;
+}
+
+
+/* ===========================================================
+ * 21. 新对话 / 欢迎页
+ * =========================================================== */
+
+html.claude-dream-skin .dream-skin-home #claude-dream-skin-chrome::before {
+  opacity: .56;
+}
+
+html.claude-dream-skin[data-dream-shell="light"] .dream-skin-home #claude-dream-skin-chrome::before {
+  opacity: .40;
+}
+
+
+/* ===========================================================
+ * 22. 打字动画光标
+ * =========================================================== */
+
+html.claude-dream-skin [data-is-streaming="true"] .cursor-blink,
+html.claude-dream-skin [data-is-streaming="true"] .animate-pulse {
+  color: var(--ds-accent) !important;
+}
+
+
+/* ===========================================================
+ * 23. Toast / Snackbar
+ * =========================================================== */
+
+html.claude-dream-skin [role="status"],
+html.claude-dream-skin [data-sonner-toast] {
+  background: var(--ds-immersive-composer-solid) !important;
+  border: 1px solid var(--ds-line) !important;
+  color: var(--ds-text) !important;
+  border-radius: 10px !important;
+}
+
+
+/* ===========================================================
+ * 24. 文件/附件卡片
+ * =========================================================== */
+
+html.claude-dream-skin [data-testid*="attachment"],
+html.claude-dream-skin [data-testid*="file-card"] {
+  background: rgb(var(--ds-panel-2-rgb) / .60) !important;
+  border: 1px solid var(--ds-line) !important;
+  border-radius: 10px !important;
+}
+
+
+/* ===========================================================
+ * 25. 标签 / Badge
+ * =========================================================== */
+
+html.claude-dream-skin [class*="badge"],
+html.claude-dream-skin [class*="tag"] {
+  background: rgb(var(--ds-accent-rgb) / .14) !important;
+  color: var(--ds-accent) !important;
+  border: 1px solid rgb(var(--ds-accent-rgb) / .22) !important;
+}
+
+
+/* ===========================================================
+ * 26. 防止 transition 闪烁(首次注入)
+ * =========================================================== */
+
+html.claude-dream-skin * {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform !important;
+  transition-duration: 0s !important;
+}
+
+html.claude-dream-skin[data-dream-art-ready="true"] * {
+  transition-duration: unset !important;
+  transition-property: unset !important;
+}

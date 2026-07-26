@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** 支持的目标应用 */
-export const TargetApp = z.enum(["codex", "workbuddy"]);
+export const TargetApp = z.enum(["codex", "workbuddy", "claude"]);
 export type TargetApp = z.infer<typeof TargetApp>;
 
 export const Appearance = z.enum(["auto", "light", "dark"]);

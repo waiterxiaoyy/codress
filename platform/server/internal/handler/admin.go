@@ -47,7 +47,7 @@ func validTargets(targets []string) bool {
 		return false
 	}
 	for _, t := range targets {
-		if t != "codex" && t != "workbuddy" {
+		if t != "codex" && t != "workbuddy" && t != "claude" {
 			return false
 		}
 	}

@@ -192,7 +192,7 @@ func main() {
 			Description:   tagline,
 			Author:        "codress",
 			Category:      category,
-			Targets:       mustJSON([]string{"codex", "workbuddy"}),
+			Targets:       mustJSON([]string{"codex", "workbuddy", "claude"}),
 			Appearance:    appearance,
 			Tagline:       tagline,
 			Quote:         quote,
