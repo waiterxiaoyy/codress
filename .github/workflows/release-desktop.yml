@@ -6,7 +6,12 @@ on:
       - "v*"
 
 permissions:
+  actions: read
   contents: write
+
+concurrency:
+  group: release-desktop-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   validate-version:
@@ -66,25 +71,61 @@ jobs:
       - name: Build desktop
         working-directory: platform
         run: pnpm --filter @codress/desktop build
-      - name: Package, sign, notarize and publish
+      - name: Package, sign and notarize
         timeout-minutes: 45
         working-directory: platform
-        run: pnpm --filter @codress/desktop exec electron-builder --${{ matrix.target }} --publish always
+        run: pnpm --filter @codress/desktop exec electron-builder --${{ matrix.target }} --publish never
         env:
           DEBUG: electron-builder,electron-osx-sign*,electron-notarize*
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ matrix.target == 'mac' && secrets.MAC_CERTIFICATE || secrets.WIN_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ matrix.target == 'mac' && secrets.MAC_CERTIFICATE_PASSWORD || secrets.WIN_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.target }}
+          if-no-files-found: error
+          path: |
+            platform/apps/desktop/release/*.dmg
+            platform/apps/desktop/release/*.dmg.blockmap
+            platform/apps/desktop/release/*.exe
+            platform/apps/desktop/release/*.exe.blockmap
+            platform/apps/desktop/release/*.zip
+            platform/apps/desktop/release/*.zip.blockmap
+            platform/apps/desktop/release/latest*.yml
 
   publish:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+      - name: Verify complete release artifacts
+        shell: bash
+        run: |
+          test -f release-artifacts/latest.yml
+          test -f release-artifacts/latest-mac.yml
+          test -n "$(find release-artifacts -maxdepth 1 -name 'Codress-*-win-x64.exe' -print -quit)"
+          test -n "$(find release-artifacts -maxdepth 1 -name 'Codress-*-mac-*.dmg' -print -quit)"
+          test -n "$(find release-artifacts -maxdepth 1 -name 'Codress-*-mac-*.zip' -print -quit)"
+          ls -la release-artifacts
       - name: Publish complete GitHub release
-        run: gh release edit "${GITHUB_REF_NAME}" --draft=false --latest
+        shell: bash
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" release-artifacts/* --clobber
+            gh release edit "${GITHUB_REF_NAME}" --draft=false --latest
+          else
+            gh release create "${GITHUB_REF_NAME}" release-artifacts/* \
+              --title "${GITHUB_REF_NAME#v}" \
+              --notes "release ${GITHUB_REF_NAME}" \
+              --latest
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

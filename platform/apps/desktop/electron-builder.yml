@@ -15,7 +15,6 @@ publish:
   provider: github
   owner: waiterxiaoyy
   repo: codress
-  releaseType: draft
 protocols:
   - name: Codress Preview
     schemes:
