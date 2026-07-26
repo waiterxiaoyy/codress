@@ -34,3 +34,5 @@ Thumbs.db
 images/generated-skins/
 images/generated-pets/
 images/generated-skins.zip
+
+*.sh
