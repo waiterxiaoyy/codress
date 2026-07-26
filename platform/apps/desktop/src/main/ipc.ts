@@ -5,6 +5,14 @@ import { loginViaBrowser } from "./auth";
 import type { AppContext } from "./context";
 import type { DesktopUpdater } from "./updater";
 import { installPetToCodex, getInstalledPetSlugs, activatePet, uninstallPet, getActivePet } from "./pet-installer";
+import type { AgentSourceId } from "./agent-link/installers";
+
+const AGENT_SOURCE_IDS = new Set<AgentSourceId>(["claude-code", "gemini-cli", "kimi-code", "codex"]);
+
+function assertAgentSourceId(id: string): AgentSourceId {
+  if (AGENT_SOURCE_IDS.has(id as AgentSourceId)) return id as AgentSourceId;
+  throw new Error("不支持的编码助手来源");
+}
 
 /** 渲染层唯一入口:全部走 invoke,主进程持有一切状态与密钥。 */
 export function registerIpc(
@@ -199,6 +207,12 @@ export function registerIpc(
   ipcMain.handle("pet:uninstall", (_e, slug: string) => uninstallPet(slug));
   ipcMain.handle("pet:installed", () => getInstalledPetSlugs());
   ipcMain.handle("pet:active", () => getActivePet());
+  ipcMain.handle("agent-link:status", () => ctx.agentLinkStatus());
+  ipcMain.handle("agent-link:install", (_e, id: string) => ctx.linkAgentSource(assertAgentSourceId(id)));
+  ipcMain.handle("agent-link:uninstall", (_e, id: string) => ctx.unlinkAgentSource(assertAgentSourceId(id)));
+  ipcMain.handle("claude-link:status", () => ctx.claudeLinkStatus());
+  ipcMain.handle("claude-link:install", () => ctx.linkClaudeCode());
+  ipcMain.handle("claude-link:uninstall", () => ctx.unlinkClaudeCode());
   const petDragStates = new Map<number, { cursorX: number; cursorY: number; windowX: number; windowY: number }>();
   ipcMain.on("pet-window:open-main", (event) => {
     if (ctx.pets.ownsWebContents(event.sender)) showMainWindow();

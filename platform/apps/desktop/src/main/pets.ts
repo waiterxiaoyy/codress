@@ -10,6 +10,13 @@ export interface ActivePet {
   assetVersion?: string;
 }
 
+/** 聚合器输出的桌宠外部驱动状态(联动开启时替代默认轮播)。 */
+export interface PetAgentState {
+  state: "idle" | "running" | "waiting";
+  label: string;
+  bubble: string | null;
+}
+
 /**
  * 桌面宠物 = 透明置顶小窗(与皮肤注入完全平行的能力)。
  * 可拖动;不抢焦点;从托盘或客户端关闭。
@@ -17,9 +24,26 @@ export interface ActivePet {
 export class PetManager {
   private window: BrowserWindow | null = null;
   private loadedPetKey: string | null = null;
+  private agentState: PetAgentState | null = null;
   current: ActivePet | null = null;
 
   constructor(private readonly petPageUrl: () => { file?: string; url?: string }) {}
+
+  /** 联动状态推送:窗口不在时先记住,上桌后补发。 */
+  setAgentState(state: PetAgentState) {
+    this.agentState = state;
+    this.send("pet:agent-state", state);
+  }
+
+  playAgentTransient(kind: "greet" | "failed" | "celebrate") {
+    this.send("pet:agent-transient", kind);
+  }
+
+  private send(channel: string, payload: unknown) {
+    if (this.window && !this.window.isDestroyed()) {
+      this.window.webContents.send(channel, payload);
+    }
+  }
 
   async show(pet: ActivePet) {
     this.current = pet;
@@ -73,6 +97,8 @@ export class PetManager {
       this.loadedPetKey = petKey;
     }
     this.window.showInactive();
+    // 页面可能刚重载,补发当前联动状态
+    if (this.agentState) this.send("pet:agent-state", this.agentState);
   }
 
   hide() {

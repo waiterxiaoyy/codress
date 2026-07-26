@@ -56,6 +56,43 @@ export interface Settings {
   activeSkins: Record<string, string | null>;
   appPaths: Record<string, string>;
   ports: Record<string, number>;
+  agentLink: {
+    enabled: boolean;
+    claudeCode: { linked: boolean; linkedAt: string | null };
+  };
+}
+
+export interface ClaudeLinkStatus {
+  claudeDetected: boolean;
+  linked: boolean;
+  scriptPresent: boolean;
+  bridgeRunning: boolean;
+  enabled: boolean;
+  lastEventAt: number | null;
+  running: number;
+  waiting: number;
+}
+
+export type AgentSourceId = "claude-code" | "gemini-cli" | "kimi-code" | "codex";
+
+export interface AgentSourceStatus {
+  id: AgentSourceId;
+  name: string;
+  detected: boolean;
+  linked: boolean;
+  linkedAt: string | null;
+  running: number;
+  waiting: number;
+  partial?: string;
+}
+
+export interface AgentLinkStatus {
+  bridgeRunning: boolean;
+  enabled: boolean;
+  lastEventAt: number | null;
+  running: number;
+  waiting: number;
+  sources: AgentSourceStatus[];
 }
 
 export interface ClientRelease {
@@ -213,6 +250,12 @@ export interface CodressBridge {
   uninstallPetFromCodex(slug: string): Promise<{ ok: boolean; message?: string }>;
   getInstalledPets(): Promise<string[]>;
   getActivePetInCodex(): Promise<string | null>;
+  agentLinkStatus(): Promise<AgentLinkStatus>;
+  linkAgentSource(id: AgentSourceId): Promise<{ ok: boolean; message?: string }>;
+  unlinkAgentSource(id: AgentSourceId): Promise<{ ok: boolean; message?: string }>;
+  claudeLinkStatus(): Promise<ClaudeLinkStatus>;
+  linkClaudeCode(): Promise<{ ok: boolean; message?: string }>;
+  unlinkClaudeCode(): Promise<{ ok: boolean; message?: string }>;
   openExternal(url: string): Promise<void>;
 }
 
@@ -241,6 +284,7 @@ const fallbackBridge: CodressBridge = {
     apiBase: API_BASE,
     userToken: null, userName: null, activePet: null,
     activeSkins: {}, appPaths: {}, ports: {},
+    agentLink: { enabled: false, claudeCode: { linked: false, linkedAt: null } },
   }),
   patchSettings: noopAsync,
   getCreatorConfig: () => Promise.resolve({
@@ -302,6 +346,27 @@ const fallbackBridge: CodressBridge = {
   uninstallPetFromCodex: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
   getInstalledPets: () => Promise.resolve([]),
   getActivePetInCodex: () => Promise.resolve(null),
+  agentLinkStatus: () => Promise.resolve({
+    bridgeRunning: false,
+    enabled: false,
+    lastEventAt: null,
+    running: 0,
+    waiting: 0,
+    sources: [
+      { id: "claude-code", name: "Claude Code", detected: false, linked: false, linkedAt: null, running: 0, waiting: 0 },
+      { id: "codex", name: "Codex", detected: false, linked: false, linkedAt: null, running: 0, waiting: 0, partial: "仅支持回合完成通知" },
+      { id: "gemini-cli", name: "Gemini CLI", detected: false, linked: false, linkedAt: null, running: 0, waiting: 0 },
+      { id: "kimi-code", name: "Kimi Code", detected: false, linked: false, linkedAt: null, running: 0, waiting: 0 },
+    ],
+  }),
+  linkAgentSource: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  unlinkAgentSource: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  claudeLinkStatus: () => Promise.resolve({
+    claudeDetected: false, linked: false, scriptPresent: false,
+    bridgeRunning: false, enabled: false, lastEventAt: null, running: 0, waiting: 0,
+  }),
+  linkClaudeCode: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
+  unlinkClaudeCode: () => Promise.resolve({ ok: false, message: "非 Electron 环境" }),
   openExternal: noopAsync,
 };
 

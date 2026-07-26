@@ -631,6 +631,43 @@ button, input, textarea, select { font: inherit; }
   border-bottom: 1px solid var(--line);
 }
 .list-row:last-child { border-bottom: 0; }
+.agent-source-row {
+  gap: 14px;
+}
+.agent-source-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.agent-source-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.agent-source-icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+}
+.agent-source-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.agent-source-copy strong {
+  font-size: 13px;
+}
+.agent-source-copy .muted {
+  font-size: 11px;
+  line-height: 1.45;
+}
 
 /* ── 空态 ── */
 .empty {
@@ -1327,7 +1364,7 @@ button, input, textarea, select { font: inherit; }
   border-top-color: transparent;
 }
 
-/* ── 设置：目标应用 ── */
+/* ── 设置 / 我的：偏好与目标应用 ── */
 .settings-appearance-heading { margin-top: 22px; }
 .appearance-card {
   max-width: 760px;
@@ -1454,6 +1491,27 @@ button, input, textarea, select { font: inherit; }
 .target-path-controls input:focus { border-color: var(--fg); }
 .target-path-controls input::placeholder { color: var(--placeholder); }
 .settings-note { max-width: 760px; margin-top: 10px; font-size: 11px; line-height: 1.7; }
+@media (max-width: 720px) {
+  .appearance-card,
+  .settings-section-heading,
+  .target-app-summary,
+  .target-path-controls,
+  .agent-source-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .theme-segmented {
+    width: 100%;
+    min-width: 0;
+  }
+  .target-path-controls input {
+    width: 100%;
+    flex: none;
+  }
+  .agent-source-row > .row {
+    justify-content: flex-start;
+  }
+}
 .about-heading { margin-top: 0; }
 .about-card {
   max-width: 760px;

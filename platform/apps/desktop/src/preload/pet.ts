@@ -6,4 +6,10 @@ contextBridge.exposeInMainWorld("codressPet", {
   startDrag: () => ipcRenderer.send("pet-window:drag-start"),
   moveDrag: () => ipcRenderer.send("pet-window:drag-move"),
   endDrag: () => ipcRenderer.send("pet-window:drag-end"),
+  onAgentState: (callback: (state: unknown) => void) => {
+    ipcRenderer.on("pet:agent-state", (_event, state) => callback(state));
+  },
+  onAgentTransient: (callback: (kind: unknown) => void) => {
+    ipcRenderer.on("pet:agent-transient", (_event, kind) => callback(kind));
+  },
 });

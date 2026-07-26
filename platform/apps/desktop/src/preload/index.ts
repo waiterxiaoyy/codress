@@ -72,6 +72,12 @@ const api = {
   uninstallPetFromCodex: (slug: string) => ipcRenderer.invoke("pet:uninstall", slug),
   getInstalledPets: () => ipcRenderer.invoke("pet:installed"),
   getActivePetInCodex: () => ipcRenderer.invoke("pet:active"),
+  agentLinkStatus: () => ipcRenderer.invoke("agent-link:status"),
+  linkAgentSource: (id: string) => ipcRenderer.invoke("agent-link:install", id),
+  unlinkAgentSource: (id: string) => ipcRenderer.invoke("agent-link:uninstall", id),
+  claudeLinkStatus: () => ipcRenderer.invoke("claude-link:status"),
+  linkClaudeCode: () => ipcRenderer.invoke("claude-link:install"),
+  unlinkClaudeCode: () => ipcRenderer.invoke("claude-link:uninstall"),
   openExternal: (url: string) => ipcRenderer.invoke("shell:openExternal", url),
 };
 

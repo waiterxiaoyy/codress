@@ -32,4 +32,5 @@ Thumbs.db
 
 # 本地生成的皮肤/宠物素材(已上传到管理端,不入库)
 images/generated-skins/
+images/generated-pets/
 images/generated-skins.zip

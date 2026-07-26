@@ -30,6 +30,38 @@
         image-rendering: pixelated;
         filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
       }
+      /* 联动气泡:动画表达情绪,气泡承载语义(waiting 是第一信息载体) */
+      .bubble {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 164px;
+        background: #2563eb;
+        color: #fff;
+        font: 11px/22px system-ui, sans-serif;
+        padding: 0 10px;
+        border-radius: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: none;
+        cursor: pointer;
+        z-index: 6;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .bubble.on {
+        display: block;
+      }
+      .bubble.warn {
+        background: #dc2626;
+      }
+      .bubble.done {
+        background: #16a34a;
+      }
+      body.dragging .bubble {
+        display: none;
+      }
       .name {
         position: fixed;
         top: 4px;
@@ -37,15 +69,29 @@
         transform: translateX(-50%);
         background: #111;
         color: #fff;
-        font: 11px/18px system-ui, sans-serif;
-        padding: 0 8px;
-        border-radius: 2px;
+        font: 11px/16px system-ui, sans-serif;
+        padding: 2px 8px;
+        border-radius: 3px;
         opacity: 0;
         transition: opacity 0.2s;
         white-space: nowrap;
+        text-align: center;
+        pointer-events: none;
       }
       body:hover .name {
         opacity: 1;
+      }
+      /* 气泡活跃时名牌让位(气泡本身已含状态语义) */
+      .bubble.on ~ .name {
+        display: none;
+      }
+      #name-status {
+        display: block;
+        font-size: 10px;
+        opacity: 0.75;
+      }
+      #name-status:empty {
+        display: none;
       }
       .menu {
         position: fixed;
@@ -110,7 +156,8 @@
   </head>
   <body>
     <div class="stage" id="stage"></div>
-    <div class="name" id="name"></div>
+    <div class="bubble" id="bubble"></div>
+    <div class="name" id="name"><span id="name-title"></span><span id="name-status"></span></div>
     <div class="menu" id="menu">
       <button id="menu-open">打开 Codress</button>
       <button id="menu-dismiss">下桌</button>
@@ -127,6 +174,9 @@
       let suppressOpenUntil = 0;
       const petBridge = window.codressPet;
       const menu = document.getElementById("menu");
+      const bubbleEl = document.getElementById("bubble");
+      const nameStatusEl = document.getElementById("name-status");
+      document.getElementById("name-title").textContent = petName;
 
       const hideMenu = () => menu.classList.remove("open");
 
@@ -151,7 +201,7 @@
       });
 
       document.addEventListener("pointerdown", (event) => {
-        if (menu.contains(event.target)) return;
+        if (menu.contains(event.target) || bubbleEl.contains(event.target)) return;
         hideMenu();
         if (event.button !== 0) return;
         pointerStart = { x: event.screenX, y: event.screenY };
@@ -180,13 +230,108 @@
       document.addEventListener("pointerup", finishDrag);
       document.addEventListener("pointercancel", finishDrag);
       document.addEventListener("dblclick", (event) => {
-        if (menu.contains(event.target)) return;
+        if (menu.contains(event.target) || bubbleEl.contains(event.target)) return;
         if (event.button === 0 && !dragged && performance.now() >= suppressOpenUntil) {
           petBridge?.openMainWindow();
         }
       });
 
-      document.getElementById("name").textContent = petName;
+      // ============ Agent 联动状态机 ============
+      // 主进程聚合后推送:{state: idle|running|waiting, label, bubble}
+      // 瞬态(greet/failed/celebrate)单独推送,播完自动回落到持久状态。
+      let agent = { state: "idle", label: "", bubble: null };
+      let displayedAgentState = "idle"; // 800ms 最小保持,防高频事件抽搐
+      let transient = null;             // { kind, seq }
+      let transientSeq = 0;
+      let bubbleSnoozed = false;        // 点宠物本体收起本次等待气泡
+      let waitingShown = false;         // waiting 持续 1.5s 后才弹泡,防闪烁
+      let waitingBubbleTimer = 0;
+      let animSwitchTimer = 0;
+      let lastAnimSwitchAt = 0;
+      let renderSingleAnim = null;      // 单图模式注册,spritesheet 模式为 null(tick 内拉取)
+      const ANIM_MIN_HOLD = 800;
+      const BUBBLE_DELAY = 1500;
+      const TRANSIENT_MS = { greet: 1500, failed: 1500, celebrate: 2000 };
+
+      function renderBubble() {
+        if (transient && transient.kind !== "greet") {
+          bubbleEl.textContent = transient.kind === "failed" ? "工具出错了" : "搞定！";
+          bubbleEl.className = "bubble on " + (transient.kind === "failed" ? "warn" : "done");
+          return;
+        }
+        if (agent.state === "waiting" && agent.bubble && !bubbleSnoozed && waitingShown) {
+          bubbleEl.textContent = agent.bubble;
+          bubbleEl.className = "bubble on";
+          return;
+        }
+        bubbleEl.className = "bubble";
+      }
+
+      function scheduleAgentAnim() {
+        if (displayedAgentState === agent.state) return;
+        clearTimeout(animSwitchTimer);
+        const wait = Math.max(0, ANIM_MIN_HOLD - (performance.now() - lastAnimSwitchAt));
+        animSwitchTimer = setTimeout(() => {
+          if (displayedAgentState === agent.state) return;
+          displayedAgentState = agent.state;
+          lastAnimSwitchAt = performance.now();
+          if (renderSingleAnim) renderSingleAnim();
+        }, wait);
+      }
+
+      petBridge?.onAgentState?.((payload) => {
+        if (!payload || typeof payload !== "object") return;
+        const prevState = agent.state;
+        agent = {
+          state: payload.state === "running" || payload.state === "waiting" ? payload.state : "idle",
+          label: typeof payload.label === "string" ? payload.label : "",
+          bubble: typeof payload.bubble === "string" ? payload.bubble : null,
+        };
+        if (agent.state !== "waiting") bubbleSnoozed = false;
+        nameStatusEl.textContent = agent.label;
+        if (agent.state !== "waiting") {
+          waitingShown = false;
+          clearTimeout(waitingBubbleTimer);
+        } else if (prevState !== "waiting") {
+          waitingShown = false;
+          clearTimeout(waitingBubbleTimer);
+          waitingBubbleTimer = setTimeout(() => {
+            waitingShown = true;
+            renderBubble();
+          }, BUBBLE_DELAY);
+        }
+        renderBubble();
+        scheduleAgentAnim();
+      });
+
+      petBridge?.onAgentTransient?.((kind) => {
+        if (kind !== "greet" && kind !== "failed" && kind !== "celebrate") return;
+        const seq = ++transientSeq;
+        transient = { kind, seq };
+        renderBubble();
+        if (renderSingleAnim) renderSingleAnim();
+        setTimeout(() => {
+          if (!transient || transient.seq !== seq) return;
+          transient = null;
+          renderBubble();
+          if (renderSingleAnim) renderSingleAnim();
+        }, TRANSIENT_MS[kind]);
+      });
+
+      // 点气泡 = waiting 快捷入口
+      bubbleEl.addEventListener("click", (event) => {
+        event.stopPropagation();
+        petBridge?.openMainWindow();
+      });
+      // 点宠物本体收起本次等待气泡(snooze,状态离开 waiting 自动复位)
+      document.addEventListener("click", (event) => {
+        if (bubbleEl.contains(event.target) || menu.contains(event.target)) return;
+        if (dragged) return;
+        if (agent.state === "waiting" && waitingShown && !bubbleSnoozed) {
+          bubbleSnoozed = true;
+          renderBubble();
+        }
+      });
 
       const resolvedSrc = imageSrc.startsWith("http")
         ? imageSrc
@@ -209,7 +354,14 @@
           el.alt = "pet";
           el.id = "pet";
           document.getElementById("stage").appendChild(el);
-          document.getElementById("stage").className = "stage anim-" + animation;
+          renderSingleAnim = () => {
+            const stage = document.getElementById("stage");
+            if (transient) stage.className = "stage anim-bounce";
+            else if (displayedAgentState === "running") stage.className = "stage anim-walk";
+            else if (displayedAgentState === "waiting") stage.className = "stage anim-idle";
+            else stage.className = "stage anim-" + animation;
+          };
+          renderSingleAnim();
         }
       };
       img.onerror = function () {
@@ -239,7 +391,7 @@
         document.getElementById("stage").appendChild(canvas);
         const ctx = canvas.getContext("2d");
 
-        // 循环播放多个状态
+        // 无联动时的默认轮播脚本(联动 idle 时也回到这里,保留原有灵动感)
         const stateOrder = ["idle", "idle", "idle", "waving", "idle", "idle", "running", "idle", "review", "idle"];
         let stateIdx = 0;
         let frame = 0;
@@ -247,6 +399,13 @@
         let lastTick = 0;
 
         function getCurrentState() {
+          // 联动优先:瞬态 > 持久状态 > 默认轮播
+          if (transient) {
+            const rowKey = transient.kind === "failed" ? "failed" : transient.kind === "celebrate" ? "jumping" : "waving";
+            return ROWS[rowKey] || ROWS.idle;
+          }
+          if (displayedAgentState === "running") return ROWS.running;
+          if (displayedAgentState === "waiting") return ROWS.waiting;
           const key = stateOrder[stateIdx % stateOrder.length];
           return ROWS[key] || ROWS.idle;
         }
@@ -258,6 +417,7 @@
 
         function tick(now) {
           const state = getCurrentState();
+          if (frame >= state.frames) frame = 0; // 行切换后帧号越界时归零
           const dur = getFrameDuration(state, frame);
           if (now - lastTick >= dur) {
             lastTick = now;

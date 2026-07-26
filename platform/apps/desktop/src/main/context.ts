@@ -17,6 +17,9 @@ import { SettingsStore } from "./core/state";
 import { PetManager } from "./pets";
 import { CreatorWorkspace } from "./creator";
 import { ensurePetAsset } from "./core/pet-assets";
+import { AgentLinkBridge } from "./agent-link/bridge";
+import { AgentStateAggregator, type AgentSnapshot, type AgentTransient } from "./agent-link/aggregator";
+import { agentSourceStates, installAgentSource, uninstallAgentSource, type AgentSourceId } from "./agent-link/installers";
 
 export interface ApplyOutcome {
   ok: boolean;
@@ -46,6 +49,8 @@ export class AppContext extends EventEmitter {
   readonly pets: PetManager;
   readonly creator: CreatorWorkspace;
   readonly clientVersion: string;
+  readonly agentAggregator = new AgentStateAggregator();
+  private readonly agentBridge = new AgentLinkBridge((event) => this.agentAggregator.ingest(event));
   private readonly runtimeRoot: string;
   private daemons = new Map<string, AppDaemon>();
   private remoteAdapterCache = new Map<string, { css: string; defaultPort?: number }>();
@@ -67,10 +72,30 @@ export class AppContext extends EventEmitter {
       () => this.settings.get().apiBase,
       () => this.settings.get().userToken
     );
+    // 聚合器 → 桌宠:总开关关闭时照收事件但不驱动动画
+    this.agentAggregator.on("snapshot", (snapshot: AgentSnapshot) => {
+      if (!this.settings.get().agentLink.enabled) return;
+      this.pets.setAgentState({ state: snapshot.state, label: snapshot.label, bubble: snapshot.bubble });
+    });
+    this.agentAggregator.on("transient", (kind: AgentTransient) => {
+      if (!this.settings.get().agentLink.enabled) return;
+      this.pets.playAgentTransient(kind);
+    });
   }
 
   async init() {
     await Promise.all([this.settings.load(), this.creator.load()]);
+    const link = this.settings.get().agentLink;
+    const anyLinked = link.claudeCode.linked || Object.values(link.sources).some((source) => source?.linked);
+    if (anyLinked) {
+      // 桥起不来不阻塞应用启动,状态卡会显示 bridgeRunning=false
+      await this.startAgentLink().catch(() => undefined);
+    }
+  }
+
+  private async startAgentLink() {
+    await this.agentBridge.start();
+    this.agentAggregator.start();
   }
 
   portFor(adapter: AdapterDefinition): number {
@@ -281,10 +306,110 @@ export class AppContext extends EventEmitter {
     this.emit("status");
   }
 
+  /** Coding-agent link: installed hooks, bridge state and aggregate snapshot. */
+  agentLinkStatus() {
+    const snapshot = this.agentAggregator.snapshot();
+    const counts = this.agentAggregator.sourceCounts();
+    const settings = this.settings.get().agentLink;
+    return {
+      bridgeRunning: this.agentBridge.running,
+      enabled: settings.enabled,
+      lastEventAt: snapshot.lastEventAt,
+      running: snapshot.running,
+      waiting: snapshot.waiting,
+      sources: agentSourceStates().map((source) => ({
+        ...source,
+        linkedAt: source.id === "claude-code"
+          ? settings.claudeCode.linkedAt
+          : settings.sources[source.id]?.linkedAt ?? null,
+        running: counts[source.id]?.running ?? 0,
+        waiting: counts[source.id]?.waiting ?? 0,
+      })),
+    };
+  }
+
+  private sourceLinkedFromSettings(id: AgentSourceId): boolean {
+    const link = this.settings.get().agentLink;
+    return id === "claude-code"
+      ? link.claudeCode.linked
+      : Boolean(link.sources[id]?.linked);
+  }
+
+  private async persistAgentSource(id: AgentSourceId, linked: boolean) {
+    const current = this.settings.get().agentLink;
+    const linkedAt = linked ? new Date().toISOString() : null;
+    await this.settings.patch({
+      agentLink: {
+        ...current,
+        claudeCode: id === "claude-code" ? { linked, linkedAt } : current.claudeCode,
+        sources: {
+          ...current.sources,
+          [id]: { linked, linkedAt },
+        },
+      },
+    });
+  }
+
+  async linkAgentSource(id: AgentSourceId): Promise<{ ok: boolean; message?: string }> {
+    try {
+      // Start the bridge first so hook scripts can read bridge.port/token.
+      await this.startAgentLink();
+    } catch (error) {
+      return { ok: false, message: `本地桥启动失败:${(error as Error).message}` };
+    }
+    const result = installAgentSource(id);
+    if (!result.ok) return result;
+    await this.persistAgentSource(id, true);
+    this.emit("status");
+    return { ok: true };
+  }
+
+  async unlinkAgentSource(id: AgentSourceId): Promise<{ ok: boolean; message?: string }> {
+    const result = uninstallAgentSource(id);
+    if (!result.ok) return result;
+    await this.persistAgentSource(id, false);
+    const knownSources: AgentSourceId[] = ["claude-code", "gemini-cli", "kimi-code", "codex"];
+    const anyLinked = agentSourceStates().some((source) => source.linked)
+      || knownSources.some((sourceId) => sourceId !== id && this.sourceLinkedFromSettings(sourceId));
+    if (!anyLinked) {
+      await this.agentBridge.stop().catch(() => undefined);
+      this.agentAggregator.stop();
+      this.agentAggregator.reset();
+      this.pets.setAgentState({ state: "idle", label: "", bubble: null });
+    }
+    this.emit("status");
+    return { ok: true };
+  }
+
+  claudeLinkStatus() {
+    const status = this.agentLinkStatus();
+    const claude = status.sources.find((source) => source.id === "claude-code");
+    return {
+      claudeDetected: Boolean(claude?.detected),
+      linked: Boolean(claude?.linked),
+      scriptPresent: Boolean(claude?.linked),
+      bridgeRunning: status.bridgeRunning,
+      enabled: status.enabled,
+      lastEventAt: status.lastEventAt,
+      running: claude?.running ?? 0,
+      waiting: claude?.waiting ?? 0,
+    };
+  }
+
+  linkClaudeCode(): Promise<{ ok: boolean; message?: string }> {
+    return this.linkAgentSource("claude-code");
+  }
+
+  unlinkClaudeCode(): Promise<{ ok: boolean; message?: string }> {
+    return this.unlinkAgentSource("claude-code");
+  }
+
   async shutdown() {
     for (const daemon of this.daemons.values()) {
       await daemon.stop({ removeSkin: false }).catch(() => undefined);
     }
+    await this.agentBridge.stop().catch(() => undefined);
+    this.agentAggregator.stop();
     this.pets.shutdown();
   }
 }
