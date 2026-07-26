@@ -51,6 +51,7 @@ body{
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font-family:inherit;border:none}
 img{max-width:100%;display:block}
+[hidden]{display:none!important}
 
 .container{max-width:1120px;margin:0 auto;padding:0 28px}
 
@@ -206,10 +207,10 @@ nav{
   width:6px;height:6px;border-radius:50%;background:#28C840;
   animation:pulse 2.2s ease-in-out infinite;
 }
-.win-body{position:relative;aspect-ratio:16/10;background:var(--off-white);overflow:hidden}
+.win-body{position:relative;aspect-ratio:16/9.7;background:var(--off-white);overflow:hidden}
 .win-shot{
   position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;object-position:center top;
+  object-fit:contain;object-position:center;
   opacity:0;transform:scale(1.015);
   transition:opacity .6s ease,transform 1.3s ease;
 }
@@ -402,9 +403,70 @@ nav{
   transition:transform .4s cubic-bezier(.16,1,.3,1);
 }
 .pet-card:hover .pet-preview img{transform:scale(1.08)}
+.pet-card .pet-preview canvas{
+  width:118px;height:auto;image-rendering:pixelated;
+  filter:drop-shadow(0 4px 12px rgba(0,0,0,.12));
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.pet-card:hover .pet-preview canvas{transform:scale(1.06)}
 .pet-card .pet-body{padding:16px 18px}
 .pet-card .pet-body h3{font-size:14px;font-weight:600;margin-bottom:3px}
 .pet-card .pet-body .by{font-size:12px;color:var(--gray)}
+
+/* 商店加载态 / 分页哨兵 */
+.grid-status{
+  grid-column:1/-1;text-align:center;padding:26px 0 6px;
+  font-size:13px;color:var(--gray);min-height:56px;
+}
+.grid-status button{
+  padding:8px 18px;border-radius:8px;font-size:13px;
+  background:var(--light-gray);border:1px solid var(--border);color:var(--dark-gray);
+}
+.grid-status button:hover{background:var(--border)}
+.spinner{
+  display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;
+  border:2px solid var(--border);border-top-color:var(--dark-gray);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 宠物详情弹窗 */
+.pet-modal{max-width:460px;padding:34px 32px 28px;position:relative;text-align:center}
+.pm-close{
+  position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:8px;
+  background:transparent;color:var(--gray);font-size:19px;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.pm-close:hover{background:var(--light-gray);color:var(--black)}
+.pm-stage{
+  width:100%;height:212px;border-radius:12px;background:var(--light-gray);
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  position:relative;overflow:hidden;
+}
+.pm-stage canvas{width:168px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 6px 14px rgba(0,0,0,.14))}
+.pm-stage img{max-width:60%;max-height:82%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.14))}
+.pm-stage .pm-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gray);background:var(--light-gray)}
+.pet-modal h3{font-size:19px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em}
+.pm-by{font-size:12px;color:var(--gray);margin-bottom:10px}
+.pm-desc{font-size:13px;color:var(--dark-gray);line-height:1.7;margin-bottom:14px;max-height:66px;overflow:auto}
+.pm-tags{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pm-tags .tag{
+  padding:3px 10px;border-radius:999px;font-size:11px;
+  background:var(--light-gray);border:1px solid var(--border);color:var(--dark-gray);
+}
+.pm-actions{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:18px;
+}
+.pm-actions button{
+  padding:8px 4px;border-radius:8px;font-size:12px;font-weight:500;
+  background:var(--white);border:1px solid var(--border);color:var(--dark-gray);
+  transition:all .18s;
+}
+.pm-actions button:hover{border-color:var(--border-hover);color:var(--black)}
+.pm-actions button.active{background:var(--near-black);border-color:var(--near-black);color:#fff}
+.pm-install{width:100%;justify-content:center}
+.pm-hint{margin-top:10px;font-size:12px;color:var(--gray);min-height:18px}
+@media(max-width:480px){.pm-actions{grid-template-columns:repeat(3,1fr)}.pet-modal{padding:28px 20px 22px}}
 
 /* Steps */
 .steps-section{
@@ -675,6 +737,7 @@ footer .flinks a:hover{color:var(--black)}
       <p data-i18n="themes.desc">侧栏、背景、卡片、动效——每个角落都可以是你的风格。</p>
     </div>
     <div class="grid" id="theme-grid"></div>
+    <div class="grid-status" id="theme-status"></div>
   </div>
 </section>
 
@@ -683,11 +746,12 @@ footer .flinks a:hover{color:var(--black)}
 <section class="gallery-section" id="pets">
   <div class="container">
     <div class="section-head">
-      <div class="section-eyebrow" data-i18n="pets.eyebrow">宠物市场</div>
+      <div class="section-eyebrow" data-i18n="pets.eyebrow">宠物商店</div>
       <h2 data-i18n="pets.title">让编辑器活起来</h2>
       <p data-i18n="pets.desc">会动、会反应的小精灵，陪你 coding 的每一刻。</p>
     </div>
     <div class="pets-grid" id="pet-grid"></div>
+    <div class="grid-status" id="pet-status"></div>
   </div>
 </section>
 
@@ -812,6 +876,27 @@ footer .flinks a:hover{color:var(--black)}
   </div>
 </footer>
 
+<div class="modal-overlay" id="pet-modal">
+  <div class="modal pet-modal">
+    <button class="pm-close" onclick="closePetModal()" aria-label="关闭">✕</button>
+    <div class="pm-stage">
+      <canvas id="pm-canvas" width="192" height="208" hidden></canvas>
+      <img id="pm-img" alt="" hidden>
+      <div class="pm-loading" id="pm-loading" hidden><span class="spinner"></span><span data-i18n="store.loading">加载中…</span></div>
+    </div>
+    <h3 id="pm-name"></h3>
+    <p class="pm-by" id="pm-by"></p>
+    <p class="pm-desc" id="pm-desc"></p>
+    <div class="pm-tags" id="pm-tags"></div>
+    <div class="pm-actions" id="pm-actions"></div>
+    <button class="btn btn-primary pm-install" id="pm-install" onclick="installCurrentPet()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="pm.install">立即安装</span>
+    </button>
+    <div class="pm-hint" id="pm-hint"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="dl-modal">
   <div class="modal">
     <div class="modal-icon">
@@ -843,7 +928,7 @@ const i18n = {
     'hero.title2': '，让灵感常驻',
     'hero.desc': '告别千篇一律的编辑器外观。精选皮肤与桌面宠物，一键切换，不修改任何官方安装文件，随时恢复默认。',
     'hero.btn_download': '立即下载',
-    'hero.btn_browse': '浏览市场',
+    'hero.btn_browse': '浏览商店',
     'hero.trust1': '不修改官方文件',
     'hero.trust2': '一键恢复默认',
     'hero.trust3': '无需账号',
@@ -858,17 +943,17 @@ const i18n = {
     'compare.desc': '告别黑白灰，换一种风格，也换一种打开编辑器的心情。',
     'compare.default': '默认外观',
     'compare.custom': '你的主题',
-    'themes.eyebrow': '皮肤市场',
+    'themes.eyebrow': '皮肤商店',
     'themes.title': '不只是换个颜色',
     'themes.desc': '侧栏、背景、卡片、动效——每个角落都可以是你的风格。',
-    'pets.eyebrow': '宠物市场',
+    'pets.eyebrow': '宠物商店',
     'pets.title': '让编辑器活起来',
     'pets.desc': '会动、会反应的小精灵，陪你 coding 的每一刻。',
     'steps.eyebrow': '三步上手',
     'steps.title': '焕然一新',
     'steps.s1_title': '下载客户端',
     'steps.s1_desc': '下载对应平台的轻量客户端，几秒完成，无需安装依赖。',
-    'steps.s2_title': '浏览市场',
+    'steps.s2_title': '浏览商店',
     'steps.s2_desc': '浏览皮肤和宠物，实时预览效果，找到你今天的风格。',
     'steps.s3_title': '一键应用',
     'steps.s3_desc': '连接本地编辑器，即刻生效。不喜欢随时恢复默认，不留痕迹。',
@@ -895,6 +980,28 @@ const i18n = {
     'modal.tip_desc': '按 <kbd>Ctrl</kbd> + <kbd>D</kbd>（Mac：<kbd>⌘</kbd> + <kbd>D</kbd>）收藏本站，关注后续更新',
     'modal.github': '前往 GitHub Releases',
     'modal.close': '我知道了',
+    'store.loading': '加载中…',
+    'store.retry': '加载失败，点击重试',
+    'store.empty': '暂无上架内容',
+    'store.installs': '次安装',
+    'store.dark': '暗色',
+    'store.light': '浅色',
+    'pm.install': '立即安装',
+    'pm.hint_idle': '已装 Codress 会直接打开客户端；未安装会引导你去下载',
+    'pm.hint_opening': '正在尝试打开 Codress 客户端…',
+    'pm.hint_opened': '已在本地 Codress 客户端中打开',
+    'pm.hint_fallback': '未检测到客户端，正在为你跳转下载…',
+    'act.idle': '待机',
+    'act.running-right': '向右跑',
+    'act.running-left': '向左跑',
+    'act.waving': '挥手',
+    'act.jumping': '跳跃',
+    'act.failed': '失败',
+    'act.waiting': '等待',
+    'act.running': '奔跑',
+    'act.review': '检查',
+    'cat.scifi': '科幻', 'cat.cozy': '治愈', 'cat.nature': '自然', 'cat.fantasy': '奇幻',
+    'cat.minimal': '极简', 'cat.anime': '二次元', 'cat.illustration': '插画', 'cat.pixel': '像素',
   },
   en: {
     'nav.skins': 'Skins',
@@ -906,7 +1013,7 @@ const i18n = {
     'hero.title2': ', Fresh Inspiration',
     'hero.desc': 'Refresh your editor with curated skins and desktop pets. Switch in one click, keep official app files untouched, and revert anytime.',
     'hero.btn_download': 'Download Now',
-    'hero.btn_browse': 'Browse Market',
+    'hero.btn_browse': 'Browse Store',
     'hero.trust1': 'No official files modified',
     'hero.trust2': 'One-click revert',
     'hero.trust3': 'No account needed',
@@ -921,17 +1028,17 @@ const i18n = {
     'compare.desc': 'Ditch the default gray. Switch to a style that sparks creativity every time you open your editor.',
     'compare.default': 'Default',
     'compare.custom': 'Your Theme',
-    'themes.eyebrow': 'Skin Market',
+    'themes.eyebrow': 'Skin Store',
     'themes.title': 'More than just colors',
     'themes.desc': 'Sidebar, background, cards, animations — every corner can be your style.',
-    'pets.eyebrow': 'Pet Market',
+    'pets.eyebrow': 'Pet Store',
     'pets.title': 'Bring your editor to life',
     'pets.desc': 'Animated little companions that react and keep you company while coding.',
     'steps.eyebrow': '3 Steps',
     'steps.title': 'Brand New Look',
     'steps.s1_title': 'Download Client',
     'steps.s1_desc': 'Download the lightweight client for your platform. Takes seconds, no dependencies.',
-    'steps.s2_title': 'Browse Market',
+    'steps.s2_title': 'Browse Store',
     'steps.s2_desc': 'Browse skins and pets, preview in real-time, find your style for today.',
     'steps.s3_title': 'One-Click Apply',
     'steps.s3_desc': 'Connect to your local editor, takes effect instantly. Revert anytime, no traces left.',
@@ -958,6 +1065,28 @@ const i18n = {
     'modal.tip_desc': 'Press <kbd>Ctrl</kbd> + <kbd>D</kbd> (Mac: <kbd>⌘</kbd> + <kbd>D</kbd>) to bookmark and follow updates',
     'modal.github': 'Open GitHub Releases',
     'modal.close': 'Got it',
+    'store.loading': 'Loading…',
+    'store.retry': 'Failed to load — tap to retry',
+    'store.empty': 'Nothing published yet',
+    'store.installs': 'installs',
+    'store.dark': 'Dark',
+    'store.light': 'Light',
+    'pm.install': 'Install Now',
+    'pm.hint_idle': 'Opens the Codress app if installed; otherwise we\'ll take you to the download',
+    'pm.hint_opening': 'Opening the Codress app…',
+    'pm.hint_opened': 'Opened in your local Codress app',
+    'pm.hint_fallback': 'App not detected — taking you to the download…',
+    'act.idle': 'Idle',
+    'act.running-right': 'Run Right',
+    'act.running-left': 'Run Left',
+    'act.waving': 'Wave',
+    'act.jumping': 'Jump',
+    'act.failed': 'Failed',
+    'act.waiting': 'Waiting',
+    'act.running': 'Working',
+    'act.review': 'Review',
+    'cat.scifi': 'Sci-Fi', 'cat.cozy': 'Cozy', 'cat.nature': 'Nature', 'cat.fantasy': 'Fantasy',
+    'cat.minimal': 'Minimal', 'cat.anime': 'Anime', 'cat.illustration': 'Illustration', 'cat.pixel': 'Pixel',
   }
 };
 
@@ -991,71 +1120,239 @@ function toggleLang() {
   applyLang(currentLang === 'zh' ? 'en' : 'zh');
 }
 
-// Data
-const themes=[
-  {id:'arina-shin',name:'Arina Shin',author:'Codress',tags:{zh:['暗色','氛围'],en:['Dark','Ambient']},dl:3200,img:'images/skins/skin-01.jpg'},
-  {id:'day-dream',name:'DAY DREAM',author:'Codress',tags:{zh:['暗色','梦幻'],en:['Dark','Dreamy']},dl:2800,img:'images/skins/skin-02.jpg'},
-  {id:'neon-note',name:'NEON NOTE',author:'Codress',tags:{zh:['暗色','霓虹'],en:['Dark','Neon']},dl:2100,img:'images/skins/skin-03.jpg'},
-  {id:'soft-focus',name:'SOFT FOCUS',author:'Codress',tags:{zh:['暗色','柔和'],en:['Dark','Soft']},dl:1800,img:'images/skins/skin-04.jpg'},
-  {id:'blue-hour',name:'BLUE HOUR',author:'Codress',tags:{zh:['暗色','冷调'],en:['Dark','Cool']},dl:2400,img:'images/skins/skin-05.jpg'},
-  {id:'alice',name:'Alice',author:'Codress',tags:{zh:['暗色','清新'],en:['Dark','Fresh']},dl:1500,img:'images/skins/skin-06.jpg'},
-  {id:'miku',name:'Miku',author:'Codress',tags:{zh:['暗色','动漫'],en:['Dark','Anime']},dl:3600,img:'images/skins/skin-07.jpg'},
-  {id:'ikun',name:'Ikun',author:'Codress',tags:{zh:['暗色','趣味'],en:['Dark','Fun']},dl:1200,img:'images/skins/skin-08.jpg'},
-  {id:'new-signal',name:'NEW SIGNAL',author:'Codress',tags:{zh:['暗色','未来'],en:['Dark','Futuristic']},dl:1900,img:'images/skins/skin-09.jpg'},
-  {id:'retro-qq',name:'RETRO QQ',author:'Codress',tags:{zh:['暗色','复古'],en:['Dark','Retro']},dl:2700,img:'images/skins/skin-10.jpg'},
+// ===== 数据:线上商店 API(开放接口,无需登录),失败时回退到内置静态数据 =====
+const API_BASE = (/^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)) ? '' : 'https://codress.dev';
+const PAGE_SIZE = 12;
+
+const FALLBACK_THEMES=[
+  {slug:'arina-shin',name:'Arina Shin',author:'Codress',category:'',appearance:'dark',downloads:3200,backgroundUrl:'images/skins/skin-01.jpg'},
+  {slug:'day-dream',name:'DAY DREAM',author:'Codress',category:'',appearance:'dark',downloads:2800,backgroundUrl:'images/skins/skin-02.jpg'},
+  {slug:'neon-note',name:'NEON NOTE',author:'Codress',category:'',appearance:'dark',downloads:2100,backgroundUrl:'images/skins/skin-03.jpg'},
+  {slug:'soft-focus',name:'SOFT FOCUS',author:'Codress',category:'',appearance:'dark',downloads:1800,backgroundUrl:'images/skins/skin-04.jpg'},
+  {slug:'blue-hour',name:'BLUE HOUR',author:'Codress',category:'',appearance:'dark',downloads:2400,backgroundUrl:'images/skins/skin-05.jpg'},
+  {slug:'alice',name:'Alice',author:'Codress',category:'',appearance:'dark',downloads:1500,backgroundUrl:'images/skins/skin-06.jpg'},
+  {slug:'miku',name:'Miku',author:'Codress',category:'anime',appearance:'dark',downloads:3600,backgroundUrl:'images/skins/skin-07.jpg'},
+  {slug:'ikun',name:'Ikun',author:'Codress',category:'',appearance:'dark',downloads:1200,backgroundUrl:'images/skins/skin-08.jpg'},
+  {slug:'new-signal',name:'NEW SIGNAL',author:'Codress',category:'scifi',appearance:'dark',downloads:1900,backgroundUrl:'images/skins/skin-09.jpg'},
+  {slug:'retro-qq',name:'RETRO QQ',author:'Codress',category:'',appearance:'dark',downloads:2700,backgroundUrl:'images/skins/skin-10.jpg'},
+];
+const FALLBACK_PETS=[
+  {slug:'pixel-coder',name:'Pixel Coder',author:'Codress',imageUrl:'images/pets/pixel-coder.png',spriteSheet:null},
+  {slug:'golden-leader',name:'Golden Leader',author:'Codress',imageUrl:'images/pets/golden-leader.png',spriteSheet:null},
+  {slug:'hoop-duck',name:'Hoop Duck',author:'Codress',imageUrl:'images/pets/hoop-duck.png',spriteSheet:null},
+  {slug:'happy-pup',name:'Happy Pup',author:'Codress',imageUrl:'images/pets/happy-pup.png',spriteSheet:null},
+  {slug:'tiny-dino',name:'Tiny Dino',author:'Codress',imageUrl:'images/pets/tiny-dino.png',spriteSheet:null},
+  {slug:'dad-coder',name:'Dad Coder',author:'Codress',imageUrl:'images/pets/dad-coder.png',spriteSheet:null},
 ];
 
-const pets=[
-  {id:'pixel-coder',name:'Pixel Coder',author:'Codress',img:'images/pets/pixel-coder.png'},
-  {id:'golden-leader',name:'Golden Leader',author:'Codress',img:'images/pets/golden-leader.png'},
-  {id:'hoop-duck',name:'Hoop Duck',author:'Codress',img:'images/pets/hoop-duck.png'},
-  {id:'happy-pup',name:'Happy Pup',author:'Codress',img:'images/pets/happy-pup.png'},
-  {id:'tiny-dino',name:'Tiny Dino',author:'Codress',img:'images/pets/tiny-dino.png'},
-  {id:'dad-coder',name:'Dad Coder',author:'Codress',img:'images/pets/dad-coder.png'},
-];
+const skinStore={items:[],total:-1,page:0,loading:false,failed:false,fallback:false};
+const petStore={items:[],total:-1,page:0,loading:false,failed:false,fallback:false};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const t9=k=>(i18n[currentLang]&&i18n[currentLang][k])||'';
 
-// Marquee
+async function fetchStore(kind){
+  const store=kind==='skins'?skinStore:petStore;
+  if(store.loading||store.fallback) return;
+  if(store.total>=0&&store.items.length>=store.total) return;
+  store.loading=true;store.failed=false;
+  renderStatus(kind);
+  try{
+    const resp=await fetch(API_BASE+'/api/v1/'+kind+'?page='+(store.page+1)+'&pageSize='+PAGE_SIZE);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    store.page+=1;
+    store.total=data.total||0;
+    const known=new Set(store.items.map(i=>i.slug));
+    (data.items||[]).forEach(item=>{if(!known.has(item.slug))store.items.push(item)});
+    store.loading=false;
+    kind==='skins'?renderThemes():renderPets();
+  }catch(err){
+    store.loading=false;
+    if(store.items.length===0){
+      // 首页拉取失败(离线/本地预览):退回内置数据,保证页面不空
+      store.fallback=true;
+      store.items=kind==='skins'?FALLBACK_THEMES:FALLBACK_PETS;
+      store.total=store.items.length;
+      kind==='skins'?renderThemes():renderPets();
+    }else{
+      store.failed=true;
+    }
+  }
+  renderStatus(kind);
+}
+
+function renderStatus(kind){
+  const store=kind==='skins'?skinStore:petStore;
+  const el=document.getElementById(kind==='skins'?'theme-status':'pet-status');
+  if(!el) return;
+  if(store.loading){el.innerHTML='<span class="spinner"></span>'+esc(t9('store.loading'));return}
+  if(store.failed){el.innerHTML='<button type="button" onclick="fetchStore(\''+kind+'\')">'+esc(t9('store.retry'))+'</button>';return}
+  if(store.total===0){el.textContent=t9('store.empty');return}
+  el.textContent='';
+}
+
+// 分页哨兵:状态条接近视口时拉下一页(懒加载)
+const moreObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    fetchStore(e.target.id==='theme-status'?'skins':'pets');
+  });
+},{rootMargin:'420px 0px'});
+moreObserver.observe(document.getElementById('theme-status'));
+moreObserver.observe(document.getElementById('pet-status'));
+setTimeout(()=>{fetchStore('skins');fetchStore('pets');},400);
+
+// Marquee(走本地静态图,零网络成本)
 (function(){
   const track=document.getElementById('marquee-track');
-  const all=[...themes,...themes];
+  const all=[...FALLBACK_THEMES,...FALLBACK_THEMES];
   track.innerHTML=all.map(t=>`
     <div class="marquee-item">
-      <img src="${t.img}" alt="${t.name}" loading="lazy">
+      <img src="${t.backgroundUrl}" alt="${esc(t.name)}" loading="lazy">
     </div>
   `).join('');
 })();
 
-// Render themes
-function renderThemes(){
-  const lang = currentLang;
-  document.getElementById('theme-grid').innerHTML=themes.map((t,i)=>`
-    <div class="card" data-idx="${i}">
-      <div class="card-preview">
-        <img src="${t.img}" alt="${t.name}" loading="lazy">
-        <div class="tags">${t.tags[lang].map(tg=>`<span class="tag">${tg}</span>`).join('')}</div>
-      </div>
-      <div class="card-body">
-        <h3>${t.name}</h3>
-        <div class="by">${t.author}</div>
-      </div>
-    </div>
-  `).join('');
-  // Re-observe for animation
-  document.querySelectorAll('.card').forEach(el=>observer.observe(el));
+function skinTagChips(s){
+  const chips=[];
+  if(s.category&&t9('cat.'+s.category)) chips.push(t9('cat.'+s.category));
+  else if(s.category) chips.push(s.category);
+  if(s.appearance==='light') chips.push(t9('store.light'));
+  else if(s.appearance==='dark') chips.push(t9('store.dark'));
+  return chips;
 }
 
-// Render pets
-function renderPets(){
-  document.getElementById('pet-grid').innerHTML=pets.map((p,i)=>`
-    <div class="pet-card" data-idx="${i}">
-      <div class="pet-preview"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
-      <div class="pet-body">
-        <h3>${p.name}</h3>
-        <div class="by">${p.author}</div>
+// Render themes(皮肤卡片:预览图优先用轻量 preview,没有则背景原图 + 原生懒加载)
+function renderThemes(){
+  document.getElementById('theme-grid').innerHTML=skinStore.items.map(s=>`
+    <div class="card">
+      <div class="card-preview">
+        <img src="${esc(s.previewLightUrl||s.backgroundUrl)}" alt="${esc(s.name)}" loading="lazy" decoding="async">
+        <div class="tags">${skinTagChips(s).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>
+      </div>
+      <div class="card-body">
+        <h3>${esc(s.name)}</h3>
+        <div class="by">${esc(s.author||'Codress')}</div>
+        <div class="row"><span>${s.downloads||0} ${esc(t9('store.installs'))}</span><span>${esc(s.tagline||'')}</span></div>
       </div>
     </div>
   `).join('');
-  document.querySelectorAll('.pet-card').forEach(el=>observer.observe(el));
+  document.querySelectorAll('#theme-grid .card').forEach(el=>observer.observe(el));
+}
+
+// ===== 宠物精灵动画引擎:共享 rAF、仅视口内播放、页签隐藏即停 =====
+const CELL_W=192,CELL_H=208;
+const SPRITE_ROWS={
+  'idle':{row:0,frames:6,durations:[280,110,110,140,140,320]},
+  'running-right':{row:1,frames:8},
+  'running-left':{row:2,frames:8},
+  'waving':{row:3,frames:4,durations:[140,140,140,280]},
+  'jumping':{row:4,frames:5,durations:[140,140,140,140,280]},
+  'failed':{row:5,frames:8},
+  'waiting':{row:6,frames:6},
+  'running':{row:7,frames:6},
+  'review':{row:8,frames:6},
+};
+const REDUCED_MOTION=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const sheetCache=new Map(); // url -> Promise<HTMLImageElement>
+function loadSheet(url){
+  if(sheetCache.has(url)) return sheetCache.get(url);
+  const p=new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.decoding='async';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>{sheetCache.delete(url);reject(new Error('sheet load failed'))};
+    img.src=url;
+  });
+  sheetCache.set(url,p);
+  return p;
+}
+
+const animators=new Set();
+let spriteRaf=0;
+function spriteTick(now){
+  spriteRaf=0;
+  let anyActive=false;
+  animators.forEach(a=>{
+    if(!a.active||!a.img) return;
+    anyActive=true;
+    const state=SPRITE_ROWS[a.state]||SPRITE_ROWS.idle;
+    const dur=state.durations?(state.durations[a.frame]||140):(a.frame===state.frames-1?220:120);
+    if(now-a.last>=dur){a.last=now;a.frame=(a.frame+1)%state.frames;drawFrame(a)}
+  });
+  if(anyActive&&!document.hidden) spriteRaf=requestAnimationFrame(spriteTick);
+}
+function wakeSprites(){
+  if(!spriteRaf&&!document.hidden&&!REDUCED_MOTION) spriteRaf=requestAnimationFrame(spriteTick);
+}
+document.addEventListener('visibilitychange',wakeSprites);
+function drawFrame(a){
+  const state=SPRITE_ROWS[a.state]||SPRITE_ROWS.idle;
+  const ctx=a.ctx;
+  ctx.clearRect(0,0,CELL_W,CELL_H);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(a.img,a.frame*CELL_W,state.row*CELL_H,CELL_W,CELL_H,0,0,CELL_W,CELL_H);
+}
+function makeAnimator(canvas){
+  const a={canvas,ctx:canvas.getContext('2d'),img:null,state:'idle',frame:0,last:0,active:false,loading:false};
+  animators.add(a);
+  return a;
+}
+function armAnimator(a,sheetUrl){
+  if(a.img){if(!REDUCED_MOTION){a.active=true;wakeSprites()}return}
+  if(a.loading) return;
+  a.loading=true;
+  loadSheet(sheetUrl).then(img=>{
+    // 精灵图规格:8 列 x ≥9 行;不满足则放弃动画
+    if(img.naturalWidth<CELL_W*8||img.naturalHeight<CELL_H*9) return;
+    a.img=img;a.frame=0;a.last=0;
+    drawFrame(a);
+    if(!REDUCED_MOTION){a.active=true;wakeSprites()}
+  }).catch(()=>{}).finally(()=>{a.loading=false});
+}
+
+// 宠物卡片:进出视口 => 启停动画(离开视口即暂停,省电省 CPU)
+const petCardObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    const a=e.target.__anim;
+    if(!a) return;
+    if(e.isIntersecting){armAnimator(a,e.target.dataset.sheet)}
+    else if(a.active){a.active=false}
+    if(e.isIntersecting) wakeSprites();
+  });
+},{rootMargin:'180px 0px'});
+
+// Render pets(有精灵图的画布动画,legacy 单图直接展示)
+function renderPets(){
+  // 全量重渲前先注销旧动画器
+  document.querySelectorAll('#pet-grid canvas.pet-canvas').forEach(c=>{if(c.__animRef)animators.delete(c.__animRef)});
+  document.getElementById('pet-grid').innerHTML=petStore.items.map(p=>`
+    <div class="pet-card" data-slug="${esc(p.slug)}" role="button" tabindex="0" aria-label="${esc(p.name)}">
+      <div class="pet-preview">
+        ${p.spriteSheet
+          ?`<canvas class="pet-canvas" width="${CELL_W}" height="${CELL_H}" data-sheet="${esc(p.spriteSheet)}"></canvas>`
+          :`<img src="${esc(p.imageUrl)}" alt="${esc(p.name)}" loading="lazy" decoding="async">`}
+      </div>
+      <div class="pet-body">
+        <h3>${esc(p.name)}</h3>
+        <div class="by">${esc(p.author?('by '+p.author+' · '):'')}${p.downloads||0} ${esc(t9('store.installs'))}</div>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('#pet-grid .pet-card').forEach(el=>{
+    observer.observe(el);
+    const canvas=el.querySelector('canvas.pet-canvas');
+    if(canvas){
+      const a=makeAnimator(canvas);
+      canvas.__animRef=a;
+      el.__anim=a;
+      el.dataset.sheet=canvas.dataset.sheet;
+      petCardObserver.observe(el);
+    }
+    el.addEventListener('click',()=>openPetModal(el.dataset.slug));
+    el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openPetModal(el.dataset.slug)}});
+  });
 }
 
 // IntersectionObserver for scroll animations
@@ -1299,6 +1596,108 @@ function closeModal(){
 document.getElementById('dl-modal').addEventListener('click',function(e){
   if(e.target===this) closeModal();
 });
+
+// ===== 宠物详情弹窗 =====
+const petModal=document.getElementById('pet-modal');
+const pmCanvas=document.getElementById('pm-canvas');
+const pmAnim=makeAnimator(pmCanvas);
+let pmCurrent=null;
+
+function openPetModal(slug){
+  const p=petStore.items.find(x=>x.slug===slug);
+  if(!p) return;
+  pmCurrent=p;
+  document.getElementById('pm-name').textContent=p.name||p.slug;
+  document.getElementById('pm-by').textContent=(p.author?'by '+p.author+' · ':'')+(p.downloads||0)+' '+t9('store.installs');
+  document.getElementById('pm-desc').textContent=p.description||'';
+  const tags=[(p.stylePreset&&p.stylePreset!=='auto')?p.stylePreset:null]
+    .concat(String(p.tags||'').split(','))
+    .map(s=>s&&s.trim())
+    .filter((s,i,l)=>s&&l.indexOf(s)===i);
+  document.getElementById('pm-tags').innerHTML=tags.map(x=>'<span class="tag">'+esc(x)+'</span>').join('');
+  document.getElementById('pm-hint').textContent=t9('pm.hint_idle');
+  const img=document.getElementById('pm-img');
+  const loading=document.getElementById('pm-loading');
+  const actions=document.getElementById('pm-actions');
+  pmAnim.active=false;pmAnim.img=null;pmAnim.state='idle';pmAnim.frame=0;pmAnim.last=0;
+  if(p.spriteSheet){
+    pmCanvas.hidden=false;img.hidden=true;loading.hidden=false;
+    actions.hidden=false;
+    actions.innerHTML=Object.keys(SPRITE_ROWS).map(k=>
+      '<button type="button" data-act="'+k+'" class="'+(k==='idle'?'active':'')+'">'+esc(t9('act.'+k)||k)+'</button>'
+    ).join('');
+    loadSheet(p.spriteSheet).then(sheet=>{
+      if(pmCurrent!==p) return;
+      loading.hidden=true;
+      if(sheet.naturalWidth<CELL_W*8||sheet.naturalHeight<CELL_H*9){
+        pmCanvas.hidden=true;img.hidden=false;img.src=p.imageUrl||'';actions.hidden=true;
+        return;
+      }
+      pmAnim.img=sheet;pmAnim.frame=0;pmAnim.last=0;
+      drawFrame(pmAnim);
+      if(!REDUCED_MOTION){pmAnim.active=true;wakeSprites();}
+    }).catch(()=>{
+      if(pmCurrent!==p) return;
+      loading.hidden=true;pmCanvas.hidden=true;actions.hidden=true;
+      img.hidden=false;img.src=p.imageUrl||'';
+    });
+  }else{
+    pmCanvas.hidden=true;loading.hidden=true;
+    img.hidden=false;img.src=p.imageUrl||'';
+    actions.hidden=true;actions.innerHTML='';
+  }
+  petModal.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closePetModal(){
+  petModal.classList.remove('show');
+  document.body.style.overflow='';
+  pmAnim.active=false;
+  pmCurrent=null;
+}
+petModal.addEventListener('click',function(e){if(e.target===this)closePetModal()});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&petModal.classList.contains('show')) closePetModal();
+});
+document.getElementById('pm-actions').addEventListener('click',function(e){
+  const b=e.target.closest('button[data-act]');
+  if(!b) return;
+  pmAnim.state=b.dataset.act;pmAnim.frame=0;pmAnim.last=0;
+  if(pmAnim.img){drawFrame(pmAnim);if(!REDUCED_MOTION){pmAnim.active=true;wakeSprites();}}
+  document.querySelectorAll('#pm-actions button').forEach(x=>x.classList.toggle('active',x===b));
+});
+
+// ===== 立即安装:先尝试唤起本地 Codress 客户端(codress:// 协议),
+// 1.8s 内页面失焦即视为已打开;否则按系统跳 GitHub 对应安装包 =====
+function detectOS(){
+  const ua=navigator.userAgent||'';
+  if(/Macintosh|Mac OS X/i.test(ua)) return 'mac';
+  if(/Windows/i.test(ua)) return 'win';
+  return 'other';
+}
+let installBusy=false;
+function installCurrentPet(){
+  if(!pmCurrent||installBusy) return;
+  installBusy=true;
+  const hint=document.getElementById('pm-hint');
+  const os=detectOS();
+  hint.textContent=t9('pm.hint_opening');
+  let opened=false;
+  const markOpened=function(){opened=true};
+  const onVis=function(){if(document.hidden)opened=true};
+  window.addEventListener('blur',markOpened);
+  document.addEventListener('visibilitychange',onVis);
+  try{location.href='codress://store/pet/'+encodeURIComponent(pmCurrent.slug);}catch(err){}
+  setTimeout(function(){
+    window.removeEventListener('blur',markOpened);
+    document.removeEventListener('visibilitychange',onVis);
+    installBusy=false;
+    if(opened){hint.textContent=t9('pm.hint_opened');return}
+    hint.textContent=t9('pm.hint_fallback');
+    if(os==='other'){window.open(RELEASES_URL,'_blank','noopener');return}
+    dl(os);
+  },1800);
+}
 </script>
 </body>
 </html>
