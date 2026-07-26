@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Config 全部来自环境变量(支持 .env),字段含义见 .env.example。
@@ -14,6 +15,12 @@ type Config struct {
 	JWTSecret     string
 	StorageDir    string
 	PublicBaseURL string
+
+	// 腾讯云 COS 直传:设置 COS_BUCKET_URL 后,上传落 COS、资产 URL 直接指向桶域名;
+	// 留空则维持本地磁盘 + /static 模式(本地联调可用)。
+	COSBucketURL string
+	COSSecretID  string
+	COSSecretKey string
 
 	AdminUsername string
 	AdminPassword string
@@ -47,6 +54,9 @@ func Load() *Config {
 		JWTSecret:     env("JWT_SECRET", "codress-dev-secret-change-me"),
 		StorageDir:    env("STORAGE_DIR", "./storage"),
 		PublicBaseURL: env("PUBLIC_BASE_URL", "http://127.0.0.1:8080"),
+		COSBucketURL:  strings.TrimRight(env("COS_BUCKET_URL", ""), "/"),
+		COSSecretID:   env("COS_SECRET_ID", ""),
+		COSSecretKey:  env("COS_SECRET_KEY", ""),
 
 		AdminUsername: env("ADMIN_USERNAME", "admin"),
 		AdminPassword: env("ADMIN_PASSWORD", "codress123"),

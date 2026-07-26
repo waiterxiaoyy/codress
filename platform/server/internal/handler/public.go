@@ -31,6 +31,10 @@ func assetURL(cfg *config.Config, rel string) string {
 	if rel == "" {
 		return ""
 	}
+	// COS 模式:资产直接走桶域名(公有读),不经过本服务
+	if cfg.COSBucketURL != "" {
+		return cfg.COSBucketURL + "/" + rel
+	}
 	return cfg.PublicBaseURL + "/static/" + rel
 }
 

@@ -59,6 +59,13 @@ func SaveBytes(root string, data []byte, subdir, base, ext string) (rel string, 
 	sum := sha256.Sum256(data)
 	hashHex = hex.EncodeToString(sum[:])
 	name := fmt.Sprintf("%s-%s%s", base, hashHex[:8], strings.ToLower(ext))
+	rel = path.Join(subdir, name)
+	if COSEnabled() {
+		if err = cosPut(rel, data, ext); err != nil {
+			return "", 0, "", err
+		}
+		return rel, int64(len(data)), hashHex, nil
+	}
 	dir := filepath.Join(root, filepath.FromSlash(subdir))
 	if err = os.MkdirAll(dir, 0o755); err != nil {
 		return "", 0, "", err
@@ -67,12 +74,16 @@ func SaveBytes(root string, data []byte, subdir, base, ext string) (rel string, 
 	if err = os.WriteFile(full, data, 0o644); err != nil {
 		return "", 0, "", err
 	}
-	return path.Join(subdir, name), int64(len(data)), hashHex, nil
+	return rel, int64(len(data)), hashHex, nil
 }
 
-// Remove 删除相对路径指向的文件(best effort,拒绝越出 root)。
+// Remove 删除相对路径指向的文件(best effort;COS 模式删对象,本地模式拒绝越出 root)。
 func Remove(root, rel string) {
 	if rel == "" {
+		return
+	}
+	if COSEnabled() {
+		cosRemove(rel)
 		return
 	}
 	full := filepath.Join(root, filepath.FromSlash(rel))

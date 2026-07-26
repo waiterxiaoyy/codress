@@ -250,7 +250,10 @@ func (h *Admin) UploadSkinAssets(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "background: " + err.Error()})
 			return
 		}
-		storage.Remove(h.Cfg.StorageDir, skin.Background)
+		// 相同内容会得到相同文件名,此时不能把刚写入的文件当旧文件删掉
+		if skin.Background != rel {
+			storage.Remove(h.Cfg.StorageDir, skin.Background)
+		}
 		skin.Background, skin.SizeBytes, skin.Hash = rel, size, hash
 		uploaded++
 	}
@@ -260,7 +263,9 @@ func (h *Admin) UploadSkinAssets(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "previewLight: " + err.Error()})
 			return
 		}
-		storage.Remove(h.Cfg.StorageDir, skin.PreviewLight)
+		if skin.PreviewLight != rel {
+			storage.Remove(h.Cfg.StorageDir, skin.PreviewLight)
+		}
 		skin.PreviewLight = rel
 		uploaded++
 	}
@@ -270,7 +275,9 @@ func (h *Admin) UploadSkinAssets(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "previewDark: " + err.Error()})
 			return
 		}
-		storage.Remove(h.Cfg.StorageDir, skin.PreviewDark)
+		if skin.PreviewDark != rel {
+			storage.Remove(h.Cfg.StorageDir, skin.PreviewDark)
+		}
 		skin.PreviewDark = rel
 		uploaded++
 	}
@@ -490,7 +497,10 @@ func (h *Admin) UploadPetAssets(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		storage.Remove(h.Cfg.StorageDir, pet.Image)
+		// 相同内容会得到相同文件名,此时不能把刚写入的文件当旧文件删掉
+		if pet.Image != rel {
+			storage.Remove(h.Cfg.StorageDir, pet.Image)
+		}
 		pet.Image, pet.SizeBytes, pet.Hash = rel, size, hash
 	}
 	// Sprite sheet (spritesheet 字段)
@@ -500,7 +510,9 @@ func (h *Admin) UploadPetAssets(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "spritesheet upload failed: " + err.Error()})
 			return
 		}
-		storage.Remove(h.Cfg.StorageDir, pet.SpriteSheet)
+		if pet.SpriteSheet != rel {
+			storage.Remove(h.Cfg.StorageDir, pet.SpriteSheet)
+		}
 		pet.SpriteSheet = rel
 		pet.SizeBytes = size
 		pet.Hash = hash

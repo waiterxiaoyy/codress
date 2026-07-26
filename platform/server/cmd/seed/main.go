@@ -125,6 +125,10 @@ func main() {
 	if err := os.MkdirAll(cfg.StorageDir, 0o755); err != nil {
 		log.Fatal(err)
 	}
+	// 与 API 一致:配置了 COS 时,seed 落盘也直传 COS
+	if err := storage.ConfigureCOS(cfg.COSBucketURL, cfg.COSSecretID, cfg.COSSecretKey); err != nil {
+		log.Fatal(err)
+	}
 	db, err := database.Open(cfg)
 	if err != nil {
 		log.Fatal(err)
